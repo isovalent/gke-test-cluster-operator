@@ -1,0 +1,3 @@
+domain: ci.cilium.io
+repo: github.com/isovalent/gke-test-cluster-management/operator
+version: "2"
