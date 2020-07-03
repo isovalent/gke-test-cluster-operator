@@ -1,0 +1,24 @@
+# permissions for end users to edit testclustergkes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: testclustergke-editor-role
+rules:
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclustergkes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclustergkes/status
+  verbs:
+  - get

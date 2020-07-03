@@ -1,3 +1,7 @@
 domain: ci.cilium.io
 repo: github.com/isovalent/gke-test-cluster-management/operator
+resources:
+- group: clusters
+  kind: TestClusterGKE
+  version: v1alpha1
 version: "2"
