@@ -28,8 +28,24 @@ type TestClusterGKESpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of TestClusterGKE. Edit TestClusterGKE_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// ConfigTemplate is the name of configuration template to use
+	ConfigTemplate *string `json:"configTemplate,omitempty"`
+	// Location is a GCP zone or region
+	Location *string `json:"location,omitempty"`
+	// KubernetesVersion is the version of Kubernetes to use
+	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
+	// JobSpec is the specification of test job
+	JobSpec *JobSpec `json:"jobSpec,omitempty"`
+}
+
+// JobSpec is the specification of test job
+type JobSpec struct {
+	// RunnerImage is the image that will drive the tests
+	RunnerImage *string `json:"runnerImage,omitempty"`
+	// ImagesToTest is a set of application images that will be tested
+	ImagesToTest *map[string]string `json:"imagesToTest,omitempty"`
+	// RunnerConfigMap is a name of configmap of the runner
+	RunnerConfigMap *string `json:"runnerConfigMap,omitempty"`
 }
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
