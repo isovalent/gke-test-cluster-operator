@@ -1,0 +1,20 @@
+# permissions for end users to view testclusterpoolgkes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: testclusterpoolgke-viewer-role
+rules:
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclusterpoolgkes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclusterpoolgkes/status
+  verbs:
+  - get

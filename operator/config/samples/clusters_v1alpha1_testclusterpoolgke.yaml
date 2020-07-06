@@ -1,0 +1,7 @@
+apiVersion: clusters.ci.cilium.io/v1alpha1
+kind: TestClusterPoolGKE
+metadata:
+  name: testclusterpoolgke-sample
+spec:
+  # Add fields here
+  foo: bar

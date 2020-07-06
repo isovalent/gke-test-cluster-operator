@@ -4,4 +4,7 @@ resources:
 - group: clusters
   kind: TestClusterGKE
   version: v1alpha1
+- group: clusters
+  kind: TestClusterPoolGKE
+  version: v1alpha1
 version: "2"
