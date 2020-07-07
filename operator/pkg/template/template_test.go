@@ -26,7 +26,7 @@ func TestGenerator(t *testing.T) {
 		cluster.Metadata.Namespace = "default"
 		cluster.Spec.Location = "us-central1-a"
 
-		js, err := gen.ToJSON(cluster)
+		js, err := gen.RenderJSON(cluster)
 		g.Expect(err).To(Not(HaveOccurred()))
 
 		const expected = `
@@ -110,7 +110,7 @@ func TestGenerator(t *testing.T) {
 			"foo": "bar",
 		}
 
-		_, err := gen.ToJSON(cluster)
+		_, err := gen.RenderJSON(cluster)
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: field "foo" not allowed in closed struct`))
 	}
@@ -118,13 +118,13 @@ func TestGenerator(t *testing.T) {
 	{
 		cluster := map[string]string{}
 
-		_, err := gen.ToJSON(cluster)
+		_, err := gen.RenderJSON(cluster)
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: incomplete value 'resource.metadata.name' in interpolation`))
 	}
 
 	{
-		_, err := gen.ToJSON(0)
+		_, err := gen.RenderJSON(0)
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: conflicting values Cluster and 0 (mismatched types struct and int)`))
 	}

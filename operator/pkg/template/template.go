@@ -39,7 +39,7 @@ func (g *Generator) CompileAndValidate() error {
 	return nil
 }
 
-func (g *Generator) ToJSON(obj interface{}) ([]byte, error) {
+func (g *Generator) RenderJSON(obj interface{}) ([]byte, error) {
 	result, err := g.template.Fill(obj, resourceKey)
 	if err != nil {
 		return nil, err

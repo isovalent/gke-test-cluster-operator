@@ -64,5 +64,5 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 		return nil, fmt.Errorf("no such template: %q", templateName)
 	}
 
-	return c.templates[templateName].ToJSON(cluster)
+	return c.templates[templateName].RenderJSON(cluster)
 }
