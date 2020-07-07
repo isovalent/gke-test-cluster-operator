@@ -47,16 +47,16 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	var testClusterGKE v1alpha1.TestClusterGKE
 	if err := r.Get(ctx, req.NamespacedName, &testClusterGKE); err != nil {
-		log.Error(err, "unable to fetch testclustergke")
+		log.Error(err, "unable to fetch object")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	data, err := r.ConfigRenderer.RenderJSON(&testClusterGKE)
 	if err != nil {
-		log.Error(err, "unable render config template for testclustergke")
+		log.Error(err, "unable render config template")
 		return ctrl.Result{}, err
 	}
-	log.Info("config = %s", string(data))
+	log.Info("generated config", "config", string(data))
 
 	return ctrl.Result{}, nil
 }
