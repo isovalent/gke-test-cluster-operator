@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/template"
@@ -25,7 +24,10 @@ func (c *Config) Load() error {
 
 	for _, entry := range entries {
 		if entry.IsDir() {
-			fullPath := filepath.Join(c.BaseDirectory, entry.Name())
+			// both path.Join and filpath.Join break this by striping leading `./`,
+			// just like Go, relative package path in must be prefixed with `./`
+			// (or `../`)
+			fullPath := c.BaseDirectory + "/" + entry.Name()
 			template := &template.Generator{
 				InputDirectory: fullPath,
 			}

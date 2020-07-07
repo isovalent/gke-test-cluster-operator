@@ -26,6 +26,8 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
@@ -33,6 +35,8 @@ type TestClusterGKEReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+
+	ConfigRenderer *config.Config
 }
 
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
@@ -46,6 +50,13 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		log.Error(err, "unable to fetch testclustergke")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	data, err := r.ConfigRenderer.RenderJSON(&testClusterGKE)
+	if err != nil {
+		log.Error(err, "unable render config template for testclustergke")
+		return ctrl.Result{}, err
+	}
+	log.Info("config = %s", string(data))
 
 	return ctrl.Result{}, nil
 }

@@ -1,6 +1,4 @@
 /*
-
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -20,14 +18,17 @@ import (
 	"flag"
 	"os"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -54,6 +55,12 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
+	configRenderer, err := initConfigRenderer()
+	if err != nil {
+		setupLog.Error(err, "unable to setup config renderer")
+		os.Exit(2)
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
@@ -67,9 +74,10 @@ func main() {
 	}
 
 	if err = (&controllers.TestClusterGKEReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
-		Scheme: mgr.GetScheme(),
+		Client:         mgr.GetClient(),
+		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
+		Scheme:         mgr.GetScheme(),
+		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterGKE")
 		os.Exit(1)
@@ -89,4 +97,33 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func initConfigRenderer() (*config.Config, error) {
+	cr := &config.Config{
+		BaseDirectory: "./config/templates",
+	}
+	if err := cr.Load(); err != nil {
+		return nil, err
+	}
+
+	defaultsForBasic := &v1alpha1.TestClusterGKE{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+		},
+		Spec: v1alpha1.TestClusterGKESpec{
+			MachineType: new(string),
+			Location:    new(string),
+			Region:      new(string),
+		},
+	}
+
+	*defaultsForBasic.Spec.MachineType = "n1-standard-4"
+	*defaultsForBasic.Spec.Location = "europe-west2-b"
+	*defaultsForBasic.Spec.Region = "europe-west2"
+
+	if err := cr.ApplyDefaults("basic", defaultsForBasic); err != nil {
+		return nil, err
+	}
+	return cr, nil
 }
