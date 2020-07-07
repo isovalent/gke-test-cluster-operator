@@ -124,7 +124,7 @@ func TestGenerator(t *testing.T) {
 	}
 
 	{
-		_, err := gen.MarshalJSON(0)
+		_, err := gen.ToJSON(0)
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: conflicting values Cluster and 0 (mismatched types struct and int)`))
 	}
