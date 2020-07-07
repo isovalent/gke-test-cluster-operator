@@ -24,6 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 )
 
@@ -36,12 +37,15 @@ type TestClusterGKEReconciler struct {
 
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
-
 func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("testclustergke", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("testclustergke", req.NamespacedName)
 
-	// your logic here
+	var testClusterGKE v1alpha1.TestClusterGKE
+	if err := r.Get(ctx, req.NamespacedName, &testClusterGKE); err != nil {
+		log.Error(err, "unable to fetch testclustergke")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
 	return ctrl.Result{}, nil
 }

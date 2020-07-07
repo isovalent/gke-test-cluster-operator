@@ -46,7 +46,7 @@ ClusterTemplate :: {
 				labels: cluster: "\(resource.metadata.name)"
 			}
 			spec: {
-				ipCidrRange: "10.128.0.0/20"
+				ipCidrRange: "\(defaults.spec.subnetCIDR)" | *"\(resource.spec.subnetCIDR)"
 				region:      "us-central1"
 				networkRef: name: "\(resource.metadata.name)"
 			}
@@ -54,5 +54,6 @@ ClusterTemplate :: {
 	]
 }
 
+defaults: testtypes.Cluster
 resource: testtypes.Cluster
 template: ClusterTemplate

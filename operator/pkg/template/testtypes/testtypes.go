@@ -11,5 +11,6 @@ type ClusterMeta struct {
 	Name      string `json:"name"`
 }
 type ClusterSpec struct {
-	Location string `json:"location"`
+	Location   string  `json:"location"`
+	SubnetCIDR *string `json:"subnetCIDR,omitempty"`
 }

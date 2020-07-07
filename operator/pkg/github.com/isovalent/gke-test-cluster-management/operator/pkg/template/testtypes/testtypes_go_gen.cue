@@ -15,5 +15,6 @@ ClusterMeta :: {
 }
 
 ClusterSpec :: {
-	location: string @go(Location)
+	location:    string        @go(Location)
+	subnetCIDR?: null | string @go(SubnetCIDR,*string)
 }

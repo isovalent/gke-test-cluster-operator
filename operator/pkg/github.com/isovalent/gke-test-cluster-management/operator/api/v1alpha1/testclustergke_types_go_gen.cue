@@ -14,11 +14,18 @@ TestClusterGKESpec :: {
 	// Location is a GCP zone or region
 	location?: null | string @go(Location,*string)
 
+	// Location is a GCP region (derived from location)
+	// TODO: not user-settable, read-only
+	region?: null | string @go(Region,*string)
+
 	// KubernetesVersion is the version of Kubernetes to use
 	kubernetesVersion?: null | string @go(KubernetesVersion,*string)
 
 	// JobSpec is the specification of test job
 	jobSpec?: null | JobSpec @go(JobSpec,*JobSpec)
+
+	// MachineType is the GCP machine type
+	machineType?: null | string @go(MachineType,*string)
 }
 
 // JobSpec is the specification of test job

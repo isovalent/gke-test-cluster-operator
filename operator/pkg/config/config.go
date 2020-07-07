@@ -10,22 +10,22 @@ import (
 )
 
 type Config struct {
-	BaseDir string
+	BaseDirectory string
 
 	templates map[string]*template.Generator
 }
 
 func (c *Config) Load() error {
-	entries, err := ioutil.ReadDir(c.BaseDir)
+	entries, err := ioutil.ReadDir(c.BaseDirectory)
 	if err != nil {
-		return fmt.Errorf("unable to list avaliable config templates in %q: %w", c.BaseDir, err)
+		return fmt.Errorf("unable to list avaliable config templates in %q: %w", c.BaseDirectory, err)
 	}
 
 	c.templates = map[string]*template.Generator{}
 
 	for _, entry := range entries {
 		if entry.IsDir() {
-			fullPath := filepath.Join(c.BaseDir, entry.Name())
+			fullPath := filepath.Join(c.BaseDirectory, entry.Name())
 			template := &template.Generator{
 				InputDirectory: fullPath,
 			}
@@ -37,7 +37,7 @@ func (c *Config) Load() error {
 	}
 
 	if len(c.templates) == 0 {
-		return fmt.Errorf("no config templates found in %q", c.BaseDir)
+		return fmt.Errorf("no config templates found in %q", c.BaseDirectory)
 	}
 	return nil
 }
@@ -55,6 +55,19 @@ func (c *Config) ExistingTemplates() []string {
 	return templates
 }
 
+func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClusterGKE) error {
+	if !c.HaveExistingTemplate(templateName) {
+		return fmt.Errorf("no such template: %q", templateName)
+	}
+	template := c.templates[templateName]
+	template, err := template.WithDefaults(defaults.WithoutTypeMeta())
+	if err != nil {
+		return err
+	}
+	c.templates[templateName] = template
+	return nil
+}
+
 func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	if cluster == nil || cluster.Spec.ConfigTemplate == nil {
 		return nil, fmt.Errorf("invalid test cluster object")
@@ -63,6 +76,11 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	if !c.HaveExistingTemplate(templateName) {
 		return nil, fmt.Errorf("no such template: %q", templateName)
 	}
-
-	return c.templates[templateName].RenderJSON(cluster)
+	template := c.templates[templateName]
+	//	workaround := cluster.(*v1alpha1.TestClusterGKECUE)
+	template, err := template.WithResource(cluster.WithoutTypeMeta())
+	if err != nil {
+		return nil, err
+	}
+	return template.RenderJSON()
 }

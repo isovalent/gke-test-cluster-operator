@@ -30,10 +30,15 @@ type TestClusterGKESpec struct {
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
 	// Location is a GCP zone or region
 	Location *string `json:"location,omitempty"`
+	// Location is a GCP region (derived from location)
+	// TODO: not user-settable, read-only
+	Region *string `json:"region,omitempty"`
 	// KubernetesVersion is the version of Kubernetes to use
 	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
 	// JobSpec is the specification of test job
 	JobSpec *JobSpec `json:"jobSpec,omitempty"`
+	// MachineType is the GCP machine type
+	MachineType *string `json:"machineType,omitempty"`
 }
 
 // JobSpec is the specification of test job
@@ -61,6 +66,23 @@ type TestClusterGKE struct {
 
 	Spec   TestClusterGKESpec   `json:"spec,omitempty"`
 	Status TestClusterGKEStatus `json:"status,omitempty"`
+}
+
+type TestClusterGKE_WithoutTypeMeta struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   TestClusterGKESpec   `json:"spec,omitempty"`
+	Status TestClusterGKEStatus `json:"status,omitempty"`
+}
+
+// WithoutTypeMeta returns a copy of t without TypeMeta, this is a workaround
+// an issue with CUE
+func (t *TestClusterGKE) WithoutTypeMeta() *TestClusterGKE_WithoutTypeMeta {
+	return &TestClusterGKE_WithoutTypeMeta{
+		ObjectMeta: t.ObjectMeta,
+		Spec:       t.Spec,
+		Status:     t.Status,
+	}
 }
 
 // +kubebuilder:object:root=true

@@ -1,6 +1,8 @@
 package template
 
 import (
+	"fmt"
+
 	"cuelang.org/go/cue"
 	"github.com/errordeveloper/kue/pkg/compiler"
 )
@@ -9,6 +11,7 @@ const (
 	templateFilename = "template.cue"
 
 	templateKey = "template"
+	defaultsKey = "defaults"
 	resourceKey = "resource"
 )
 
@@ -39,11 +42,32 @@ func (g *Generator) CompileAndValidate() error {
 	return nil
 }
 
-func (g *Generator) RenderJSON(obj interface{}) ([]byte, error) {
-	result, err := g.template.Fill(obj, resourceKey)
+func (g *Generator) with(key string, obj interface{}) (*Generator, error) {
+	result, err := g.template.Fill(obj, key)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot fill %q: %w", key, err)
 	}
+	if result.Err != nil {
+		return nil, fmt.Errorf("error after filling %q: %w", key, err)
+	}
+	return &Generator{
+		InputDirectory: g.InputDirectory,
+		template:       result,
+	}, nil
+}
 
-	return result.Lookup(templateKey).MarshalJSON()
+func (g *Generator) WithDefaults(obj interface{}) (*Generator, error) {
+	return g.with(defaultsKey, obj)
+}
+
+func (g *Generator) WithResource(obj interface{}) (*Generator, error) {
+	return g.with(resourceKey, obj)
+}
+
+func (g *Generator) RenderJSON() ([]byte, error) {
+	value := g.template.Lookup(templateKey)
+	if err := value.Err(); err != nil {
+		return nil, fmt.Errorf("unable to lookup %q: %w", templateKey, err)
+	}
+	return value.MarshalJSON()
 }
