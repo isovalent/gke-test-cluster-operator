@@ -44,7 +44,7 @@ func init() {
 	_ = clustersv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 
-	// register Config Connector sheme, so that the client can access its objects
+	// register Config Connector scheme, so that the client can access its objects
 	_ = cnrm.AddToScheme(scheme)
 }
 
