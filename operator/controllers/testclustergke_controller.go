@@ -60,6 +60,19 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 	log.Info("generated config", "items", objs.Items)
 
+	// TODO (mvp)
+	// - detect event type, error on updates
+	// - handle deletion
+	// - write a few simple controller tests
+	// - update RBAC configs
+	// - de-kustomize configs
+	// TODO (post-mvp)
+	// - implement pool object
+	// - implement GCP project annotation
+	// - implement job runner pod (use sonoboy as PoC)
+	// - use random cluster name, instead of same as test object
+	// - wait for cluster to get created, update status
+
 	if err := objs.EachListItem(r.createOrSkip); err != nil {
 		log.Error(err, "unable reconcile object")
 		return ctrl.Result{}, nil
@@ -82,8 +95,8 @@ func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
 	ctx := context.Background()
 	log := r.Log.WithValues("createOrSkip", key)
 
-	// TODO probably don't need to make a full copy, should be able to
-	// copy just TypeMeta and ObjectMeta
+	// TODO (post-mvp) probably don't need to make a full copy,
+	// should be able to copy just TypeMeta and ObjectMeta
 	remoteObj := obj.DeepCopyObject()
 	getErr := r.Client.Get(ctx, key, remoteObj)
 	if apierrors.IsNotFound(getErr) {
