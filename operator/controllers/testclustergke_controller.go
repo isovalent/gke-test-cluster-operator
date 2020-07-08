@@ -21,6 +21,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -43,7 +45,7 @@ type TestClusterGKEReconciler struct {
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
 func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("testclustergke", req.NamespacedName)
+	log := r.Log.WithValues("Reconcile", req.NamespacedName)
 
 	var testClusterGKE v1alpha1.TestClusterGKE
 	if err := r.Get(ctx, req.NamespacedName, &testClusterGKE); err != nil {
@@ -51,13 +53,17 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	data, err := r.ConfigRenderer.RenderJSON(&testClusterGKE)
+	objs, err := r.ConfigRenderer.RenderObjects(&testClusterGKE)
 	if err != nil {
 		log.Error(err, "unable render config template")
 		return ctrl.Result{}, err
 	}
-	log.Info("generated config", "config", string(data))
+	log.Info("generated config", "items", objs.Items)
 
+	if err := objs.EachListItem(r.createOrSkip); err != nil {
+		log.Error(err, "unable reconcile object")
+		return ctrl.Result{}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -65,4 +71,27 @@ func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&clustersv1alpha1.TestClusterGKE{}).
 		Complete(r)
+}
+
+func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
+	key, err := client.ObjectKeyFromObject(obj)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	log := r.Log.WithValues("createOrSkip", key)
+
+	// TODO probably don't need to make a full copy, should be able to
+	// copy just TypeMeta and ObjectMeta
+	remoteObj := obj.DeepCopyObject()
+	getErr := r.Client.Get(ctx, key, remoteObj)
+	if apierrors.IsNotFound(getErr) {
+		log.Info("will create", "obj", obj)
+		return r.Client.Create(ctx, obj)
+	}
+	if getErr == nil {
+		log.Info("already exists", "remoteObj", remoteObj)
+	}
+	return getErr
 }

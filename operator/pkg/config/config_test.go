@@ -41,7 +41,7 @@ func TestConfig(t *testing.T) {
 		}
 
 		err := c.Load()
-		g.Expect(err).To(Not(HaveOccurred()))
+		g.Expect(err).ToNot(HaveOccurred())
 
 		g.Expect(c.HaveExistingTemplate("basic")).To(BeTrue())
 	}
@@ -52,7 +52,7 @@ func TestConfig(t *testing.T) {
 		}
 
 		err := c.Load()
-		g.Expect(err).To(Not(HaveOccurred()))
+		g.Expect(err).ToNot(HaveOccurred())
 
 		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{})
 		g.Expect(err).To(HaveOccurred())
@@ -80,12 +80,12 @@ func TestConfig(t *testing.T) {
 		}
 
 		err := c.Load()
-		g.Expect(err).To(Not(HaveOccurred()))
+		g.Expect(err).ToNot(HaveOccurred())
 
 		g.Expect(c.HaveExistingTemplate(templateName)).To(BeTrue())
 
 		err = c.ApplyDefaults(templateName, defCluster)
-		g.Expect(err).To(Not(HaveOccurred()))
+		g.Expect(err).ToNot(HaveOccurred())
 
 		{
 			cluster := &v1alpha1.TestClusterGKE{
@@ -103,7 +103,7 @@ func TestConfig(t *testing.T) {
 			*cluster.Spec.Location = "europe-west2-b"
 
 			data, err := c.RenderJSON(cluster)
-			g.Expect(err).To(Not(HaveOccurred()))
+			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
 			{
@@ -212,6 +212,11 @@ func TestConfig(t *testing.T) {
 				]
 			}`
 			g.Expect(data).To(MatchJSON(expected))
+
+			objs, err := c.RenderObjects(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(4))
 		}
 
 		{
@@ -226,7 +231,7 @@ func TestConfig(t *testing.T) {
 			}
 
 			data, err := c.RenderJSON(cluster)
-			g.Expect(err).To(Not(HaveOccurred()))
+			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
 			{
@@ -335,6 +340,11 @@ func TestConfig(t *testing.T) {
 				]
 			}`
 			g.Expect(data).To(MatchJSON(expected))
+
+			objs, err := c.RenderObjects(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(4))
 		}
 
 		{

@@ -25,6 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
@@ -42,6 +43,9 @@ func init() {
 
 	_ = clustersv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
+
+	// register Config Connector sheme, so that the client can access its objects
+	_ = cnrm.AddToScheme(scheme)
 }
 
 func main() {
