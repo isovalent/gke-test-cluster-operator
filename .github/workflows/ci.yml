@@ -1,0 +1,74 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, reopened]
+  push:
+    branches: ['**']
+
+jobs:
+  build-image:
+    #if: github.repository == 'isovalent/gke-test-cluster-management'
+    name: Build new cilium image locally
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker://docker.io/errordeveloper/image-maker:1bb337678fe025bc34c3ac1f2d0601595343989b-dev # includes imagine and latest buildx
+        name: Run make operator-image
+        env:
+          DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
+          QUAY_PUBLIC_ACCESS_ONLY: "true"
+        with:
+          entrypoint: make
+          args: operator-image
+      - name: Get image cache key
+        id: get-image-cache-key
+        run: .github/workflows/ci.get-image-cache-key.sh
+      - name: Cache OCI image tarballs and generated manifests
+        # cache is normally restored at the start, but it's not used in this case, as it is
+        # not being used to store anything between runs, the key is specific to this run only
+        # and is only used to pass image between jobs without having to push it to a registry;
+        # the artifacts are not used here due to costs
+        uses: actions/cache@v2
+        with:
+          # generate a unique key for the workflow run
+          key: ${{ steps.get-image-cache-key.outputs.key }}
+          path: |
+            image-*.oci
+    outputs:
+      image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
+  build-and-test:
+    #if: github.repository == 'isovalent/gke-test-cluster-management'
+    needs: build-image
+    strategy:
+      matrix:
+        kube_version: [1.16, 1.17, 1.18]
+    name: Create kind clusters and test new image
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore OCI image and manifest from cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ needs.build-image.outputs.image-cache-key }}
+          path: |
+            image-*.oci
+      - name: Create Kubernetes cluster (${{ matrix.kube_version }})
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        with:
+          entrypoint: kind
+          args: create cluster --config /etc/kind/${{ matrix.kube_version }}/standard-github-actions-cluster.yaml --kubeconfig /github/workspace/kubeconfig
+      - name: Load OCI image into the cluster
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        with:
+          entrypoint: kind
+          args: load image-archive image-gke-test-cluster-operator.oci
+      - name: Deploy Cilium and Config Connector CRDs
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        with:
+          entrypoint: kubectl
+          args: apply --kubeconfig /github/workspace/kubeconfig --context kind-kind --filename cilium-kind.yaml --filename cnrm/crds.yaml
+      - name: Wait for nodes to become ready
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        with:
+          entrypoint: kubectl
+          args: wait nodes --kubeconfig /github/workspace/kubeconfig --context kind-kind --for=condition=Ready --all --timeout=5m

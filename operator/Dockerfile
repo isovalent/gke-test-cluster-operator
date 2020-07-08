@@ -1,27 +1,29 @@
-# Build the manager binary
-FROM golang:1.13 as builder
+# syntax=docker/dockerfile:1.1-experimental
 
-WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-RUN go mod download
+# Copyright 2020 Authors of Cilium
+# SPDX-License-Identifier: Apache-2.0
 
-# Copy the go source
-COPY main.go main.go
-COPY api/ api/
-COPY controllers/ controllers/
+ARG GOLANG_IMAGE=docker.io/library/golang:1.14@sha256:ede9a57fa6d862ab87f5abcea707c3d55e445ff01d806334a1cb7aae45ec73bb
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+FROM ${GOLANG_IMAGE} as builder
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+WORKDIR /src
+ENV GOPRIVATE=github.com/isovalent
+
+RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
+    go mod download
+
+RUN mkdir -p /out/usr/bin
+
+RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+        go build -a -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-operator main.go
+
+RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
+    go test ./pkg/...
+
+FROM scratch
 WORKDIR /
-COPY --from=builder /workspace/manager .
-USER nonroot:nonroot
+COPY --from=builder /out /
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/usr/bin/gke-test-cluster-operator"]
