@@ -10,9 +10,10 @@ jobs:
     #if: github.repository == 'isovalent/gke-test-cluster-management'
     name: Build new cilium image locally
     runs-on: ubuntu-18.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
-      - uses: docker://docker.io/errordeveloper/image-maker:1bb337678fe025bc34c3ac1f2d0601595343989b-dev # includes imagine and latest buildx
+      - uses: docker://docker.io/errordeveloper/image-maker:e9b7cb4bea4e22b81612cbdc266e3f0885416cd4-dev # includes imagine and latest buildx
         name: Run make operator-image
         env:
           DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
@@ -34,6 +35,7 @@ jobs:
           key: ${{ steps.get-image-cache-key.outputs.key }}
           path: |
             image-*.oci
+            image-*.tag
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   build-and-test:
@@ -44,6 +46,7 @@ jobs:
         kube_version: [1.16, 1.17, 1.18]
     name: Create kind clusters and test new image
     runs-on: ubuntu-18.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Restore OCI image and manifest from cache
@@ -52,6 +55,7 @@ jobs:
           key: ${{ needs.build-image.outputs.image-cache-key }}
           path: |
             image-*.oci
+            image-*.tag
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:
@@ -62,13 +66,32 @@ jobs:
         with:
           entrypoint: kind
           args: load image-archive image-gke-test-cluster-operator.oci
+      - name: Set kubeconfig context
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        env:
+          KUBECONFIG: "/github/workspace/kubeconfig"
+        with:
+          entrypoint: kubectl
+          args: config use-context kind-kind
       - name: Deploy Cilium and Config Connector CRDs
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        env:
+          KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
-          args: apply --kubeconfig /github/workspace/kubeconfig --context kind-kind --filename cilium-kind.yaml --filename cnrm/crds.yaml
+          args: apply --filename cilium-kind.yaml --filename cnrm/crds.yaml
       - name: Wait for nodes to become ready
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        env:
+          KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
-          args: wait nodes --kubeconfig /github/workspace/kubeconfig --context kind-kind --for=condition=Ready --all --timeout=5m
+          args: wait nodes --for=condition=Ready --all --timeout=5m
+      - name: Run controller tests
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        env:
+          KUBECONFIG: "/github/workspace/kubeconfig"
+        timeout-minutes: 10
+        with:
+          entrypoint: make
+          args: test.operator-controllers

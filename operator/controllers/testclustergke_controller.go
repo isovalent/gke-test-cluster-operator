@@ -61,11 +61,11 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log.Info("generated config", "items", objs.Items)
 
 	// TODO (mvp)
-	// - detect event type, error on updates
-	// - handle deletion
-	// - write a few simple controller tests
-	// - update RBAC configs
-	// - de-kustomize configs
+	// - [ ] detect event type, error on updates
+	// - [ ] handle deletion
+	// - [x] write a few simple controller tests
+	// - [ ] update RBAC configs
+	// - [ ] de-kustomize configs
 	// TODO (post-mvp)
 	// - implement pool object
 	// - implement GCP project annotation

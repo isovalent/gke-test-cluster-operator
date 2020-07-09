@@ -1,0 +1,85 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: testclustergkes.clusters.ci.cilium.io
+spec:
+  group: clusters.ci.cilium.io
+  names:
+    kind: TestClusterGKE
+    listKind: TestClusterGKEList
+    plural: testclustergkes
+    singular: testclustergke
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      description: TestClusterGKE is the Schema for the testclustergkes API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: TestClusterGKESpec defines the desired state of TestClusterGKE
+          properties:
+            configTemplate:
+              description: ConfigTemplate is the name of configuration template to
+                use
+              type: string
+            jobSpec:
+              description: JobSpec is the specification of test job
+              properties:
+                imagesToTest:
+                  additionalProperties:
+                    type: string
+                  description: ImagesToTest is a set of application images that will
+                    be tested
+                  type: object
+                runnerConfigMap:
+                  description: RunnerConfigMap is a name of configmap of the runner
+                  type: string
+                runnerImage:
+                  description: RunnerImage is the image that will drive the tests
+                  type: string
+              type: object
+            kubernetesVersion:
+              description: KubernetesVersion is the version of Kubernetes to use
+              type: string
+            location:
+              description: Location is a GCP zone or region
+              type: string
+            machineType:
+              description: MachineType is the GCP machine type
+              type: string
+            region:
+              description: 'Location is a GCP region (derived from location) TODO:
+                not user-settable, read-only'
+              type: string
+          type: object
+        status:
+          description: TestClusterGKEStatus defines the observed state of TestClusterGKE
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

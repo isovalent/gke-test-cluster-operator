@@ -18,26 +18,47 @@ import (
 	"context"
 	"testing"
 
-	. "github.com/onsi/gomega"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 
-	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/types"
+	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 func TestControllers(t *testing.T) {
-	g := NewGomegaWithT(t)
+	cstm, teardown := setup(t)
 
-	client, env := setup(t)
+	cstm.NewControllerSubTest(t).Run("basic test - create and delete objects", basicCreateDeleteObjects)
+
+	teardown()
+}
+
+func basicCreateDeleteObjects(g *gomega.WithT, cst *ControllerSubTest) {
 	ctx := context.Background()
+	ns := cst.NextNamespace()
 
-	key := types.NamespacedName{
-		Namespace: "default",
-		Name:      "test-1",
-	}
+	key, obj := newTestClusterGKE(ns, "test-1")
+	remoteObj := obj.DeepCopy()
 
-	obj := &clustersv1alpha1.TestClusterGKE{}
-	err := client.Get(ctx, key, obj)
+	err := cst.Client.Get(ctx, key, remoteObj)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+
+	err = cst.Client.Create(ctx, obj)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	teardown(t, env)
+	err = cst.Client.Get(ctx, key, remoteObj)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	cnrmKey, cnrmObjs := newContainerClusterObjs(g, ns, "test-1")
+
+	err = cnrmObjs.EachListItem(func(obj runtime.Object) error {
+		return cst.Client.Get(ctx, cnrmKey, obj)
+	})
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+
+	err = cst.Client.Delete(ctx, remoteObj)
+	g.Expect(err).ToNot(HaveOccurred())
+
 }

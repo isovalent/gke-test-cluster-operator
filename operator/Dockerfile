@@ -17,10 +17,17 @@ RUN mkdir -p /out/usr/bin
 
 RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-        go build -a -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-operator main.go
+        go build -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-operator ./
+
+RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+        go test -c -ldflags '-s -w' -o /out/usr/bin/test.gke-test-cluster-operator-controllers ./controllers
 
 RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
     go test ./pkg/...
+
+RUN --mount=type=bind,target=/src  \
+    tar -c config pkg/k8s.io pkg/github.com/isovalent | tar -C /out -x
 
 FROM scratch
 WORKDIR /

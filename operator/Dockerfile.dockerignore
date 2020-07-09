@@ -8,3 +8,4 @@
 !api/
 !controllers/
 !config/templates
+!config/crd

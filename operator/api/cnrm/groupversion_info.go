@@ -19,12 +19,27 @@ limitations under the License.
 package cnrm
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
-var (
-	GroupVersion  = schema.GroupVersion{Group: "container.cnrm.cloud.google.com", Version: "v1beta1"}
-	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
-	AddToScheme   = SchemeBuilder.AddToScheme
-)
+func AddToScheme(s *runtime.Scheme) error {
+	if err := (&scheme.Builder{
+		GroupVersion: schema.GroupVersion{
+			Group:   "container.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	}).AddToScheme(s); err != nil {
+		return err
+	}
+	if err := (&scheme.Builder{
+		GroupVersion: schema.GroupVersion{
+			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	}).AddToScheme(s); err != nil {
+		return err
+	}
+	return nil
+}
