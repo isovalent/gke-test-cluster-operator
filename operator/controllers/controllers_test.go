@@ -17,11 +17,11 @@ package controllers_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 )
 
@@ -33,12 +33,15 @@ func TestControllers(t *testing.T) {
 	teardown()
 }
 
-func basicCreateDeleteObjects(g *gomega.WithT, cst *ControllerSubTest) {
+func basicCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	ctx := context.Background()
 	ns := cst.NextNamespace()
 
 	key, obj := newTestClusterGKE(ns, "test-1")
 	remoteObj := obj.DeepCopy()
+
+	obj.Spec.ConfigTemplate = new(string)
+	*obj.Spec.ConfigTemplate = "basic"
 
 	err := cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())
@@ -58,7 +61,16 @@ func basicCreateDeleteObjects(g *gomega.WithT, cst *ControllerSubTest) {
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
 
+	g.Eventually(func() error {
+		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
+			return cst.Client.Get(ctx, cnrmKey, obj)
+		})
+	}, 120*time.Second, 100*time.Millisecond).Should(Succeed()) // TODO add flags
+
 	err = cst.Client.Delete(ctx, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())
 
+	err = cst.Client.Get(ctx, key, remoteObj)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
 }

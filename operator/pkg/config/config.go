@@ -73,8 +73,11 @@ func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClust
 }
 
 func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
-	if cluster == nil || cluster.Spec.ConfigTemplate == nil {
-		return nil, fmt.Errorf("invalid test cluster object")
+	if cluster == nil {
+		return nil, fmt.Errorf("unexpected nil object")
+	}
+	if cluster.Spec.ConfigTemplate == nil {
+		return nil, fmt.Errorf("unexpected nil config template")
 	}
 	templateName := *cluster.Spec.ConfigTemplate
 	if !c.HaveExistingTemplate(templateName) {

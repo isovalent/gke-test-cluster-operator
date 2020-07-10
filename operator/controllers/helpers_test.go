@@ -36,6 +36,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
@@ -49,7 +51,20 @@ var rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 var resourcePrefix = flag.String("resource-prefix", fmt.Sprintf("test-%d", rng.Uint64()), "resource prefix")
 var crdPath = flag.String("crd-path", filepath.Join("..", "config", "crd", "bases"), "resource prefix")
 
+type TLogger struct {
+	t *testing.T
+}
+
+func (t *TLogger) Write(p []byte) (int, error) {
+	t.t.Log(string(p))
+	return len(p), nil
+}
+
 func setup(t *testing.T) (*ControllerSubTestManager, func()) {
+	t.Helper()
+
+	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, true))
+
 	g := NewGomegaWithT(t)
 
 	var err error
@@ -126,6 +141,7 @@ func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv
 			Name:      name,
 			Namespace: namespace,
 		},
+		Spec: clustersv1alpha1.TestClusterGKESpec{},
 	}
 	return key, obj
 }
@@ -189,6 +205,8 @@ func NewControllerSubTestManager(client client.Client, namespacePrefix string) *
 	}
 }
 func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *ControllerSubTest {
+	t.Helper()
+
 	objectID := atomic.AddUint64(&cstm.nextObjectID, 1)
 	namespacePrefix := fmt.Sprintf("%s-%d", cstm.namespacePrefix, objectID)
 

@@ -75,7 +75,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	if err := objs.EachListItem(r.createOrSkip); err != nil {
 		log.Error(err, "unable reconcile object")
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 	return ctrl.Result{}, nil
 }
