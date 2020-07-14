@@ -73,4 +73,10 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	err = cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+
+	g.Eventually(func() error {
+		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
+			return cst.Client.Get(ctx, cnrmKey, obj)
+		})
+	}, *pollTimeout, *pollInterval).ShouldNot(Succeed())
 }
