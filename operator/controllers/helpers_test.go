@@ -67,7 +67,7 @@ func (t *TLogger) Write(p []byte) (int, error) {
 func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	t.Helper()
 
-	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, false))
+	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, true))
 
 	g := NewGomegaWithT(t)
 
