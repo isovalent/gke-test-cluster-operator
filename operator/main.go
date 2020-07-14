@@ -76,7 +76,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TestClusterGKEReconciler{
+	if err := (&controllers.TestClusterGKEReconciler{
 		Client:         mgr.GetClient(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
@@ -85,7 +85,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterGKE")
 		os.Exit(1)
 	}
-	if err = (&controllers.TestClusterPoolGKEReconciler{
+	if err := (&controllers.TestClusterPoolGKEReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("TestClusterPoolGKE"),
 		Scheme: mgr.GetScheme(),
@@ -95,7 +95,15 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
-	setupLog.Info("starting manager")
+	if err := (&controllers.CNRMWatcher{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CNRMWatcher")
+		os.Exit(1)
+	}
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

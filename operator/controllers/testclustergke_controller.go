@@ -1,6 +1,4 @@
 /*
-
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -20,13 +18,14 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
@@ -41,19 +40,25 @@ type TestClusterGKEReconciler struct {
 	ConfigRenderer *config.Config
 }
 
+const (
+	Finalizer = "finalizer.clusters.ci.cilium.io"
+)
+
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
 func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("Reconcile", req.NamespacedName)
 
-	var testClusterGKE v1alpha1.TestClusterGKE
-	if err := r.Get(ctx, req.NamespacedName, &testClusterGKE); err != nil {
-		log.Error(err, "unable to fetch object")
+	instance := &clustersv1alpha1.TestClusterGKE{}
+	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	objs, err := r.ConfigRenderer.RenderObjects(&testClusterGKE)
+	// if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+	// }
+
+	objs, err := r.RenderObjects(instance)
 	if err != nil {
 		log.Error(err, "unable render config template")
 		return ctrl.Result{}, err
@@ -79,11 +84,26 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 	return ctrl.Result{}, nil
 }
-
 func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&clustersv1alpha1.TestClusterGKE{}).
 		Complete(r)
+}
+
+func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+	objs, err := r.ConfigRenderer.RenderObjects(instance)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range objs.Items {
+		// not using objs.EachListItem here sicne it would require type conversion
+		if err := controllerutil.SetControllerReference(instance, &objs.Items[i], r.Scheme); err != nil {
+			return nil, err
+		}
+	}
+
+	return objs, nil
 }
 
 func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {

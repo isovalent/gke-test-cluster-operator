@@ -86,14 +86,9 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 
 	scheme := runtime.NewScheme()
 
-	err = clientgoscheme.AddToScheme(scheme)
-	g.Expect(err).NotTo(HaveOccurred())
-
-	err = clustersv1alpha1.AddToScheme(scheme)
-	g.Expect(err).NotTo(HaveOccurred())
-
-	err = cnrm.AddToScheme(scheme)
-	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(clientgoscheme.AddToScheme(scheme)).To(Succeed())
+	g.Expect(clustersv1alpha1.AddToScheme(scheme)).To(Succeed())
+	g.Expect(cnrm.AddToScheme(scheme)).To(Succeed())
 
 	kubeClient, err := client.New(cfg, client.Options{Scheme: scheme})
 	g.Expect(err).ToNot(HaveOccurred())
@@ -107,29 +102,28 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	configRenderer := &config.Config{
 		BaseDirectory: "../config/templates",
 	}
-	err = configRenderer.Load()
-	g.Expect(err).ToNot(HaveOccurred())
-	configRenderer.ApplyDefaults("basic", basic.NewDefaults())
-	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(configRenderer.Load()).To(Succeed())
+	g.Expect(configRenderer.ApplyDefaults("basic", basic.NewDefaults())).To(Succeed())
 
-	err = (&controllers.TestClusterGKEReconciler{
+	g.Expect((&controllers.TestClusterGKEReconciler{
 		Client:         mgr.GetClient(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
-	}).SetupWithManager(mgr)
-	g.Expect(err).ToNot(HaveOccurred())
+	}).SetupWithManager(mgr)).To(Succeed())
+
+	g.Expect((&controllers.CNRMWatcher{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr)).To(Succeed())
 
 	stop := make(chan struct{})
-	go func() {
-		err := mgr.Start(stop)
-		g.Expect(err).ToNot(HaveOccurred())
-	}()
+	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()
 
 	teardown := func() {
 		close(stop)
-		err := env.Stop()
-		g.Expect(err).ToNot(HaveOccurred())
+		g.Expect(env.Stop()).To(Succeed())
 	}
 
 	return NewControllerSubTestManager(kubeClient, *resourcePrefix), teardown
@@ -155,35 +149,14 @@ func newContainerClusterObjs(g *gomega.WithT, namespace, name string) (types.Nam
 		Name:      name,
 		Namespace: namespace,
 	}
-	objs := &unstructured.UnstructuredList{}
-
-	apis := []struct{ kind, apiVersion string }{
-		{kind: "ContainerCluster", apiVersion: "container.cnrm.cloud.google.com/v1beta1"},
-		{kind: "ComputeNetwork", apiVersion: "compute.cnrm.cloud.google.com/v1beta1"},
-		{kind: "ComputeSubnetwork", apiVersion: "compute.cnrm.cloud.google.com/v1beta1"},
-	}
-
-	const jsfmt = `
-	{
-		"kind": %q,
-		"apiVersion": %q,
-		"metadata": {
-		  "namespace": %q,
-		  "name": %q,
-		  "labels": {
-			"cluster": %q
-		  }
+	objs := &unstructured.UnstructuredList{
+		Items: []unstructured.Unstructured{
+			*cnrm.NewContainerCluster(),
+			*cnrm.NewContainerNodePool(),
+			*cnrm.NewComputeNetwork(),
+			*cnrm.NewComputeSubnetwork(),
 		},
-		"spec": {}
-	}`
-
-	for _, api := range apis {
-		obj := &unstructured.Unstructured{}
-		err := obj.UnmarshalJSON([]byte(fmt.Sprintf(jsfmt, api.kind, api.apiVersion, namespace, name, name)))
-		g.Expect(err).ToNot(HaveOccurred())
-		objs.Items = append(objs.Items, *obj)
 	}
-
 	return key, objs
 }
 

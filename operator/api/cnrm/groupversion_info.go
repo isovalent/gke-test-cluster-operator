@@ -19,9 +19,11 @@ limitations under the License.
 package cnrm
 
 import (
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 func AddToScheme(s *runtime.Scheme) error {
@@ -42,4 +44,68 @@ func AddToScheme(s *runtime.Scheme) error {
 		return err
 	}
 	return nil
+}
+
+func NewContainerCluster() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ContainerCluster",
+			Group:   "container.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewContainerClusterSource() source.Source {
+	return &source.Kind{Type: NewContainerCluster()}
+}
+
+func NewContainerNodePool() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ContainerNodePool",
+			Group:   "container.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewContainerNodePoolSource() source.Source {
+	return &source.Kind{Type: NewContainerNodePool()}
+}
+
+func NewComputeNetwork() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ComputeNetwork",
+			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewComputeNetworkSource() source.Source {
+	return &source.Kind{Type: NewComputeNetwork()}
+}
+
+func NewComputeSubnetwork() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ComputeSubnetwork",
+			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewComputeSubnetworkSource() source.Source {
+	return &source.Kind{Type: NewComputeSubnetwork()}
 }
