@@ -23,7 +23,6 @@ import (
 
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 type TestClusterGKESpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// ConfigTemplate is the name of configuration template to use
@@ -36,13 +35,13 @@ type TestClusterGKESpec struct {
 	// KubernetesVersion is the version of Kubernetes to use
 	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
 	// JobSpec is the specification of test job
-	JobSpec *JobSpec `json:"jobSpec,omitempty"`
+	JobSpec *TestClusterGKEJobSpec `json:"jobSpec,omitempty"`
 	// MachineType is the GCP machine type
 	MachineType *string `json:"machineType,omitempty"`
 }
 
 // JobSpec is the specification of test job
-type JobSpec struct {
+type TestClusterGKEJobSpec struct {
 	// RunnerImage is the image that will drive the tests
 	RunnerImage *string `json:"runnerImage,omitempty"`
 	// ImagesToTest is a set of application images that will be tested
@@ -53,8 +52,32 @@ type JobSpec struct {
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 type TestClusterGKEStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	Conditions           []TestClusterGKEStatusCondition `json:"conditions,omitempty"`
+	Endpoint             *string                         `json:"endpoint,omitempty"`
+	Operation            *string                         `json:"operation,omitempty"`
+	KubeconfigSecretName *string                         `json:"kubeconfigSecretName"`
+}
+
+type TestClusterGKEStatusCondition struct {
+	Type               string      `json:"type"`
+	Status             string      `json:"status"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	Reason             string      `json:"reason,omitempty"`
+	Message            string      `json:"message,omitempty"`
+}
+
+func (c *TestClusterGKEStatus) HasReadyCondition() bool {
+	if c == nil {
+		return false
+	}
+	for _, condition := range c.Conditions {
+		if condition.Type == "Ready" && condition.Status == "True" {
+			return true
+		}
+	}
+	return false
 }
 
 // +kubebuilder:object:root=true
