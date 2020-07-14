@@ -56,7 +56,7 @@ func TestConfig(t *testing.T) {
 
 		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{})
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(Equal(`invalid test cluster object`))
+		g.Expect(err.Error()).To(Equal(`unexpected nil config template`))
 	}
 
 	{

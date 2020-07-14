@@ -84,7 +84,6 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 		return nil, fmt.Errorf("no such template: %q", templateName)
 	}
 	template := c.templates[templateName]
-	//	workaround := cluster.(*v1alpha1.TestClusterGKECUE)
 	template, err := template.WithResource(cluster.WithoutTypeMeta())
 	if err != nil {
 		return nil, err

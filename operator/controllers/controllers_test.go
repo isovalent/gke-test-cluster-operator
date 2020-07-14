@@ -17,7 +17,6 @@ package controllers_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,12 +27,13 @@ import (
 func TestControllers(t *testing.T) {
 	cstm, teardown := setup(t)
 
-	cstm.NewControllerSubTest(t).Run("basic test - create and delete objects", basicCreateDeleteObjects)
+	cstm.NewControllerSubTest(t).
+		Run("simple test - create and delete objects", simpleCreateDeleteObjects)
 
 	teardown()
 }
 
-func basicCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
+func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	ctx := context.Background()
 	ns := cst.NextNamespace()
 
@@ -65,7 +65,7 @@ func basicCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
 			return cst.Client.Get(ctx, cnrmKey, obj)
 		})
-	}, 120*time.Second, 100*time.Millisecond).Should(Succeed()) // TODO add flags
+	}, *pollTimeout, *pollInterval).Should(Succeed())
 
 	err = cst.Client.Delete(ctx, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())

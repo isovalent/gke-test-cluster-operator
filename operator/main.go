@@ -56,7 +56,7 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	ctrl.SetLogger(zap.New())
 
 	configRenderer, err := initConfigRenderer()
 	if err != nil {

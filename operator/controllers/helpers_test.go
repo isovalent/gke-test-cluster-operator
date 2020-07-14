@@ -46,10 +46,14 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
-var rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+var (
+	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-var resourcePrefix = flag.String("resource-prefix", fmt.Sprintf("test-%d", rng.Uint64()), "resource prefix")
-var crdPath = flag.String("crd-path", filepath.Join("..", "config", "crd", "bases"), "resource prefix")
+	resourcePrefix = flag.String("resource-prefix", fmt.Sprintf("test-%d", rng.Uint64()), "resource prefix")
+	crdPath        = flag.String("crd-path", filepath.Join("..", "config", "crd", "bases"), "path to CRDs")
+	pollInterval   = flag.Duration("poll-interval", 10*time.Second, "polling interval")
+	pollTimeout    = flag.Duration("poll-timeout", 2*time.Minute, "polling timeout")
+)
 
 type TLogger struct {
 	t *testing.T
@@ -63,7 +67,7 @@ func (t *TLogger) Write(p []byte) (int, error) {
 func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	t.Helper()
 
-	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, true))
+	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, false))
 
 	g := NewGomegaWithT(t)
 
