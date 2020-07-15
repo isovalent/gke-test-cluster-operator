@@ -11,6 +11,7 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/template"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
 
 type Config struct {
@@ -94,8 +95,13 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	return template.RenderJSON()
 }
 
-func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
 	objs := &unstructured.UnstructuredList{}
+
+	if generateName {
+		cluster = cluster.DeepCopy()
+		cluster.Name += "-" + utilrand.String(5)
+	}
 
 	data, err := c.RenderJSON(cluster)
 	if err != nil {

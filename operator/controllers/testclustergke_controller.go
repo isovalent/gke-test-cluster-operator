@@ -56,16 +56,16 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	// TODO (mvp)
 	// - [ ] detect event type, error on updates
-	// - [ ] handle deletion
+	// - [x] handle deletion
 	// - [x] write a few simple controller tests
+	// - [x] wait for cluster to get created, update status
 	// - [ ] update RBAC configs
 	// - [ ] de-kustomize configs
+	// - [ ] use random cluster name, instead of same as test object
 	// TODO (post-mvp)
 	// - implement pool object
 	// - implement GCP project annotation
 	// - implement job runner pod (use sonoboy as PoC)
-	// - use random cluster name, instead of same as test object
-	// - wait for cluster to get created, update status
 
 	if err := objs.EachListItem(r.createOrSkip); err != nil {
 		log.Error(err, "unable reconcile object")
@@ -80,7 +80,7 @@ func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
-	objs, err := r.ConfigRenderer.RenderObjects(instance)
+	objs, err := r.ConfigRenderer.RenderObjects(instance, true)
 	if err != nil {
 		return nil, err
 	}

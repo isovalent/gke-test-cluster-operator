@@ -216,7 +216,7 @@ func TestConfig(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderObjects(cluster)
+			objs, err := c.RenderObjects(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(4))
@@ -344,10 +344,37 @@ func TestConfig(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderObjects(cluster)
+			objs, err := c.RenderObjects(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(4))
+		}
+
+		{
+			cluster := &v1alpha1.TestClusterGKE{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "baz",
+				},
+				Spec: v1alpha1.TestClusterGKESpec{
+					ConfigTemplate: &templateName,
+					MachineType:    &machineType,
+				},
+			}
+
+			objs, err := c.RenderObjects(cluster, true)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(4))
+
+			name := objs.Items[1].GetName()
+			g.Expect(name).To(HavePrefix("baz-"))
+			g.Expect(name).To(HaveLen(9))
+
+			for _, obj := range objs.Items {
+				labels := obj.GetLabels()
+				g.Expect(labels).To(HaveKeyWithValue("cluster", name))
+				g.Expect(obj.GetName()).To(Equal(name))
+			}
 		}
 
 		{
