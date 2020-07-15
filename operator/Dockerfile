@@ -16,6 +16,9 @@ RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount
 RUN mkdir -p /out/usr/bin
 
 RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
+    go vet ./...
+
+RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
         go build -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-operator ./
 

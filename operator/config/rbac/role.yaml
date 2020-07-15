@@ -1,0 +1,28 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: gke-test-cluster-operator
+rules:
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclusterpoolgkes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclusterpoolgkes/status
+  verbs:
+  - get
+  - patch
+  - update

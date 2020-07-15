@@ -12,7 +12,7 @@ import (
 
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 type TestClusterGKESpec struct {
-	// Important: Run "make" to regenerate code after modifying this file
+	// Important: Run "make generate" to regenerate code after modifying this file
 
 	// ConfigTemplate is the name of configuration template to use
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
@@ -41,12 +41,12 @@ type TestClusterGKEJobSpec struct {
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 type TestClusterGKEStatus struct {
-	// Important: Run "make" to regenerate code after modifying this file
+	// Important: Run "make generate" to regenerate code after modifying this file
 
 	Conditions           []TestClusterGKEStatusCondition `json:"conditions,omitempty"`
 	Endpoint             *string                         `json:"endpoint,omitempty"`
 	Operation            *string                         `json:"operation,omitempty"`
-	KubeconfigSecretName *string                         `json:"kubeconfigSecretName"`
+	KubeconfigSecretName *string                         `json:"kubeconfigSecretName,omitempty"`
 }
 
 type TestClusterGKEStatusCondition struct {
@@ -88,7 +88,7 @@ type TestClusterGKE_WithoutTypeMeta struct {
 }
 
 // WithoutTypeMeta returns a copy of t without TypeMeta, this is a workaround
-// an issue with CUE
+// an issue with CUE (see https://github.com/cuelang/cue/discussions/439)
 func (t *TestClusterGKE) WithoutTypeMeta() *TestClusterGKE_WithoutTypeMeta {
 	return &TestClusterGKE_WithoutTypeMeta{
 		ObjectMeta: t.ObjectMeta,

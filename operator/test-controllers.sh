@@ -81,7 +81,7 @@ items:
               - -test.v
               - -test.timeout=5m
               - -resource-prefix=\$(POD_NAME)
-              - -crd-path=/config/crd/bases
+              - -crd-path=/config/crd
               volumeMounts:
               - mountPath: /tmp
                 name: tmp

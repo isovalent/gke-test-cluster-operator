@@ -82,7 +82,9 @@ ClusterTemplate :: {
 	}]
 }
 
-defaults: v1alpha1.TestClusterGKE // cannot use the TestClusterGKE type here, see https://github.com/cuelang/cue/discussions/439
+
+
+defaults: v1alpha1.TestClusterGKE
 
 resource: v1alpha1.TestClusterGKE
 
