@@ -1,3 +1,6 @@
+// Copyright 2020 Authors of Cilium
+// SPDX-License-Identifier: Apache-2.0
+
 package testtypes
 
 //go:generate cue get go github.com/isovalent/gke-test-cluster-management/operator/pkg/template/testtypes
