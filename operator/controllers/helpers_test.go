@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onsi/gomega"
 	. "github.com/onsi/gomega"
 
 	corev1 "k8s.io/api/core/v1"
@@ -40,8 +39,8 @@ var (
 
 	resourcePrefix = flag.String("resource-prefix", fmt.Sprintf("test-%d", rng.Uint64()), "resource prefix")
 	crdPath        = flag.String("crd-path", filepath.Join("..", "config", "crd"), "path to CRDs")
-	pollInterval   = flag.Duration("poll-interval", 10*time.Second, "polling interval")
-	pollTimeout    = flag.Duration("poll-timeout", 2*time.Minute, "polling timeout")
+	pollInterval   = flag.Duration("poll-interval", 5*time.Second, "polling interval")
+	pollTimeout    = flag.Duration("poll-timeout", 30*time.Second, "polling timeout")
 )
 
 type TLogger struct {
@@ -132,8 +131,7 @@ func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv
 	}
 	return key, obj
 }
-
-func newContainerClusterObjs(g *gomega.WithT, namespace, name string) (types.NamespacedName, *unstructured.UnstructuredList) {
+func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName, *unstructured.UnstructuredList) {
 	key := types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
@@ -212,8 +210,9 @@ func (cst *ControllerSubTest) cleanup() {
 	}
 }
 
-func (cst *ControllerSubTest) Run(name string, testFunc func(*gomega.WithT, *ControllerSubTest)) {
+func (cst *ControllerSubTest) Run(name string, testFunc func(*WithT, *ControllerSubTest)) {
 	cst.t.Run(name, func(t *testing.T) {
+		// t.Parallel()
 		testFunc(NewGomegaWithT(t), cst)
 		cst.cleanup()
 	})

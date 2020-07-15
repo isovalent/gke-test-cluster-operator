@@ -11,9 +11,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	. "github.com/onsi/gomega"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	. "github.com/isovalent/gke-test-cluster-management/operator/controllers"
 )
@@ -50,19 +52,26 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	err = cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	cnrmKey, cnrmObjs := newContainerClusterObjs(g, ns, "test-1")
+	listOpts := &client.ListOptions{Namespace: ns}
+	g.Eventually(func() bool {
+		cnrmObjs := cnrm.NewContainerClusterList()
+		err := cst.Client.List(ctx, cnrmObjs, listOpts)
+		return err == nil && len(cnrmObjs.Items) > 0
+	}, *pollTimeout, *pollInterval).Should(BeTrue())
 
-	err = cnrmObjs.EachListItem(func(obj runtime.Object) error {
+	cnrmContainerClusterObjs := cnrm.NewContainerClusterList()
+	g.Expect(cst.Client.List(ctx, cnrmContainerClusterObjs, listOpts)).To(Succeed())
+	g.Expect(cnrmContainerClusterObjs.Items).To(HaveLen(1))
+
+	clusterName := cnrmContainerClusterObjs.Items[0].GetName()
+	g.Expect(clusterName).To(HavePrefix("test-1-"))
+	g.Expect(clusterName).To(HaveLen(12))
+
+	cnrmKey, cnrmObjs := newEmptyContainerClusterObjs(ns, clusterName)
+
+	g.Expect(cnrmObjs.EachListItem(func(obj runtime.Object) error {
 		return cst.Client.Get(ctx, cnrmKey, obj)
-	})
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
-
-	g.Eventually(func() error {
-		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
-			return cst.Client.Get(ctx, cnrmKey, obj)
-		})
-	}, *pollTimeout, *pollInterval).Should(Succeed())
+	})).Should(Succeed())
 
 	err = cst.Client.Delete(ctx, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -71,11 +80,16 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
 
-	g.Eventually(func() error {
-		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
-			return cst.Client.Get(ctx, cnrmKey, obj)
-		})
-	}, *pollTimeout, *pollInterval).ShouldNot(Succeed())
+	g.Eventually(func() bool {
+		deleted := 0
+		for i := range cnrmObjs.Items {
+			err := cst.Client.Get(ctx, cnrmKey, &cnrmObjs.Items[i])
+			if apierrors.IsNotFound(err) {
+				deleted++
+			}
+		}
+		return deleted == 4
+	}, *pollTimeout, *pollInterval).Should(BeTrue())
 }
 
 func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
@@ -96,19 +110,20 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 
 	g.Expect(cst.Client.Get(ctx, key, remoteObj)).To(Succeed())
 
-	cnrmKey, cnrmObjs := newContainerClusterObjs(g, ns, "test-2")
+	listOpts := &client.ListOptions{Namespace: ns}
+	g.Eventually(func() bool {
+		cnrmObjs := cnrm.NewContainerClusterList()
+		err := cst.Client.List(ctx, cnrmObjs, listOpts)
+		return err == nil && len(cnrmObjs.Items) > 0
+	}, *pollTimeout, *pollInterval).Should(BeTrue())
 
-	err = cnrmObjs.EachListItem(func(obj runtime.Object) error {
-		return cst.Client.Get(ctx, cnrmKey, obj)
-	})
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+	cnrmObjs := cnrm.NewContainerClusterList()
+	g.Expect(cst.Client.List(ctx, cnrmObjs, listOpts)).To(Succeed())
+	g.Expect(cnrmObjs.Items).To(HaveLen(1))
 
-	g.Eventually(func() error {
-		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
-			return cst.Client.Get(ctx, cnrmKey, obj)
-		})
-	}, *pollTimeout, *pollInterval).Should(Succeed())
+	clusterName := cnrmObjs.Items[0].GetName()
+	g.Expect(clusterName).To(HavePrefix("test-2-"))
+	g.Expect(clusterName).To(HaveLen(12))
 
 	cnrmCluster := &cnrmObjs.Items[0]
 
@@ -145,7 +160,7 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		// check status is not the same initially
 		g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
 		g.Expect(obj.Status).NotTo(Equal(cnrmCluster.Object["status"]))
-		// make an update simmulating what CNRM would do
+		// make an update simulating what CNRM would do
 		g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
 		// expect the status to be exactly the same soon enough
 		g.Eventually(func() []v1alpha1.TestClusterGKEStatusCondition {
@@ -162,10 +177,4 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 	err = cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
-
-	g.Eventually(func() error {
-		return cnrmObjs.EachListItem(func(obj runtime.Object) error {
-			return cst.Client.Get(ctx, cnrmKey, obj)
-		})
-	}, *pollTimeout, *pollInterval).ShouldNot(Succeed())
 }

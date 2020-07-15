@@ -48,6 +48,18 @@ func NewContainerClusterSource() source.Source {
 	return &source.Kind{Type: NewContainerCluster()}
 }
 
+func NewContainerClusterList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ContainerClusterList",
+			Group:   "container.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
+}
+
 func NewContainerNodePool() *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{}
 	obj.SetGroupVersionKind(
@@ -64,6 +76,18 @@ func NewContainerNodePoolSource() source.Source {
 	return &source.Kind{Type: NewContainerNodePool()}
 }
 
+func NewContainerNodePoolList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ContainerNodePoolList",
+			Group:   "container.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
+}
+
 func NewComputeNetwork() *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{}
 	obj.SetGroupVersionKind(
@@ -74,6 +98,18 @@ func NewComputeNetwork() *unstructured.Unstructured {
 		},
 	)
 	return obj
+}
+
+func NewComputeNetworkList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ComputeNetworkList",
+			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
 }
 
 func NewComputeNetworkSource() source.Source {
@@ -94,4 +130,16 @@ func NewComputeSubnetwork() *unstructured.Unstructured {
 
 func NewComputeSubnetworkSource() source.Source {
 	return &source.Kind{Type: NewComputeSubnetwork()}
+}
+
+func NewComputeSubnetworkList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "ComputeSubnetworkList",
+			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
 }
