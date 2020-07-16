@@ -94,7 +94,7 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log.V(1).Info("reconciling status", "status", status)
 
 	if err := w.UpdateOwnerStatus(status, req.NamespacedName, *ownerKey, ownerObj); err != nil {
-		log.Error(err, "failed toudate owner status")
+		log.Error(err, "failed to update owner status")
 		return ctrl.Result{}, err
 	}
 
