@@ -1,0 +1,81 @@
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: cilium-ci-12-admin
+  labels:
+    cluster: cilium-ci-12
+  namespace: test-clusters
+spec:
+  displayName: cilium-ci-12-admin
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicy
+metadata:
+  name: cilium-ci-12-admin
+  labels:
+    cluster: cilium-ci-12
+  namespace: test-clusters
+spec:
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: cilium-ci-12-admin
+  bindings:
+    - role: roles/iam.workloadIdentityUser
+      members:
+        - serviceAccount:cilium-ci.svc.id.goog[test-clusters/cilium-ci-12-admin]
+# ---
+# apiVersion: iam.cnrm.cloud.google.com/v1beta1
+# kind: IAMPolicyMember
+# metadata:
+#   name: cilium-ci-12-admin
+#   labels:
+#     cluster: cilium-ci-12
+#   namespace: test-clusters
+# spec:
+#   resourceRef:
+#     apiVersion: iam.cnrm.cloud.google.com/v1beta1
+#     kind: IAMServiceAccount
+#     name: cilium-ci-12-admin
+#   role: roles/iam.workloadIdentityUser
+#   member: serviceAccount:cilium-ci.svc.id.goog[test-clusters/cilium-ci-12-admin]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cilium-ci-12-admin
+  labels:
+    cluster: cilium-ci-12
+  annotations:
+    iam.gke.io/gcp-service-account: cilium-ci-12-admin@cilium-ci.iam.gserviceaccount.com
+  namespace: test-clusters
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-cilium-ci-12-workload-identity
+  labels:
+    cluster: cilium-ci-12
+  namespace: test-clusters
+spec:
+  containers:
+  - name: workload-identity-test
+    command:
+    - bash
+    - -l
+    tty: true
+    image: google/cloud-sdk:slim
+    readinessProbe:
+      exec:
+        command:
+        - bash
+        - -c
+        - gcloud auth list "--format=value(account)" | grep cilium-ci-12-admin@cilium-ci.iam.gserviceaccount.com
+      failureThreshold: 500
+      initialDelaySeconds: 5
+      periodSeconds: 2
+      successThreshold: 3
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  serviceAccountName: cilium-ci-12-admin
