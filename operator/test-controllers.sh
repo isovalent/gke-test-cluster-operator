@@ -80,16 +80,16 @@ items:
               - test.gke-test-cluster-operator-controllers
               - -test.v
               - -test.timeout=5m
-              - -resource-prefix=\$(POD_NAME)
+              - -resource-prefix=\$(NAMESPACE)
               - -crd-path=/config/crd
               volumeMounts:
               - mountPath: /tmp
                 name: tmp
               env:
-              - name: POD_NAME
+              - name: NAMESPACE
                 valueFrom:
                   fieldRef:
-                    fieldPath: metadata.name
+                    fieldPath: metadata.namespace
 EOF
 
 # these tests should quick and there is no point in streaming logs,
@@ -109,6 +109,8 @@ troubleshoot() {
 bail() {
   echo "INFO: cleaning up..."
   kubectl delete namespace "${namespace}" --wait="false"
+  # test namespaces are not deleted on test failure, so make sure those are cleaned up here
+  kubectl delete namespace --selector="test=${namespace}" --field-selector="status.phase=Active" --wait="false"
   kubectl delete clusterrolebinding "${namespace}" --wait="false"
   exit "$1"
 }

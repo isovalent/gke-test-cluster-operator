@@ -6,10 +6,8 @@ package controllers_test
 import (
 	"context"
 	"flag"
-	"fmt"
 	"math/rand"
 	"path/filepath"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -20,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	utilrand "k8s.io/apimachinery/pkg/util/rand"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,10 +36,10 @@ import (
 var (
 	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	resourcePrefix = flag.String("resource-prefix", fmt.Sprintf("test-%d", rng.Uint64()), "resource prefix")
+	resourcePrefix = flag.String("resource-prefix", "test-"+utilrand.String(5), "resource prefix")
 	crdPath        = flag.String("crd-path", filepath.Join("..", "config", "crd"), "path to CRDs")
 	pollInterval   = flag.Duration("poll-interval", 5*time.Second, "polling interval")
-	pollTimeout    = flag.Duration("poll-timeout", 30*time.Second, "polling timeout")
+	pollTimeout    = flag.Duration("poll-timeout", 120*time.Second, "polling timeout")
 )
 
 type TLogger struct {
@@ -149,17 +148,15 @@ func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName,
 
 type ControllerSubTestManager struct {
 	client          client.Client
-	nextObjectID    uint64
 	namespacePrefix string
 }
 
 type ControllerSubTest struct {
 	Client client.Client
 
-	t               *testing.T
-	nextObjectID    uint64
-	namespacePrefix string
-	namespaces      []*corev1.Namespace
+	t                          *testing.T
+	testLabel, namespacePrefix string
+	namespaces                 []*corev1.Namespace
 }
 
 func NewControllerSubTestManager(client client.Client, namespacePrefix string) *ControllerSubTestManager {
@@ -171,19 +168,15 @@ func NewControllerSubTestManager(client client.Client, namespacePrefix string) *
 func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *ControllerSubTest {
 	t.Helper()
 
-	objectID := atomic.AddUint64(&cstm.nextObjectID, 1)
-	namespacePrefix := fmt.Sprintf("%s-%d", cstm.namespacePrefix, objectID)
-
 	return &ControllerSubTest{
 		t:               t,
 		Client:          cstm.client,
-		namespacePrefix: namespacePrefix,
+		namespacePrefix: cstm.namespacePrefix,
 	}
 }
 
 func (cst *ControllerSubTest) NextNamespace() string {
-	objectID := atomic.AddUint64(&cst.nextObjectID, 1)
-	name := fmt.Sprintf("%s-%d", cst.namespacePrefix, objectID)
+	name := cst.namespacePrefix + "-" + utilrand.String(5)
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
