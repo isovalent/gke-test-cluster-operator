@@ -25,6 +25,40 @@ spec:
     - role: roles/iam.workloadIdentityUser
       members:
         - serviceAccount:cilium-ci.svc.id.goog[test-clusters/cilium-ci-12-admin]
+    # TODO: is GCP access supposed to be defined here as well? 
+
+## TODO: should we still have IAMCustomRole and binding above, or there is a role
+## we can use already?
+## ---
+## apiVersion: iam.cnrm.cloud.google.com/v1beta1
+## kind: IAMCustomRole
+## metadata:
+##   name: containerclusteradmin
+##   namespace: test-clusters
+## spec:
+##   title: Admin role for GKE clusters
+##   description: This role only contains permissions to access GKE clusters
+##   permissions:
+##     # TOOD
+##     - container.clusters.get
+##   stage: GA
+## ---
+## apiVersion: iam.cnrm.cloud.google.com/v1beta1
+## kind: IAMPolicyMember
+## metadata:
+##   name: cilium-ci-12-admin-gcpsa
+##   labels:
+##     cluster: cilium-ci-12
+##   namespace: test-clusters
+## spec:
+##   member: serviceAccount:cilium-ci-12-admin@cilium-ci.iam.gserviceaccount.com
+##   role: projects/cilium-ci/roles/containerclusteradmin
+##   resourceRef:
+##     apiVersion: container.cnrm.cloud.google.com/v1beta1
+##     kind: ContainerCluster
+##     name: cilium-ci-12
+
+# an alternative way of setting up a policy
 # ---
 # apiVersion: iam.cnrm.cloud.google.com/v1beta1
 # kind: IAMPolicyMember
@@ -67,6 +101,9 @@ spec:
     tty: true
     image: google/cloud-sdk:slim
     readinessProbe:
+      # the pod identity is not immediatly usable, so we need to wait
+      # perhaps this should be an init container actually, we might
+      # just write out kubeconfig to a volume this way
       exec:
         command:
         - bash
