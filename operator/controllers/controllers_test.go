@@ -159,14 +159,20 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		}
 		// check status is not the same initially
 		g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
-		g.Expect(obj.Status).NotTo(Equal(cnrmCluster.Object["status"]))
+		g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha1.TestClusterGKEStatus).Conditions))
 		// make an update simulating what CNRM would do
 		g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
 		// expect the status to be exactly the same soon enough
 		g.Eventually(func() []v1alpha1.TestClusterGKEStatusCondition {
-			_ = cst.Client.Get(ctx, key, obj)
+			err := cst.Client.Get(ctx, key, obj)
+			if err != nil {
+				return nil
+			}
+			if len(obj.Status.Conditions) == 0 {
+				return nil
+			}
 			return obj.Status.Conditions
-		}, *pollTimeout, *pollInterval).Should(Equal(conditions))
+		}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
 	}
 
 	g.Expect(cst.Client.Delete(ctx, remoteObj)).To(Succeed())

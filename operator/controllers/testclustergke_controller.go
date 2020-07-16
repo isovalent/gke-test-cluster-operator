@@ -39,6 +39,8 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	ctx := context.Background()
 	log := r.Log.WithValues("Reconcile", req.NamespacedName)
 
+	log.V(1).Info("request")
+
 	instance := &clustersv1alpha1.TestClusterGKE{}
 	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)

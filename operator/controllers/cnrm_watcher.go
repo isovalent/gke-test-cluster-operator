@@ -36,10 +36,8 @@ func (w *CNRMWatcher) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	eventHandler := &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &clustersv1alpha1.TestClusterGKE{},
-	}
+	// watch for object, check ownership separately
+	eventHandler := &handler.EnqueueRequestForObject{}
 
 	if err := c.Watch(cnrm.NewContainerClusterSource(), eventHandler); err != nil {
 		return err
@@ -61,24 +59,24 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := w.Log.WithValues("Reconcile", req.NamespacedName)
 
+	log.V(1).Info("request")
+
 	instance := cnrm.NewContainerCluster()
 	if err := w.Get(ctx, req.NamespacedName, instance); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if instance.GetDeletionTimestamp() != nil {
-		log.Info("delete")
+	owners := instance.GetOwnerReferences()
+	numOwners := len(owners)
+	if numOwners == 0 {
+		log.V(1).Info("object not owned by the opertor")
+		return ctrl.Result{}, nil
 	}
 
-	status, err := GetContainerClusterStatus(instance)
-	if err != nil {
-		return ctrl.Result{}, err
+	if numOwners > 1 {
+		return ctrl.Result{}, fmt.Errorf("object %q has unexpected number of owners (%d)", req.NamespacedName, numOwners)
 	}
-	log.Info("got cluster with status", "status", status)
-	owners := instance.GetOwnerReferences()
-	if l := len(owners); l != 1 {
-		return ctrl.Result{}, fmt.Errorf("object %q has unexpected number of owners (%d)", req.NamespacedName, l)
-	}
+
 	ownerObj := &clustersv1alpha1.TestClusterGKE{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      owners[0].Name,
@@ -95,23 +93,43 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		Namespace: req.Namespace,
 	}
 
+	if instance.GetDeletionTimestamp() != nil {
+		log.V(1).Info("deleting")
+		return ctrl.Result{}, nil
+	}
+
+	status, err := GetContainerClusterStatus(instance)
+	if err != nil {
+		log.Error(err, "failed to get status")
+		return ctrl.Result{}, err
+	}
+
+	if status == nil {
+		log.V(1).Info("empty status")
+		return ctrl.Result{}, nil
+	}
+
+	log.V(1).Info("reconciling status", "status", status)
+
 	if err := w.Get(ctx, ownerKey, ownerObj); err != nil {
 		return ctrl.Result{}, err
 	}
-	if status != nil {
-		ownerObj.Status = *status
-		if err := w.Update(ctx, ownerObj); err != nil {
-			return ctrl.Result{}, err
-		}
-		if status.HasReadyCondition() {
-			// TODO: get creds
-		}
+
+	ownerObj.Status = *status
+	log.Info("updating owner status", "owner", ownerKey)
+	if err := w.Update(ctx, ownerObj); err != nil {
+		return ctrl.Result{}, err
+	}
+	if status.HasReadyCondition() {
+		// TODO: get creds
 	}
 
 	// TODO (mvp)
 	// - [x] update status of the owner
 	// - [ ] fetch credentials and create a secret
 	// TODO (post-mvp)
+	// - update status in a more sophisticated manner, the transition timestamps should corespond to the time of update
+	// - review status structs, using the same struct is probably a naive idea
 	// - inspect all of the 4 object and set parent condtion accordingly, so progress is fully trackable
 
 	return ctrl.Result{}, nil
@@ -141,5 +159,4 @@ func GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerC
 		return nil, err
 	}
 	return status, nil
-
 }
