@@ -66,39 +66,21 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	owners := instance.GetOwnerReferences()
-	numOwners := len(owners)
-	if numOwners == 0 {
+	ownerKey, ownerObj, err := w.GetOwner(req.NamespacedName, instance.GetOwnerReferences())
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if ownerObj == nil {
 		log.V(1).Info("object not owned by the opertor")
 		return ctrl.Result{}, nil
 	}
 
-	if numOwners > 1 {
-		return ctrl.Result{}, fmt.Errorf("object %q has unexpected number of owners (%d)", req.NamespacedName, numOwners)
-	}
-
-	ownerObj := &clustersv1alpha1.TestClusterGKE{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      owners[0].Name,
-			Namespace: req.Namespace,
-			UID:       owners[0].UID, // maybe not needed really?
-		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: owners[0].APIVersion,
-			Kind:       owners[0].Kind,
-		},
-	}
-	ownerKey := types.NamespacedName{
-		Name:      owners[0].Name,
-		Namespace: req.Namespace,
-	}
-
 	if instance.GetDeletionTimestamp() != nil {
-		log.V(1).Info("deleting")
+		log.V(1).Info("object is being deleted")
 		return ctrl.Result{}, nil
 	}
 
-	status, err := GetContainerClusterStatus(instance)
+	status, err := w.GetContainerClusterStatus(instance)
 	if err != nil {
 		log.Error(err, "failed to get status")
 		return ctrl.Result{}, err
@@ -111,15 +93,11 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	log.V(1).Info("reconciling status", "status", status)
 
-	if err := w.Get(ctx, ownerKey, ownerObj); err != nil {
+	if err := w.UpdateOwnerStatus(status, req.NamespacedName, *ownerKey, ownerObj); err != nil {
+		log.Error(err, "failed toudate owner status")
 		return ctrl.Result{}, err
 	}
 
-	ownerObj.Status = *status
-	log.Info("updating owner status", "owner", ownerKey)
-	if err := w.Update(ctx, ownerObj); err != nil {
-		return ctrl.Result{}, err
-	}
 	if status.HasReadyCondition() {
 		// TODO: get creds
 	}
@@ -135,10 +113,38 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+func (*CNRMWatcher) GetOwner(objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*types.NamespacedName, *clustersv1alpha1.TestClusterGKE, error) {
+	numOwners := len(ownerRefs)
+	if numOwners > 1 {
+		return nil, nil, fmt.Errorf("object %q unexpected number of owners (%d)", objKey, numOwners)
+	}
+
+	owner := ownerRefs[0]
+
+	ownerKey := &types.NamespacedName{
+		Name:      owner.Name,
+		Namespace: objKey.Namespace,
+	}
+
+	ownerObj := &clustersv1alpha1.TestClusterGKE{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      owner.Name,
+			Namespace: objKey.Namespace,
+			UID:       owner.UID, // maybe not needed really?
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: owner.APIVersion,
+			Kind:       owner.Kind,
+		},
+	}
+
+	return ownerKey, ownerObj, nil
+}
+
 type ContainerClusterStatus = clustersv1alpha1.TestClusterGKEStatus
 type ContainerClusterStatusCondition = clustersv1alpha1.TestClusterGKEStatusCondition
 
-func GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerClusterStatus, error) {
+func (*CNRMWatcher) GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerClusterStatus, error) {
 	// TestClusterGKEStatus is really based on CNRM's ContainerClusterStatus,
 	// so the same type is used here while it's actually defined as part of
 	// the main API
@@ -159,4 +165,19 @@ func GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerC
 		return nil, err
 	}
 	return status, nil
+}
+
+func (w *CNRMWatcher) UpdateOwnerStatus(status *ContainerClusterStatus, objKey, ownerKey types.NamespacedName, ownerObj *clustersv1alpha1.TestClusterGKE) error {
+	ctx := context.Background()
+
+	if err := w.Get(ctx, ownerKey, ownerObj); err != nil {
+		return err
+	}
+
+	ownerObj.Status = *status
+	if err := w.Update(ctx, ownerObj); err != nil {
+		return err
+	}
+
+	return nil
 }
