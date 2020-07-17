@@ -80,8 +80,8 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	if cluster == nil {
 		return nil, fmt.Errorf("unexpected nil object")
 	}
-	if cluster.Spec.ConfigTemplate == nil {
-		return nil, fmt.Errorf("unexpected nil config template")
+	if cluster.Spec.ConfigTemplate == nil || *cluster.Spec.ConfigTemplate == "" {
+		return nil, fmt.Errorf("unexpected nil/empty configTemplate")
 	}
 	templateName := *cluster.Spec.ConfigTemplate
 	if !c.HaveExistingTemplate(templateName) {
