@@ -39,6 +39,8 @@ func (w *CNRMWatcher) SetupWithManager(mgr ctrl.Manager) error {
 	// watch for object, check ownership separately
 	eventHandler := &handler.EnqueueRequestForObject{}
 
+	// setup watchers only for functional depednencies of the cluster,
+	// no watchers are needed for IAM resources
 	if err := c.Watch(cnrm.NewContainerClusterSource(), eventHandler); err != nil {
 		return err
 	}

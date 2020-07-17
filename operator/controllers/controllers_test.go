@@ -88,7 +88,10 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 				deleted++
 			}
 		}
-		return deleted == 4
+		// we only check CNRM resrource, the service account is not
+		// part of this and there is no doubt it would get deleted
+		// just as well
+		return deleted == 6
 	}, *pollTimeout, *pollInterval).Should(BeTrue())
 }
 

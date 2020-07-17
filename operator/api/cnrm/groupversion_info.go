@@ -29,6 +29,14 @@ func AddToScheme(s *runtime.Scheme) error {
 	}).AddToScheme(s); err != nil {
 		return err
 	}
+	if err := (&scheme.Builder{
+		GroupVersion: schema.GroupVersion{
+			Group:   "iam.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	}).AddToScheme(s); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -138,6 +146,62 @@ func NewComputeSubnetworkList() *unstructured.UnstructuredList {
 		schema.GroupVersionKind{
 			Kind:    "ComputeSubnetworkList",
 			Group:   "compute.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
+}
+
+func NewIAMServiceAccount() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "IAMServiceAccount",
+			Group:   "iam.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewIAMServiceAccountSource() source.Source {
+	return &source.Kind{Type: NewIAMServiceAccount()}
+}
+
+func NewIAMServiceAccountList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "IAMServiceAccountList",
+			Group:   "ima.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return objs
+}
+
+func NewIAMPolicy() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "IAMPolicy",
+			Group:   "iam.cnrm.cloud.google.com",
+			Version: "v1beta1",
+		},
+	)
+	return obj
+}
+
+func NewIAMPolicySource() source.Source {
+	return &source.Kind{Type: NewIAMPolicy()}
+}
+
+func NewIAMPolicyList() *unstructured.UnstructuredList {
+	objs := &unstructured.UnstructuredList{}
+	objs.SetGroupVersionKind(
+		schema.GroupVersionKind{
+			Kind:    "IAMPolicy",
+			Group:   "ima.cnrm.cloud.google.com",
 			Version: "v1beta1",
 		},
 	)

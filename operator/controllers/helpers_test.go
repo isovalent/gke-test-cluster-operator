@@ -141,6 +141,8 @@ func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName,
 			*cnrm.NewContainerNodePool(),
 			*cnrm.NewComputeNetwork(),
 			*cnrm.NewComputeSubnetwork(),
+			*cnrm.NewIAMServiceAccount(),
+			*cnrm.NewIAMPolicy(),
 		},
 	}
 	return key, objs
