@@ -73,14 +73,14 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log.Info("generated config", "items", objs.Items)
 
 	// TODO (mvp)
-	// - [ ] detect event type, error on updates
 	// - [x] handle deletion
 	// - [x] write a few simple controller tests
 	// - [x] wait for cluster to get created, update status
-	// - [ ] update RBAC configs
-	// - [ ] de-kustomize configs
-	// - [ ] use random cluster name, instead of same as test object
+	// - [x] update RBAC configs
+	// - [x] de-kustomize configs
+	// - [x] use random cluster name, instead of same as test object
 	// TODO (post-mvp)
+	// - ensure updates are handles as intended, i.e. errror
 	// - implement pool object
 	// - implement GCP project annotation
 	// - implement job runner pod (use sonoboy as PoC)

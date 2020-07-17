@@ -101,12 +101,12 @@ func (w *CNRMWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if status.HasReadyCondition() {
-		// TODO: get creds
+		// start the job
 	}
 
 	// TODO (mvp)
 	// - [x] update status of the owner
-	// - [ ] fetch credentials and create a secret
+	// - [ ] lauch job
 	// TODO (post-mvp)
 	// - update status in a more sophisticated manner, the transition timestamps should corespond to the time of update
 	// - review status structs, using the same struct is probably a naive idea
