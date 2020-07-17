@@ -123,7 +123,8 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/remove-default-node-pool": "true"
+						"cnrm.cloud.google.com/remove-default-node-pool": "true",
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -152,6 +153,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -186,6 +190,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -202,6 +209,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -211,6 +221,67 @@ func TestConfig(t *testing.T) {
 					  },
 					  "ipCidrRange": "10.128.0.0/20"
 					}
+				  },
+				  {
+					"kind": "IAMServiceAccount",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "baz",
+					  "namespace": "other",
+					  "labels": {
+						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+					  }
+					},
+					"spec": {
+					  "displayName": "baz-admin"
+					}
+				  },
+				  {
+					"kind": "IAMPolicy",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "baz",
+					  "namespace": "other",
+					  "labels": {
+						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+					  }
+					},
+					"spec": {
+					  "resourceRef": {
+						"name": "baz-admin",
+						"kind": "IAMServiceAccount",
+						"apiVersion": "iam.cnrm.cloud.google.com/v1beta1"
+					  },
+					  "bindings": [
+						{
+						  "role": "roles/iam.workloadIdentityUser",
+						  "members": [
+							"serviceAccount:cilimum-ci.svc.id.goog[other/baz-admin]"
+						  ]
+						}
+					  ]
+					}
+				  },
+				  {
+					"kind": "ServiceAccount",
+					"apiVersion": "v1",
+					"metadata": {
+					  "name": "baz-admin",
+					  "namespace": "other",
+					  "labels": {
+						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci",
+						"iam.gke.io/gcp-service-account": "baz-admin@cilimum-ci.iam.gserviceaccount.com"
+					  }
+					}
 				  }
 				]
 			}`
@@ -219,7 +290,7 @@ func TestConfig(t *testing.T) {
 			objs, err := c.RenderObjects(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(7))
 		}
 
 		{
@@ -251,7 +322,8 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/remove-default-node-pool": "true"
+						"cnrm.cloud.google.com/remove-default-node-pool": "true",
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -280,6 +352,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -314,6 +389,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -330,6 +408,9 @@ func TestConfig(t *testing.T) {
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
 					  }
 					},
 					"spec": {
@@ -339,6 +420,67 @@ func TestConfig(t *testing.T) {
 					  },
 					  "ipCidrRange": "10.128.0.0/20"
 					}
+				  },
+				  {
+					"kind": "IAMServiceAccount",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "bar",
+					  "namespace": "default",
+					  "labels": {
+						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+					  }
+					},
+					"spec": {
+					  "displayName": "bar-admin"
+					}
+				  },
+				  {
+					"kind": "IAMPolicy",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "bar",
+					  "namespace": "default",
+					  "labels": {
+						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+					  }
+					},
+					"spec": {
+					  "resourceRef": {
+						"name": "bar-admin",
+						"kind": "IAMServiceAccount",
+						"apiVersion": "iam.cnrm.cloud.google.com/v1beta1"
+					  },
+					  "bindings": [
+						{
+						  "role": "roles/iam.workloadIdentityUser",
+						  "members": [
+							"serviceAccount:cilimum-ci.svc.id.goog[default/bar-admin]"
+						  ]
+						}
+					  ]
+					}
+				  },
+				  {
+					"kind": "ServiceAccount",
+					"apiVersion": "v1",
+					"metadata": {
+					  "name": "bar-admin",
+					  "namespace": "default",
+					  "labels": {
+						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilimum-ci",
+						"iam.gke.io/gcp-service-account": "bar-admin@cilimum-ci.iam.gserviceaccount.com"
+					  }
+					}
 				  }
 				]
 			}`
@@ -347,7 +489,7 @@ func TestConfig(t *testing.T) {
 			objs, err := c.RenderObjects(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(7))
 		}
 
 		{
@@ -364,7 +506,7 @@ func TestConfig(t *testing.T) {
 			objs, err := c.RenderObjects(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(7))
 
 			name := objs.Items[1].GetName()
 			g.Expect(name).To(HavePrefix("baz-"))
@@ -373,7 +515,7 @@ func TestConfig(t *testing.T) {
 			for _, obj := range objs.Items {
 				labels := obj.GetLabels()
 				g.Expect(labels).To(HaveKeyWithValue("cluster", name))
-				g.Expect(obj.GetName()).To(Equal(name))
+				g.Expect(obj.GetName()).To(HavePrefix(name))
 			}
 		}
 
