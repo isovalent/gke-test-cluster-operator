@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	templateFilename = "template.cue"
-
 	templateKey = "template"
 	defaultsKey = "defaults"
 	resourceKey = "resource"
