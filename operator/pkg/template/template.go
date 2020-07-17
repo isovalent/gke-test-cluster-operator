@@ -38,10 +38,6 @@ func (g *Generator) CompileAndValidate() error {
 
 	g.template = template
 
-	if err := g.template.Value().Err(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
