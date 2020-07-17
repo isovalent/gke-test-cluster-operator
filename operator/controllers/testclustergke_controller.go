@@ -20,6 +20,21 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
+// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containerclusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containerclusters/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containernodepools,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containernodepools/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computenetworks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computenetworks/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computesubnetworks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computesubnetworks/status,verbs=get;update;patch
+
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
 type TestClusterGKEReconciler struct {
 	client.Client
@@ -33,8 +48,6 @@ const (
 	Finalizer = "finalizer.clusters.ci.cilium.io"
 )
 
-// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
 func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("Reconcile", req.NamespacedName)

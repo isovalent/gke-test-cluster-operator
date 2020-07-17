@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - clusters.ci.cilium.io
   resources:
+  - testclustergkes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclustergkes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
   - testclusterpoolgkes
   verbs:
   - create
@@ -22,6 +42,86 @@ rules:
   - clusters.ci.cilium.io
   resources:
   - testclusterpoolgkes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - computenetworks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - computenetworks/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - computesubnetworks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - computesubnetworks/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - containerclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - containerclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - containernodepools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - container.cnrm.cloud.google.com
+  resources:
+  - containernodepools/status
   verbs:
   - get
   - patch
