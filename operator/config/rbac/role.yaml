@@ -7,6 +7,26 @@ metadata:
   name: gke-test-cluster-operator
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - clusters.ci.cilium.io
   resources:
   - testclustergkes
