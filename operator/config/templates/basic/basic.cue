@@ -5,39 +5,45 @@ package basic
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
+_name:        "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
+_namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+_location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
+_region:      "\(defaults.spec.region)" | *"\(resource.spec.region)"
+_machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
+
 ClusterTemplate :: {
-	kind: "List"
+	kind:       "List"
 	apiVersion: "v1"
 	items: [{
 		apiVersion: "container.cnrm.cloud.google.com/v1beta1"
 		kind:       "ContainerCluster"
 		metadata: {
 			annotations: "cnrm.cloud.google.com/remove-default-node-pool": "true"
-			labels: cluster: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			name:      "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+			labels: cluster:                                               "\(_name)"
+			name:      "\(_name)"
+			namespace: "\(_namespaces)"
 		}
 		spec: {
 			initialNodeCount: 1
-			location:         "\(defaults.spec.location)" | *"\(resource.spec.location)" 
+			location:         "\(_location)"
 			loggingService:   "logging.googleapis.com/kubernetes"
 			masterAuth: clientCertificateConfig: issueClientCertificate: false
 			monitoringService: "monitoring.googleapis.com/kubernetes"
-			networkRef: name: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			subnetworkRef: name: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
+			networkRef: name:    "\(_name)"
+			subnetworkRef: name: "\(_name)"
 		}
 	}, {
 		apiVersion: "container.cnrm.cloud.google.com/v1beta1"
 		kind:       "ContainerNodePool"
 		metadata: {
-			labels: cluster: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			name:      "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+			labels: cluster: "\(_name)"
+			name:      "\(_name)"
+			namespace: "\(_namespaces)"
 		}
 		spec: {
-			clusterRef: name: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
+			clusterRef: name: "\(_name)"
 			initialNodeCount: 0
-			location:         "\(defaults.spec.location)" | *"\(resource.spec.location)" 
+			location:         "\(_location)"
 			management: {
 				autoRepair:  false
 				autoUpgrade: false
@@ -45,7 +51,7 @@ ClusterTemplate :: {
 			nodeConfig: {
 				diskSizeGb:  100
 				diskType:    "pd-standard"
-				machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
+				machineType: "\(_machineType)"
 				metadata: "disable-legacy-endpoints": "true"
 				oauthScopes: [
 					"https://www.googleapis.com/auth/logging.write",
@@ -57,9 +63,9 @@ ClusterTemplate :: {
 		apiVersion: "compute.cnrm.cloud.google.com/v1beta1"
 		kind:       "ComputeNetwork"
 		metadata: {
-			labels: cluster: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			name:      "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+			labels: cluster: "\(_name)"
+			name:      "\(_name)"
+			namespace: "\(_namespaces)"
 		}
 		spec: {
 			autoCreateSubnetworks:       false
@@ -70,19 +76,17 @@ ClusterTemplate :: {
 		apiVersion: "compute.cnrm.cloud.google.com/v1beta1"
 		kind:       "ComputeSubnetwork"
 		metadata: {
-			labels: cluster: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			name:      "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+			labels: cluster: "\(_name)"
+			name:      "\(_name)"
+			namespace: "\(_namespaces)"
 		}
 		spec: {
 			ipCidrRange: "10.128.0.0/20"
-			networkRef: name: "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
-			region: "\(defaults.spec.region)" | *"\(resource.spec.region)"
+			networkRef: name: "\(_name)"
+			region: "\(_region)"
 		}
 	}]
 }
-
-
 
 defaults: v1alpha1.TestClusterGKE
 
