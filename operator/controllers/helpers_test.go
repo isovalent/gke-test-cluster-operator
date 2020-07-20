@@ -117,6 +117,8 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()
 
 	teardown := func() {
+		logf.SetLogger(logf.NullLogger{}) // attempt to avoid panic "Log in goroutine after TestControllers has completed"
+
 		close(stop)
 		g.Expect(env.Stop()).To(Succeed())
 	}
