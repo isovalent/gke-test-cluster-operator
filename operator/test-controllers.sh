@@ -79,9 +79,16 @@ wait_for_pod() {
   done
 }
 
+get_container_exit_code() {
+  kubectl get pods --namespace="${namespace}" --selector="name=${name}" --output="jsonpath={.items[0].status.containerStatuses[0].state.terminated.exitCode}"
+}
+
 container_status() {
   echo "INFO: getting container status..."
-  exit_code="$(kubectl get pods --namespace="${namespace}" --selector="name=${name}" --output="jsonpath={.items[0].status.containerStatuses[0].state.terminated.exitCode}")"
+  # sometimes the value doesn't parse as a number, before this is re-written in Go
+  # it will have to be done like this
+  until test "$(get_container_exit_code)" -ge 0 ; do sleep 0.5 ; done
+  exit_code="$(get_container_exit_code)"
   echo "INFO: container exited with ${exit_code}"
   return "${exit_code}"
 }
