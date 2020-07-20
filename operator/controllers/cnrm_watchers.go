@@ -72,7 +72,6 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	log.V(1).Info("request")
 
-	// TODO (post-mvp): check wich of objects we are looking at
 	instance := cnrm.NewContainerCluster()
 	if err := w.Get(ctx, req.NamespacedName, instance); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -295,7 +294,10 @@ func (o *Owner) UpdateStatus(client client.Client, status *ContainerClusterStatu
 		return err
 	}
 
-	o.Object.Status = *status
+	// TODO (post-mvp): detect which object is which
+	o.Object.Status.Conditions = status.Conditions
+	o.Object.Status.Endpoint = status.Endpoint
+
 	if err := client.Update(ctx, o.Object); err != nil {
 		return err
 	}

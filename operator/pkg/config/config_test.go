@@ -520,6 +520,36 @@ func TestConfig(t *testing.T) {
 		}
 
 		{
+			clusterName := "baz-abc2sax"
+			cluster := &v1alpha1.TestClusterGKE{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "baz",
+				},
+				Spec: v1alpha1.TestClusterGKESpec{
+					ConfigTemplate: &templateName,
+					MachineType:    &machineType,
+				},
+				Status: v1alpha1.TestClusterGKEStatus{
+					ClusterName: &clusterName,
+				},
+			}
+
+			objs, err := c.RenderObjects(cluster, true)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(7))
+
+			name := objs.Items[1].GetName()
+			g.Expect(name).To(Equal(clusterName))
+
+			for _, obj := range objs.Items {
+				labels := obj.GetLabels()
+				g.Expect(labels).To(HaveKeyWithValue("cluster", name))
+				g.Expect(obj.GetName()).To(HavePrefix(name))
+			}
+		}
+
+		{
 			cluster := &v1alpha1.TestClusterGKE{
 				Spec: v1alpha1.TestClusterGKESpec{
 					ConfigTemplate: &templateName,

@@ -55,7 +55,9 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	err = cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	listOpts := &client.ListOptions{Namespace: ns}
+	listOpts := &client.ListOptions{
+		Namespace: ns,
+	}
 	g.Eventually(func() bool {
 		cnrmObjs := cnrm.NewContainerClusterList()
 		err := cst.Client.List(ctx, cnrmObjs, listOpts)
@@ -136,6 +138,10 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 	g.Expect(clusterName).To(HavePrefix("test-2-"))
 	g.Expect(clusterName).To(HaveLen(12))
 
+	// TODO: this is not the case for some reason, should check why that maybe...
+	// g.Expect(obj.Status.ClusterName).ToNot(BeNil())
+	// g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
+
 	cnrmCluster := &cnrmObjs.Items[0]
 
 	// creation sequence:
@@ -179,11 +185,15 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			if err != nil {
 				return nil
 			}
+
 			if len(obj.Status.Conditions) == 0 {
 				return nil
 			}
 			return obj.Status.Conditions
 		}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
+
+		g.Expect(obj.Status.ClusterName).ToNot(BeNil())
+		g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
 
 		if conditions[0].Status == "True" {
 			g.Expect(obj.Status.HasReadyCondition()).To(BeTrue())
@@ -191,6 +201,10 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			g.Expect(obj.Status.HasReadyCondition()).To(BeFalse())
 		}
 	}
+
+	cnrmCheckLeakedObjs := cnrm.NewContainerClusterList()
+	g.Expect(cst.Client.List(ctx, cnrmCheckLeakedObjs, listOpts))
+	g.Expect(cnrmCheckLeakedObjs.Items).To(HaveLen(1))
 
 	jobObj := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{

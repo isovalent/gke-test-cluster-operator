@@ -77,22 +77,34 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
 	// }
 
+	// it's safe to re-generate object, as same name will be used
 	objs, err := r.RenderObjects(instance)
 	if err != nil {
 		log.Error(err, "unable render config template")
 		return ctrl.Result{}, err
 	}
+
 	log.Info("generated config", "items", objs.Items)
 
+	// update status to store generated cluster name and prevent
+	// more clusters being generated
+	// (NB: r.RenderObjects sets instance.Status.ClusterName)
+	if err := r.Update(ctx, instance); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	// TODO (mvp)
-	// - [x] handle deletion
+	// - [x] handle deletion ``
 	// - [x] write a few simple controller tests
 	// - [x] wait for cluster to get created, update status
 	// - [x] update RBAC configs
 	// - [x] de-kustomize configs
 	// - [x] use random cluster name, instead of same as test object
 	// - [x] deploy to management clusters
+	// - [x] ensure we don't leak clusters
 	// TODO (post-mvp)
+	// - capture events
+	// - ensure all dependency error are captured and we don't try to re-create
 	// - ensure validation and defaulting webhook works, deploy cert-manager
 	// - deploy Promethues and for monitoring the operator and configure alerts
 	//   (try doing it with stackdriver)
@@ -113,9 +125,11 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// - implement job runner pod (use sonoboy as PoC)
 
 	if err := objs.EachListItem(r.createOrSkip); err != nil {
+		// TODO (post-mvp): send these errors as events
 		log.Error(err, "unable reconcile object")
 		return ctrl.Result{}, err
 	}
+
 	return ctrl.Result{}, nil
 }
 func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {

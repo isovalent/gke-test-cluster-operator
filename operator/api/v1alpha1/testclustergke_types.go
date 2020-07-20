@@ -40,6 +40,7 @@ type TestClusterGKEJobSpec struct {
 }
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
+// +kubebuilder:subresource:status
 type TestClusterGKEStatus struct {
 	// Important: Run "make generate" to regenerate code after modifying this file
 
@@ -47,6 +48,7 @@ type TestClusterGKEStatus struct {
 	Endpoint             *string                         `json:"endpoint,omitempty"`
 	Operation            *string                         `json:"operation,omitempty"`
 	KubeconfigSecretName *string                         `json:"kubeconfigSecretName,omitempty"`
+	ClusterName          *string                         `json:"clusterName,omitempty"`
 }
 
 type TestClusterGKEStatusCondition struct {

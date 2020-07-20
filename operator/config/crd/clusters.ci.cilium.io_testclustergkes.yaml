@@ -71,6 +71,8 @@ spec:
         status:
           description: TestClusterGKEStatus defines the observed state of TestClusterGKE
           properties:
+            clusterName:
+              type: string
             conditions:
               items:
                 properties:

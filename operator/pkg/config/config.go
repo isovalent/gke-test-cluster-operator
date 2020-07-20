@@ -99,8 +99,17 @@ func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, generateName bo
 	objs := &unstructured.UnstructuredList{}
 
 	if generateName {
+		clusterName := cluster.Name + "-" + utilrand.String(5)
+		if cluster.Status.ClusterName == nil {
+			// store generated name in status
+			cluster.Status.ClusterName = &clusterName
+		} else {
+			// if name is already stored in status, use that instead
+			clusterName = *cluster.Status.ClusterName
+		}
+		// make a copy and use new name as input to generator
 		cluster = cluster.DeepCopy()
-		cluster.Name += "-" + utilrand.String(5)
+		cluster.Name = clusterName
 	}
 
 	data, err := c.RenderJSON(cluster)

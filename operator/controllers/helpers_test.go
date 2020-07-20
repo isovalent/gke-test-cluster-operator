@@ -22,7 +22,9 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -113,6 +115,13 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		JobRenderer: jobRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
+	objChan := make(chan *unstructured.Unstructured)
+	g.Expect((&TestCNRMContainerClusterWatcher{
+		Client:  mgr.GetClient(),
+		Scheme:  mgr.GetScheme(),
+		objChan: objChan,
+	}).SetupWithManager(mgr)).To(Succeed())
+
 	stop := make(chan struct{})
 	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()
 
@@ -123,7 +132,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		g.Expect(env.Stop()).To(Succeed())
 	}
 
-	return NewControllerSubTestManager(kubeClient, *resourcePrefix), teardown
+	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan), teardown
 }
 
 func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv1alpha1.TestClusterGKE) {
@@ -159,23 +168,53 @@ func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName,
 	return key, objs
 }
 
+type TestCNRMContainerClusterWatcher struct {
+	client.Client
+	Scheme  *runtime.Scheme
+	objChan chan *unstructured.Unstructured
+}
+
+func (w *TestCNRMContainerClusterWatcher) SetupWithManager(mgr ctrl.Manager) error {
+	c, err := controller.New("test-cnrm-containercluster-watcher", mgr, controller.Options{
+		Reconciler: w,
+	})
+	if err != nil {
+		return err
+	}
+	return c.Watch(cnrm.NewContainerClusterSource(), &handler.EnqueueRequestForObject{})
+}
+
+func (w *TestCNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	ctx := context.Background()
+
+	instance := cnrm.NewContainerCluster()
+	if err := w.Get(ctx, req.NamespacedName, instance); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	w.objChan <- instance
+	return ctrl.Result{}, nil
+}
+
 type ControllerSubTestManager struct {
 	client          client.Client
 	namespacePrefix string
+	objChan         chan *unstructured.Unstructured
 }
 
 type ControllerSubTest struct {
-	Client client.Client
+	Client  client.Client
+	ObjChan chan *unstructured.Unstructured
 
 	t                          *testing.T
 	testLabel, namespacePrefix string
 	namespaces                 []*corev1.Namespace
 }
 
-func NewControllerSubTestManager(client client.Client, namespacePrefix string) *ControllerSubTestManager {
+func NewControllerSubTestManager(client client.Client, namespacePrefix string, objChan chan *unstructured.Unstructured) *ControllerSubTestManager {
 	return &ControllerSubTestManager{
 		client:          client,
 		namespacePrefix: namespacePrefix,
+		objChan:         objChan,
 	}
 }
 func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *ControllerSubTest {
@@ -185,6 +224,7 @@ func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *Contro
 		t:               t,
 		Client:          cstm.client,
 		namespacePrefix: cstm.namespacePrefix,
+		ObjChan:         cstm.objChan,
 	}
 }
 
