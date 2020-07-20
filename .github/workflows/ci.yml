@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
-      - uses: docker://docker.io/errordeveloper/image-maker:e9b7cb4bea4e22b81612cbdc266e3f0885416cd4-dev # includes imagine and latest buildx
+      - uses: docker://docker.io/errordeveloper/image-maker:156febd65dd277853aec9a834a1288e286645db4-dev # includes imagine and latest buildx
         name: Run make operator-image
         env:
           DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
