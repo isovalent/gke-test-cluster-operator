@@ -22,7 +22,7 @@ cat > config/operator/instances.json << EOF
   "instances": [{
       "output": "operator-test.json",
       "parameters": {
-        "namespace": "kube-system",
+        "namespace": "${namespace}",
         "image": "${image}",
         "test": true
       }
