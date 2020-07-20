@@ -38,11 +38,17 @@ import (
 // +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containernodepools,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containernodepools/status,verbs=get;update;patch
 
-// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computenetworks,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computenetworks/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=compute.cnrm.cloud.google.com,resources=computenetworks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=compute.cnrm.cloud.google.com,resources=computenetworks/status,verbs=get;update;patch
 
-// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computesubnetworks,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=computesubnetworks/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=compute.cnrm.cloud.google.com,resources=computesubnetworks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=compute.cnrm.cloud.google.com,resources=computesubnetworks/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iamserviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iamserviceaccounts/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicies/status,verbs=get;update;patch
 
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
 type TestClusterGKEReconciler struct {

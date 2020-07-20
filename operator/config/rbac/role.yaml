@@ -107,7 +107,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - container.cnrm.cloud.google.com
+  - compute.cnrm.cloud.google.com
   resources:
   - computenetworks
   verbs:
@@ -119,7 +119,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - container.cnrm.cloud.google.com
+  - compute.cnrm.cloud.google.com
   resources:
   - computenetworks/status
   verbs:
@@ -127,7 +127,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - container.cnrm.cloud.google.com
+  - compute.cnrm.cloud.google.com
   resources:
   - computesubnetworks
   verbs:
@@ -139,7 +139,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - container.cnrm.cloud.google.com
+  - compute.cnrm.cloud.google.com
   resources:
   - computesubnetworks/status
   verbs:
@@ -182,6 +182,46 @@ rules:
   - container.cnrm.cloud.google.com
   resources:
   - containernodepools/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - iam.cnrm.cloud.google.com
+  resources:
+  - iampolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - iam.cnrm.cloud.google.com
+  resources:
+  - iampolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - iam.cnrm.cloud.google.com
+  resources:
+  - iamserviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - iam.cnrm.cloud.google.com
+  resources:
+  - iamserviceaccounts/status
   verbs:
   - get
   - patch
