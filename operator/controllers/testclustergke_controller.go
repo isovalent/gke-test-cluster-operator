@@ -85,8 +85,20 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// - [x] update RBAC configs
 	// - [x] de-kustomize configs
 	// - [x] use random cluster name, instead of same as test object
-	// - [ ] deploy to management clusters
+	// - [x] deploy to management clusters
 	// TODO (post-mvp)
+	// - ensure validation and defaulting webhook works, deploy cert-manager
+	// - deploy Promethues and for monitoring the operator and configure alerts
+	//   (try doing it with stackdriver)
+	// - find way to deploy things into the test clusters, maybe use init container
+	//   in runner pod for this, probably check standard config as part of cluster
+	//   template
+	// - move to own namespace, restrict access to configmaps within the namespaces
+	// - review RBAC, investigate if resource name prefix can be used for core resources
+	// - add RBAC role for CI to submit cluster requests
+	// - add developer RBAC role bound to a namespace
+	// - register runner job as GitHub Actions runner
+	// - consider using a function proxy for request submissions from CI
 	// - build image in GitHub Actions
 	// - deploy using Flux
 	// - ensure updates are handles as intended, i.e. errror
