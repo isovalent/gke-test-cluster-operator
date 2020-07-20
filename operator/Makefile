@@ -6,7 +6,7 @@ KG ?= $(GOBIN)/kg
 
 .buildx_builder:
 	# see https://github.com/docker/buildx/issues/308
-	mkdir -p .buildx
+	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
 image: .buildx_builder
