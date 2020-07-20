@@ -30,7 +30,9 @@ cat > config/operator/instances.json << EOF
 }
 EOF
 
-${GOPATH}/bin/kg -input-directory config/operator -output-directory config/operator
+export PATH="${PATH}:${GOPATH}/bin"
+
+kg -input-directory config/operator -output-directory config/operator
 
 kubectl apply --filename="config/rbac/role.yaml"
 
