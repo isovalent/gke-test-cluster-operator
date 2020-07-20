@@ -1,12 +1,18 @@
-GOBIN := $(shell go env GOPATH)/bin
+GOBIN = $(shell go env GOPATH)/bin
 
 CONTROLLER_GEN ?= $(GOBIN)/controller-gen
 IMAGINE ?= $(GOBIN)/imagine
 KG ?= $(GOBIN)/kg
 
-ifdef MAKER_CONTAINER
+ifeq ($(MAKER_CONTAINER),true)
   IMAGINE=imagine
   KG=kg
+endif
+
+REGISTRY ?= docker.io/isovalent
+imagine_push_or_export = --export
+ifeq ($(PUSH),true)
+imagine_push_or_export = --push
 endif
 
 .buildx_builder:
@@ -19,13 +25,13 @@ image: .buildx_builder
 		--builder $$(cat .buildx_builder) \
 		--base ./ \
 		--name gke-test-cluster-operator \
-		--registry docker.io/isovalent \
-		--export \
+		--registry $(REGISTRY) \
+		$(imagine_push_or_export) \
 		--cleanup
 	$(IMAGINE) image \
 		--base ./ \
 		--name gke-test-cluster-operator \
-		--registry docker.io/isovalent \
+		--registry $(REGISTRY) \
 		> image-gke-test-cluster-operator.tag
 
 manifests:
