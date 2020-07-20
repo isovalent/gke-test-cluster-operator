@@ -45,7 +45,7 @@ test.controllers-local: image
 	docker load -i image-gke-test-cluster-operator.oci
 	$(MAKE) test.controllers
 
-test.controllers: image
+test.controllers:
 	./test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)"
 
 test.unit:
