@@ -38,12 +38,11 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+	port := flag.Int("port", 9443, "port to listen on")
+	metricsAddr := flag.String("metrics-addr", ":8080", "address the metric endpoint binds to")
+	enableLeaderElection := flag.Bool("enable-leader-election", false, "enable leader election")
+	leaderElectionID := flag.String("leader-election-id", "gke-test-cluster-operator.ci.cilium.io", "identifier to use for leader election")
+
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
@@ -57,10 +56,10 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "8f35d3d2.ci.cilium.io",
+		MetricsBindAddress: *metricsAddr,
+		Port:               *port,
+		LeaderElection:     *enableLeaderElection,
+		LeaderElectionID:   *leaderElectionID,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
