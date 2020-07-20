@@ -30,8 +30,11 @@ manifests:
 	  > config/operator/instances.json
 	$(KG) -input-directory config/operator -output-directory config/operator
 
-test.local: image
+test.controllers-local: image
 	docker load -i image-gke-test-cluster-operator.oci
+	$(MAKE) test.controllers
+
+test.controllers: image
 	./test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)"
 
 test.unit:

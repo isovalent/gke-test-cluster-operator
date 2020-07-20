@@ -20,7 +20,7 @@ jobs:
           QUAY_PUBLIC_ACCESS_ONLY: "true"
         with:
           entrypoint: make
-          args: operator-image
+          args: -C operator image
       - name: Get image cache key
         id: get-image-cache-key
         run: .github/workflows/ci.get-image-cache-key.sh
@@ -34,8 +34,8 @@ jobs:
           # generate a unique key for the workflow run
           key: ${{ steps.get-image-cache-key.outputs.key }}
           path: |
-            image-*.oci
-            image-*.tag
+            operator/image-*.oci
+            operator/image-*.tag
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   build-and-test:
@@ -54,8 +54,8 @@ jobs:
         with:
           key: ${{ needs.build-image.outputs.image-cache-key }}
           path: |
-            image-*.oci
-            image-*.tag
+            operator/image-*.oci
+            operator/image-*.tag
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:
@@ -65,7 +65,7 @@ jobs:
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:
           entrypoint: kind
-          args: load image-archive image-gke-test-cluster-operator.oci
+          args: load image-archive operator/image-gke-test-cluster-operator.oci
       - name: Set kubeconfig context
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
@@ -94,4 +94,4 @@ jobs:
         timeout-minutes: 10
         with:
           entrypoint: make
-          args: test.operator-controllers
+          args: -C operator test.controllers
