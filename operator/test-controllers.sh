@@ -17,11 +17,18 @@ namespace="${name}-$(date +%s)"
 
 echo "INFO: creating test job"
 
-jq -n \
-	--arg image "${image}" \
-  --arg namespace "${namespace}" \
-	  '.instances=[({} | .output="operator-test.json" | .parameters=({} | .namespace="\($namespace)" | .image="\($image)" | .test=true))]' \
-	> config/operator/instances.json
+cat > config/operator/instances.json << EOF
+{
+  "instances": [{
+      "output": "operator-test.json",
+      "parameters": {
+        "namespace": "kube-system",
+        "image": "${image}",
+        "test": true
+      }
+  }]
+}
+EOF
 
 ${GOPATH}/bin/kg -input-directory config/operator -output-directory config/operator
 
