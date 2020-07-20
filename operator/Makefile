@@ -26,7 +26,7 @@ image: .buildx_builder
 manifests:
 	jq -n \
 	  --arg image $$(cat  image-gke-test-cluster-operator.tag) \
-	    '.instances=[{} | .output="operator.json" | .parameters=({} | .namespace="kube-system" | .image="\($$image)")]' \
+	    '.instances=[({} | .output="operator.json" | .parameters=({} | .namespace="kube-system" | .image="\($$image)" | .test=false))]' \
 	  > config/operator/instances.json
 	$(KG) -input-directory config/operator -output-directory config/operator
 
