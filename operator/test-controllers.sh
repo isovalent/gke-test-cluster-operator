@@ -94,7 +94,7 @@ container_status() {
   echo "INFO: getting container status..."
   # sometimes the value doesn't parse as a number, before this is re-written in Go
   # it will have to be done like this
-  until test "$(get_container_exit_code)" -ge 0 ; do sleep 0.5 ; done
+  until test -n "$(get_container_exit_code)" ; do sleep 0.5 ; done
   exit_code="$(get_container_exit_code)"
   echo "INFO: container exited with ${exit_code}"
   return "${exit_code}"
