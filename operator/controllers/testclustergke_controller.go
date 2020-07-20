@@ -82,7 +82,10 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// - [x] update RBAC configs
 	// - [x] de-kustomize configs
 	// - [x] use random cluster name, instead of same as test object
+	// - [ ] deploy to management clusters
 	// TODO (post-mvp)
+	// - build image in GitHub Actions
+	// - deploy using Flux
 	// - ensure updates are handles as intended, i.e. errror
 	// - implement pool object
 	// - implement GCP project annotation
@@ -116,6 +119,7 @@ func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.Test
 	return objs, nil
 }
 
+// TODO (post-mvp) de-dup
 func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
 	key, err := client.ObjectKeyFromObject(obj)
 	if err != nil {

@@ -139,7 +139,7 @@ func TestJob(t *testing.T) {
 					"kind": "Job",
 					"apiVersion": "batch/v1",
 					"metadata": {
-					  "name": "test-baz-a0b1c2-workload-identity",
+					  "name": "test-runner-baz-a0b1c2",
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz-a0b1c2"
@@ -190,10 +190,10 @@ func TestJob(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			// objs, err := c.RenderObjects(cluster, "baz-a0b1c2")
-			// g.Expect(err).ToNot(HaveOccurred())
-			// g.Expect(objs).ToNot(BeNil())
-			// g.Expect(objs.Items).To(HaveLen(7))
+			objs, err := c.RenderObjects(cluster, "baz-a0b1c2")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(1))
 		}
 
 		{
@@ -221,7 +221,7 @@ func TestJob(t *testing.T) {
 					"kind": "Job",
 					"apiVersion": "batch/v1",
 					"metadata": {
-					  "name": "test-bar-0a1b2c-workload-identity",
+					  "name": "test-runner-bar-0a1b2c",
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar-0a1b2c"
@@ -272,38 +272,39 @@ func TestJob(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			// objs, err := c.RenderObjects(cluster, false)
-			// g.Expect(err).ToNot(HaveOccurred())
-			// g.Expect(objs).ToNot(BeNil())
-			// g.Expect(objs.Items).To(HaveLen(7))
+			objs, err := c.RenderObjects(cluster, "bar-0a1b2c")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(1))
 		}
 
-		// {
-		// 	cluster := &v1alpha1.TestClusterGKE{
-		// 		ObjectMeta: metav1.ObjectMeta{
-		// 			Name: "baz",
-		// 		},
-		// 		Spec: v1alpha1.TestClusterGKESpec{
-		// 			ConfigTemplate: &templateName,
-		// 			MachineType:    &machineType,
-		// 		},
-		// 	}
+		{
+			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
+			cluster := &v1alpha1.TestClusterGKE{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "baz",
+				},
+				Spec: v1alpha1.TestClusterGKESpec{
+					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
+						RunnerImage: &runnerImage,
+					},
+				},
+			}
 
-		// 	objs, err := c.RenderObjects(cluster, "baz-x2a8332")
-		// 	g.Expect(err).ToNot(HaveOccurred())
-		// 	g.Expect(objs).ToNot(BeNil())
-		// 	g.Expect(objs.Items).To(HaveLen(7))
+			objs, err := c.RenderObjects(cluster, "baz-x2a8332")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(1))
 
-		// 	name := objs.Items[1].GetName()
-		// 	g.Expect(name).To(HavePrefix("baz-"))
-		// 	g.Expect(name).To(HaveLen(9))
+			name := objs.Items[0].GetName()
+			g.Expect(name).To(Equal("test-runner-baz-x2a8332"))
 
-		// 	for _, obj := range objs.Items {
-		// 		labels := obj.GetLabels()
-		// 		g.Expect(labels).To(HaveKeyWithValue("cluster", name))
-		// 		g.Expect(obj.GetName()).To(HavePrefix(name))
-		// 	}
-		// }
+			for _, obj := range objs.Items {
+				labels := obj.GetLabels()
+				g.Expect(labels).To(HaveKeyWithValue("cluster", "baz-x2a8332"))
+				g.Expect(obj.GetName()).To(Equal(name))
+			}
+		}
 
 		{
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"

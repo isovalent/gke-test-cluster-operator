@@ -8,9 +8,12 @@ import (
 	"testing"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	. "github.com/onsi/gomega"
@@ -105,6 +108,11 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 	obj.Spec.ConfigTemplate = new(string)
 	*obj.Spec.ConfigTemplate = "basic"
 
+	obj.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
+		RunnerImage: new(string),
+	}
+	*obj.Spec.JobSpec.RunnerImage = "sonobuoy/sonobuoy:v0.18.0"
+
 	err := cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())
 	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
@@ -176,7 +184,29 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			}
 			return obj.Status.Conditions
 		}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
+
+		if conditions[0].Status == "True" {
+			g.Expect(obj.Status.HasReadyCondition()).To(BeTrue())
+		} else {
+			g.Expect(obj.Status.HasReadyCondition()).To(BeFalse())
+		}
 	}
+
+	jobObj := batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-runner-" + clusterName,
+			Namespace: ns,
+		},
+	}
+
+	jobKey := types.NamespacedName{
+		Name:      jobObj.Name,
+		Namespace: jobObj.Namespace,
+	}
+
+	g.Eventually(func() error {
+		return cst.Client.Get(ctx, jobKey, &jobObj)
+	}, *pollTimeout, *pollInterval).Should(Succeed())
 
 	g.Expect(cst.Client.Delete(ctx, remoteObj)).To(Succeed())
 

@@ -181,44 +181,7 @@ ClusterTemplate :: {
 				"cnrm.cloud.google.com/project-id": "\(_project)"
 			}
 		}
-	},
-		// {
-		//  apiVersion: "v1"
-		//  kind:       "Pod"
-		//  metadata: {
-		//   name: "test-\(_name)-workload-identity"
-		//   labels: cluster: "\(_name)"
-		//   namespace: "\(_namespace)"
-		//  }
-		//  spec: {
-		//   containers: [{
-		//    name: "workload-identity-test"
-		//    command: [
-		//     "bash",
-		//     "-l",
-		//    ]
-		//    tty:   true
-		//    image: "google/cloud-sdk:slim"
-		//    readinessProbe: {
-		//     // the pod identity is not immediatly usable, so we need to wait
-		//     // perhaps this should be an init container actually, we might
-		//     // just write out kubeconfig to a volume this way
-		//     exec: command: [
-		//      "bash",
-		//      "-c",
-		//      "gcloud auth list \"--format=value(account)\" | grep \(_name)-admin@\(_project).iam.gserviceaccount.com",
-		//     ]
-		//     failureThreshold:    500
-		//     initialDelaySeconds: 5
-		//     periodSeconds:       2
-		//     successThreshold:    3
-		//    }
-		//   }]
-		//   dnsPolicy:          "ClusterFirst"
-		//   restartPolicy:      "Never"
-		//   serviceAccountName: "\(_name)-admin"
-		//  }
-	]
+	}]
 }
 
 defaults: v1alpha1.TestClusterGKE

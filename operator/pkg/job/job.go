@@ -8,6 +8,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/template"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type Config struct {
@@ -56,4 +57,18 @@ func (c *Config) RenderJSON(clusterRequest *v1alpha1.TestClusterGKE, actualName 
 		return nil, err
 	}
 	return jobTemplate.RenderJSON()
+}
+
+func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, actualName string) (*unstructured.UnstructuredList, error) {
+	objs := &unstructured.UnstructuredList{}
+
+	data, err := c.RenderJSON(cluster, actualName)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := objs.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+	return objs, nil
 }

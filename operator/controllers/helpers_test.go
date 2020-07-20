@@ -31,6 +31,7 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/job"
 )
 
 var (
@@ -92,6 +93,12 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(configRenderer.Load()).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaults("basic", basic.NewDefaults())).To(Succeed())
 
+	jobRenderer := &job.Config{
+		BaseDirectory: "../config/templates",
+	}
+	g.Expect(jobRenderer.Load()).To(Succeed())
+	g.Expect(jobRenderer.ApplyDefaults(basic.NewDefaults())).To(Succeed())
+
 	g.Expect((&controllers.TestClusterGKEReconciler{
 		Client:         mgr.GetClient(),
 		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
@@ -99,10 +106,11 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
-	g.Expect((&controllers.CNRMWatcher{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
-		Scheme: mgr.GetScheme(),
+	g.Expect((&controllers.CNRMContainerClusterWatcher{
+		Client:      mgr.GetClient(),
+		Log:         ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
+		Scheme:      mgr.GetScheme(),
+		JobRenderer: jobRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	stop := make(chan struct{})
@@ -130,6 +138,7 @@ func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv
 	}
 	return key, obj
 }
+
 func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName, *unstructured.UnstructuredList) {
 	key := types.NamespacedName{
 		Name:      name,

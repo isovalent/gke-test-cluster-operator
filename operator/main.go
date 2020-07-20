@@ -18,6 +18,7 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/job"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -47,9 +48,10 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	configRenderer, err := initConfigRenderer()
+	configRenderer, jobRenderer, err := initRenderers()
+
 	if err != nil {
-		setupLog.Error(err, "unable to setup config renderer")
+		setupLog.Error(err, "unable to setup conig and job renderers")
 		os.Exit(2)
 	}
 
@@ -84,12 +86,13 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
-	if err := (&controllers.CNRMWatcher{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
-		Scheme: mgr.GetScheme(),
+	if err := (&controllers.CNRMContainerClusterWatcher{
+		Client:      mgr.GetClient(),
+		Log:         ctrl.Log.WithName("controllers").WithName("CNRMContainerClusterWatcher"),
+		Scheme:      mgr.GetScheme(),
+		JobRenderer: jobRenderer,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "CNRMWatcher")
+		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
 		os.Exit(1)
 	}
 
@@ -99,16 +102,28 @@ func main() {
 	}
 }
 
-func initConfigRenderer() (*config.Config, error) {
+func initRenderers() (*config.Config, *job.Config, error) {
 	cr := &config.Config{
 		BaseDirectory: "./config/templates",
 	}
 	if err := cr.Load(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := cr.ApplyDefaults("basic", basic.NewDefaults()); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return cr, nil
+
+	jr := &job.Config{
+		BaseDirectory: "./config/templates",
+	}
+	if err := jr.Load(); err != nil {
+		return nil, nil, err
+	}
+
+	if err := jr.ApplyDefaults(basic.NewDefaults()); err != nil {
+		return nil, nil, err
+	}
+
+	return cr, jr, nil
 }
