@@ -4,6 +4,11 @@ CONTROLLER_GEN ?= $(GOBIN)/controller-gen
 IMAGINE ?= $(GOBIN)/imagine
 KG ?= $(GOBIN)/kg
 
+ifdef MAKER_CONTAINER
+  IMAGINE=imagine
+  KG=kg
+endif
+
 .buildx_builder:
 	# see https://github.com/docker/buildx/issues/308
 	mkdir -p ../.buildx
