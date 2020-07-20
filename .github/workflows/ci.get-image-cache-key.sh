@@ -12,6 +12,6 @@ if [ -z "${GITHUB_ACTIONS+x}" ] ; then
 fi
 
 # use git hash-object purelly out of convenient, as e.g. with sha256sum output needs to be parsed
-cache_hash="$(cat ${GITHUB_WORKSPACE}/image-*.oci | git hash-object --stdin)"
+cache_hash="$(cat ${GITHUB_WORKSPACE}/operator/image-*.oci | git hash-object --stdin)"
 event_hash="$(git hash-object "${GITHUB_EVENT_PATH}")"
 printf "::set-output name=key::%s-%s\n" "${cache_hash}" "${event_hash}"
