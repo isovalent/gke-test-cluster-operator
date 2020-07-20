@@ -57,7 +57,7 @@ type CNRMComputeSubnetworkWatcher struct {
 }
 
 func (w *CNRMContainerClusterWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-watcher", mgr, controller.Options{
+	c, err := controller.New("cnrm-containercluster-watcher", mgr, controller.Options{
 		Reconciler: w,
 	})
 	if err != nil {
@@ -203,7 +203,7 @@ func (w *CNRMContainerClusterWatcher) createOrSkip(obj runtime.Object) error {
 }
 
 func (w *CNRMContainerNodePoolSourceWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-watcher", mgr, controller.Options{
+	c, err := controller.New("cnrm-containernodepool-watcher", mgr, controller.Options{
 		Reconciler: w,
 	})
 	if err != nil {
@@ -219,7 +219,7 @@ func (w *CNRMContainerNodePoolSourceWatcher) Reconcile(req ctrl.Request) (ctrl.R
 }
 
 func (w *CNRMComputeNetworkWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-watcher", mgr, controller.Options{
+	c, err := controller.New("cnrm-computenetwork-watcher", mgr, controller.Options{
 		Reconciler: w,
 	})
 	if err != nil {
@@ -235,7 +235,7 @@ func (w *CNRMComputeNetworkWatcher) Reconcile(req ctrl.Request) (ctrl.Result, er
 }
 
 func (w *CNRMComputeSubnetworkWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-watcher", mgr, controller.Options{
+	c, err := controller.New("cnrm-computesubnetwork-watcher", mgr, controller.Options{
 		Reconciler: w,
 	})
 	if err != nil {
@@ -256,6 +256,10 @@ type Owner struct {
 
 func GetOwner(objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*Owner, error) {
 	numOwners := len(ownerRefs)
+	if numOwners == 0 {
+		return nil, nil
+	}
+
 	if numOwners > 1 {
 		return nil, fmt.Errorf("object %q unexpected number of owners (%d)", objKey, numOwners)
 	}
