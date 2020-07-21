@@ -13,9 +13,6 @@ _machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
 
 _project: "cilium-ci"
 
-// TODO (post-mvp): IAM resources are implementation detail of the operator, so should be
-// factored into another template or file or package
-
 ClusterTemplate :: {
 	kind:       "List"
 	apiVersion: "v1"

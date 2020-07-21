@@ -35,7 +35,6 @@ JobTemplate :: {
 						command: [
 							"bash",
 							"-c",
-							// TODO (post-mvp): create an image with a script that waits and writes kubeconfg
 							"until gcloud auth list \"--format=value(account)\" | grep \(_name)-admin@\(_project).iam.gserviceaccount.com ; do sleep 1 ; done",
 						]
 						image: "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"

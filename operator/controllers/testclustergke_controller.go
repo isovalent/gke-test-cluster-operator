@@ -93,15 +93,6 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	// TODO (mvp)
-	// - [x] handle deletion
-	// - [x] write a few simple controller tests
-	// - [x] wait for cluster to get created, update status
-	// - [x] update RBAC configs
-	// - [x] de-kustomize configs
-	// - [x] use random cluster name, instead of same as test object
-	// - [x] deploy to management clusters
-	// - [x] ensure we don't leak clusters
 	// TODO (post-mvp)
 	// - capture events
 	// - ensure all dependency error are captured and we don't try to re-create
@@ -154,7 +145,6 @@ func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.Test
 	return objs, nil
 }
 
-// TODO (post-mvp) de-dup
 func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
 	key, err := client.ObjectKeyFromObject(obj)
 	if err != nil {
@@ -164,8 +154,6 @@ func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
 	ctx := context.Background()
 	log := r.Log.WithValues("createOrSkip", key)
 
-	// TODO (post-mvp) probably don't need to make a full copy,
-	// should be able to copy just TypeMeta and ObjectMeta
 	remoteObj := obj.DeepCopyObject()
 	getErr := r.Client.Get(ctx, key, remoteObj)
 	if apierrors.IsNotFound(getErr) {

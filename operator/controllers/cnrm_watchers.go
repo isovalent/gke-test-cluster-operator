@@ -123,15 +123,6 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		}
 	}
 
-	// TODO (mvp)
-	// - [x] update status of the owner
-	// - [x] lauch job
-	// TODO (post-mvp)
-	// - updates status once job has been launched/stated/finished
-	// - update status in a more sophisticated manner, the transition timestamps should corespond to the time of update
-	// - review status structs, using the same struct is probably a naive idea
-	// - inspect all of the 4 object and set parent condtion accordingly, so progress is fully trackable
-
 	return ctrl.Result{}, nil
 }
 
@@ -177,7 +168,6 @@ func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.T
 	return objs, nil
 }
 
-// TODO (post-mvp) de-dup
 func (w *CNRMContainerClusterWatcher) createOrSkip(obj runtime.Object) error {
 	key, err := client.ObjectKeyFromObject(obj)
 	if err != nil {
@@ -187,8 +177,6 @@ func (w *CNRMContainerClusterWatcher) createOrSkip(obj runtime.Object) error {
 	ctx := context.Background()
 	log := w.Log.WithValues("createOrSkip", key)
 
-	// TODO (post-mvp) probably don't need to make a full copy,
-	// should be able to copy just TypeMeta and ObjectMeta
 	remoteObj := obj.DeepCopyObject()
 	getErr := w.Client.Get(ctx, key, remoteObj)
 	if apierrors.IsNotFound(getErr) {
@@ -294,7 +282,6 @@ func (o *Owner) UpdateStatus(client client.Client, status *ContainerClusterStatu
 		return err
 	}
 
-	// TODO (post-mvp): detect which object is which
 	o.Object.Status.Conditions = status.Conditions
 	o.Object.Status.Endpoint = status.Endpoint
 
