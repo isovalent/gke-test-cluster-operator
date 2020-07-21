@@ -29,6 +29,7 @@ else
 fi
 
 kubectl apply --filename="config/rbac/role.yaml"
+kubectl apply --filename="config/crd"
 
 kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.json"
 

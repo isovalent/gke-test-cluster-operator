@@ -85,7 +85,6 @@ if parameters.test {
 		"-test.v",
 		"-test.timeout=5m",
 		"-resource-prefix=\(parameters.namespace)",
-		"-crd-path=/config/crd",
 	]
 }
 

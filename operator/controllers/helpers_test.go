@@ -7,7 +7,6 @@ import (
 	"context"
 	"flag"
 	"math/rand"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -40,7 +39,6 @@ var (
 	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	resourcePrefix = flag.String("resource-prefix", "test-"+utilrand.String(5), "resource prefix")
-	crdPath        = flag.String("crd-path", filepath.Join("..", "config", "crd"), "path to CRDs")
 	pollInterval   = flag.Duration("poll-interval", 5*time.Second, "polling interval")
 	pollTimeout    = flag.Duration("poll-timeout", 120*time.Second, "polling timeout")
 )
@@ -64,9 +62,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	var err error
 
 	env := &envtest.Environment{
-		CRDDirectoryPaths:     []string{*crdPath},
-		UseExistingCluster:    new(bool),
-		ErrorIfCRDPathMissing: true,
+		UseExistingCluster: new(bool),
 	}
 	*env.UseExistingCluster = true
 
