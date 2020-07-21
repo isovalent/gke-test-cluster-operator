@@ -9,7 +9,7 @@ _name:        "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
 _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 _runnerImage: "\(defaults.spec.jobSpec.runnerImage)" | *"\(resource.spec.jobSpec.runnerImage)"
 
-_project: "cilimum-ci"
+_project: "cilium-ci"
 
 JobTemplate :: {
 	kind:       "List"

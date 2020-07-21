@@ -11,7 +11,7 @@ _location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
 _region:      "\(defaults.spec.region)" | *"\(resource.spec.region)"
 _machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
 
-_project: "cilimum-ci"
+_project: "cilium-ci"
 
 // TODO (post-mvp): IAM resources are implementation detail of the operator, so should be
 // factored into another template or file or package

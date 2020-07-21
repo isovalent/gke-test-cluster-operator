@@ -124,7 +124,7 @@ func TestConfig(t *testing.T) {
 					  },
 					  "annotations": {
 						"cnrm.cloud.google.com/remove-default-node-pool": "true",
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -155,7 +155,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -192,7 +192,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -211,7 +211,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -232,7 +232,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -249,7 +249,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -262,7 +262,7 @@ func TestConfig(t *testing.T) {
 						{
 						  "role": "roles/iam.workloadIdentityUser",
 						  "members": [
-							"serviceAccount:cilimum-ci.svc.id.goog[other/baz-admin]"
+							"serviceAccount:cilium-ci.svc.id.goog[other/baz-admin]"
 						  ]
 						}
 					  ]
@@ -278,8 +278,8 @@ func TestConfig(t *testing.T) {
 						"cluster": "baz"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci",
-						"iam.gke.io/gcp-service-account": "baz-admin@cilimum-ci.iam.gserviceaccount.com"
+						"cnrm.cloud.google.com/project-id": "cilium-ci",
+						"iam.gke.io/gcp-service-account": "baz-admin@cilium-ci.iam.gserviceaccount.com"
 					  }
 					}
 				  }
@@ -323,7 +323,7 @@ func TestConfig(t *testing.T) {
 					  },
 					  "annotations": {
 						"cnrm.cloud.google.com/remove-default-node-pool": "true",
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -354,7 +354,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -391,7 +391,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -410,7 +410,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -431,7 +431,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -448,7 +448,7 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci"
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
 					},
 					"spec": {
@@ -461,7 +461,7 @@ func TestConfig(t *testing.T) {
 						{
 						  "role": "roles/iam.workloadIdentityUser",
 						  "members": [
-							"serviceAccount:cilimum-ci.svc.id.goog[default/bar-admin]"
+							"serviceAccount:cilium-ci.svc.id.goog[default/bar-admin]"
 						  ]
 						}
 					  ]
@@ -477,8 +477,8 @@ func TestConfig(t *testing.T) {
 						"cluster": "bar"
 					  },
 					  "annotations": {
-						"cnrm.cloud.google.com/project-id": "cilimum-ci",
-						"iam.gke.io/gcp-service-account": "bar-admin@cilimum-ci.iam.gserviceaccount.com"
+						"cnrm.cloud.google.com/project-id": "cilium-ci",
+						"iam.gke.io/gcp-service-account": "bar-admin@cilium-ci.iam.gserviceaccount.com"
 					  }
 					}
 				  }

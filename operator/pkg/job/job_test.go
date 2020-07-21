@@ -161,7 +161,7 @@ func TestJob(t *testing.T) {
 							  "command": [
 								"bash",
 								"-c",
-								"until gcloud auth list \"--format=value(account)\" | grep baz-a0b1c2-admin@cilimum-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
+								"until gcloud auth list \"--format=value(account)\" | grep baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
 							  ],
 							  "image": "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a",
 							  "volumeMounts": []
@@ -243,7 +243,7 @@ func TestJob(t *testing.T) {
 							  "command": [
 								"bash",
 								"-c",
-								"until gcloud auth list \"--format=value(account)\" | grep bar-0a1b2c-admin@cilimum-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
+								"until gcloud auth list \"--format=value(account)\" | grep bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
 							  ],
 							  "image": "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a",
 							  "volumeMounts": []
