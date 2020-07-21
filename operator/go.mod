@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	cuelang.org/go v0.2.1
-	github.com/errordeveloper/imagine v0.0.0-20200720095627-da3e30ba15e2
+	github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d
 	github.com/errordeveloper/kue v0.2.3
 	github.com/go-logr/logr v0.1.0
 	github.com/onsi/gomega v1.9.0

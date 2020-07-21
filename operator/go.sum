@@ -300,6 +300,12 @@ github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5/go.mod h1:a2zkGnVExMxdzMo3M0Hi/3sEU+cWnZpSni0O6/Yb/P0=
 github.com/errordeveloper/imagine v0.0.0-20200720095627-da3e30ba15e2 h1:tm0+Pf6ExaM9TrGv65YT53Ctng1MKj339cbHJDuBt40=
 github.com/errordeveloper/imagine v0.0.0-20200720095627-da3e30ba15e2/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
+github.com/errordeveloper/imagine v0.0.0-20200721092640-3e2fd900c7ae h1:oYTJqov+ZVFD5hQwBaXZ6YimciraWVHQw+sgXkR/ZME=
+github.com/errordeveloper/imagine v0.0.0-20200721092640-3e2fd900c7ae/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
+github.com/errordeveloper/imagine v0.0.0-20200721104057-67aa076ae0eb h1:ZlIDaCWrO8sA4R7ya24faahFySoeJ7656xqR1hlANCQ=
+github.com/errordeveloper/imagine v0.0.0-20200721104057-67aa076ae0eb/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
+github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d h1:cvgai3M5pvJWAQr7XbgrrLdNZUHdeAMqAiyQMKIov7I=
+github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
 github.com/errordeveloper/kue v0.2.3 h1:teLjMnyibvutu34MPT7MbPfhD3j5cVpKZbpgxyVORqY=
 github.com/errordeveloper/kue v0.2.3/go.mod h1:3XKcXDhU7U8IuJ7jLCExYNfKT76C8MmrXel8bfO4TwM=
 github.com/evanphx/json-patch v4.2.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
