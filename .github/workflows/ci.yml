@@ -13,14 +13,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
-      - uses: docker://docker.io/errordeveloper/image-maker:156febd65dd277853aec9a834a1288e286645db4-dev # includes imagine and latest buildx
-        name: Run make operator-image
+      - uses: docker://docker.io/errordeveloper/image-maker:1ba12edc0ddb3d7320cdcc3e2144e1cd0946c09b-dev # includes imagine and latest buildx
+        name: Run make operator-image and manifests
         env:
           DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
           QUAY_PUBLIC_ACCESS_ONLY: "true"
         with:
           entrypoint: make
-          args: -C operator operator-image
+          args: -C operator operator-image manifests
       - name: Get image cache key
         id: get-image-cache-key
         run: .github/workflows/ci.get-image-cache-key.sh
@@ -36,6 +36,7 @@ jobs:
           path: |
             operator/image-*.oci
             operator/image-*.tag
+            operator/config/operator/operator-test.json
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   build-and-test:
@@ -56,6 +57,7 @@ jobs:
           path: |
             operator/image-*.oci
             operator/image-*.tag
+            operator/config/operator/operator-test.json
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:

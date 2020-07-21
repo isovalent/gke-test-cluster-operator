@@ -17,24 +17,9 @@ namespace="${name}-$(date +%s)"
 
 echo "INFO: creating test job"
 
-cat > config/operator/instances.json << EOF
-{
-  "instances": [{
-      "output": "operator-test.json",
-      "parameters": {
-        "namespace": "${namespace}",
-        "image": "${image}",
-        "test": true
-      }
-  }]
-}
-EOF
-
-if [ -n "${GOPATH+x}" ] ; then
-  export PATH="${PATH}:${GOPATH}/bin"
+if [ -z "${CI+x}" ] ; then
+   NAMESPACE="${namespace}" ./generate-manifests.sh "${image}"
 fi
-
-kg -input-directory config/operator -output-directory config/operator
 
 kubectl apply --filename="config/rbac/role.yaml"
 
