@@ -22,6 +22,7 @@ type Generator struct {
 	template *cue.Instance
 }
 
+// TODO: move this package to kue
 func (g *Generator) CompileAndValidate() error {
 	// TODO: produce meanigful compilation errors
 	// TODO: produce meanigful validation errors

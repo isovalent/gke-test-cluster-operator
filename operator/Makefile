@@ -20,7 +20,7 @@ endif
 	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
-image: .buildx_builder
+operator-image: .buildx_builder
 	$(IMAGINE) build \
 		--builder $$(cat .buildx_builder) \
 		--base ./ \
@@ -34,6 +34,21 @@ image: .buildx_builder
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-operator.tag
 
+job-runner-init-image: .buildx_builder
+	$(IMAGINE) build \
+		--builder $$(cat .buildx_builder) \
+		--base ./config/job-runner-init-image \
+		--name gke-test-cluster-job-runner-init \
+		--test \
+		--registry $(REGISTRY) \
+		$(imagine_push_or_export) \
+		--cleanup
+	$(IMAGINE) image \
+		--base ./config/job-runner-init-image  \
+		--name gke-test-cluster-operator \
+		--registry $(REGISTRY) \
+		> image-gke-test-cluster-job-runner-init.tag
+
 manifests:
 	jq -n \
 	  --arg image $$(cat  image-gke-test-cluster-operator.tag) \
@@ -41,7 +56,7 @@ manifests:
 	  > config/operator/instances.json
 	$(KG) -input-directory config/operator -output-directory config/operator
 
-test.controllers-local: image
+test.controllers-local: operator-image
 	docker load -i image-gke-test-cluster-operator.oci
 	$(MAKE) test.controllers
 

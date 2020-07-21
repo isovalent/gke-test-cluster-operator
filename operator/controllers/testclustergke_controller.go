@@ -94,7 +94,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 
 	// TODO (mvp)
-	// - [x] handle deletion ``
+	// - [x] handle deletion
 	// - [x] write a few simple controller tests
 	// - [x] wait for cluster to get created, update status
 	// - [x] update RBAC configs
