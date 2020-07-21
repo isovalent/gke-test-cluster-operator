@@ -17,16 +17,20 @@ namespace="${name}-$(date +%s)"
 
 echo "INFO: creating test job"
 
+# since we rely on external dependencie, CI uses a different
+# namespace, which shouldn't have to be the case once this
+# is re-written in Go and CUE template is rendered directly
 if [ -z "${CI+x}" ] ; then
    NAMESPACE="${namespace}" ./generate-manifests.sh "${image}"
+   kubectl create namespace "${namespace}"
+   kubectl label namespace "${namespace}" test="${name}"
+else
+   namespace="kube-system"
 fi
 
 kubectl apply --filename="config/rbac/role.yaml"
 
-kubectl create namespace "${namespace}"
-kubectl label namespace "${namespace}" test="${name}"
-
-kubectl create --namespace "${namespace}" --filename="config/operator/operator-test.json"
+kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.json"
 
 # these tests should quick and there is no point in streaming logs,
 # completion should be within a minute or two, otherwise there is
@@ -44,7 +48,7 @@ troubleshoot() {
 
 bail() {
   echo "INFO: cleaning up..."
-  kubectl delete --wait="false"  --filename="config/operator/operator-test.json"
+  kubectl delete --wait="false" --filename="config/operator/operator-test.json"
   # test namespaces are not deleted on test failure, so make sure those are cleaned up here
   kubectl delete namespace --selector="test=${namespace}" --field-selector="status.phase=Active" --wait="false"
   exit "$1"
