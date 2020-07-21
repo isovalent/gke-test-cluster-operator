@@ -30,7 +30,9 @@ cat > config/operator/instances.json << EOF
 }
 EOF
 
-export PATH="${PATH}:${GOPATH}/bin"
+if [ -n "${GOPATH+x}" ] ; then
+  export PATH="${PATH}:${GOPATH}/bin"
+fi
 
 kg -input-directory config/operator -output-directory config/operator
 
