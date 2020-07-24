@@ -6,18 +6,15 @@ package controllers
 import (
 	"context"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 )
 
 // TestClusterPoolGKEReconciler reconciles a TestClusterPoolGKE object
 type TestClusterPoolGKEReconciler struct {
-	client.Client
-	Log    logr.Logger
+	ClientLogger
 	Scheme *runtime.Scheme
 }
 

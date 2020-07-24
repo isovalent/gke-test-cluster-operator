@@ -67,8 +67,7 @@ func main() {
 	}
 
 	if err := (&controllers.TestClusterGKEReconciler{
-		Client:         mgr.GetClient(),
-		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
+		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr); err != nil {
@@ -76,9 +75,8 @@ func main() {
 		os.Exit(1)
 	}
 	if err := (&controllers.TestClusterPoolGKEReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("TestClusterPoolGKE"),
-		Scheme: mgr.GetScheme(),
+		ClientLogger: controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterPoolGKE"),
+		Scheme:       mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterPoolGKE")
 		os.Exit(1)
@@ -86,10 +84,9 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		Client:      mgr.GetClient(),
-		Log:         ctrl.Log.WithName("controllers").WithName("CNRMContainerClusterWatcher"),
-		Scheme:      mgr.GetScheme(),
-		JobRenderer: jobRenderer,
+		ClientLogger: controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
+		Scheme:       mgr.GetScheme(),
+		JobRenderer:  jobRenderer,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
 		os.Exit(1)

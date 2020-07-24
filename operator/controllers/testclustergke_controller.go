@@ -6,11 +6,9 @@ package controllers
 import (
 	"context"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -52,8 +50,7 @@ import (
 
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
 type TestClusterGKEReconciler struct {
-	client.Client
-	Log    logr.Logger
+	ClientLogger
 	Scheme *runtime.Scheme
 
 	ConfigRenderer *config.Config
@@ -143,25 +140,4 @@ func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.Test
 	}
 
 	return objs, nil
-}
-
-func (r *TestClusterGKEReconciler) createOrSkip(obj runtime.Object) error {
-	key, err := client.ObjectKeyFromObject(obj)
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	log := r.Log.WithValues("createOrSkip", key)
-
-	remoteObj := obj.DeepCopyObject()
-	getErr := r.Client.Get(ctx, key, remoteObj)
-	if apierrors.IsNotFound(getErr) {
-		log.Info("will create", "obj", obj)
-		return r.Client.Create(ctx, obj)
-	}
-	if getErr == nil {
-		log.Info("already exists", "remoteObj", remoteObj)
-	}
-	return getErr
 }

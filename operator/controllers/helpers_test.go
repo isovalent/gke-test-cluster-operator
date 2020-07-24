@@ -98,17 +98,15 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(jobRenderer.ApplyDefaults(basic.NewDefaults())).To(Succeed())
 
 	g.Expect((&controllers.TestClusterGKEReconciler{
-		Client:         mgr.GetClient(),
-		Log:            ctrl.Log.WithName("controllers").WithName("TestClusterGKE"),
+		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		Client:      mgr.GetClient(),
-		Log:         ctrl.Log.WithName("controllers").WithName("CNRMWatcher"),
-		Scheme:      mgr.GetScheme(),
-		JobRenderer: jobRenderer,
+		ClientLogger: controllers.NewClientLogger(mgr, ctrl.Log, "CNRMWatcher"),
+		Scheme:       mgr.GetScheme(),
+		JobRenderer:  jobRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	objChan := make(chan *unstructured.Unstructured)

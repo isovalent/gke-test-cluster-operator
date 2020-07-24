@@ -19,7 +19,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
-	"github.com/go-logr/logr"
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/job"
@@ -32,27 +31,23 @@ import (
 var cnrmEventHandler = &handler.EnqueueRequestForObject{}
 
 type CNRMContainerClusterWatcher struct {
-	client.Client
-	Log         logr.Logger
+	ClientLogger
 	Scheme      *runtime.Scheme
 	JobRenderer *job.Config
 }
 
 type CNRMContainerNodePoolSourceWatcher struct {
-	client.Client
-	Log    logr.Logger
+	ClientLogger
 	Scheme *runtime.Scheme
 }
 
 type CNRMComputeNetworkWatcher struct {
-	client.Client
-	Log    logr.Logger
+	ClientLogger
 	Scheme *runtime.Scheme
 }
 
 type CNRMComputeSubnetworkWatcher struct {
-	client.Client
-	Log    logr.Logger
+	ClientLogger
 	Scheme *runtime.Scheme
 }
 
