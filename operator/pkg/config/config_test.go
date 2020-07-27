@@ -57,7 +57,7 @@ func TestConfig(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderCoreResourcesAsJSON(&v1alpha1.TestClusterGKE{})
+		_, err = c.RenderCoreResourcesAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil/empty configTemplate`))
 	}
@@ -588,7 +588,8 @@ func TestConfig(t *testing.T) {
 			_, err := c.RenderCoreResourcesAsJSON(cluster)
 			g.Expect(err).To(HaveOccurred())
 			// this is another weird error from CUE, but that's what you get when optional field is unspecified on export...
-			g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: field "name" is optional`))
+			g.Expect(err.Error()).ToNot(Equal(`cue: marshal error: template.items.0.metadata.name: field "name" is optional`))
+			g.Expect(err.Error()).To(Equal(`unexpected unnamed object`))
 		}
 	}
 }

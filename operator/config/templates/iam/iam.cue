@@ -5,7 +5,7 @@ package iam
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
-_name:      "\(defaults.metadata.name)" | *"\(resource.metadata.name)"
+_name:     "\(resource.metadata.name)"
 _namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 
 _project: "cilium-ci"

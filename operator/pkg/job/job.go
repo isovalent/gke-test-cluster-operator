@@ -44,6 +44,9 @@ func (c *Config) RenderJobAsJSON(clusterRequest *v1alpha1.TestClusterGKE, actual
 	if clusterRequest == nil {
 		return nil, fmt.Errorf("unexpected nil object")
 	}
+	if clusterRequest.Name == "" {
+		return nil, fmt.Errorf("unexpected unnamed object")
+	}
 	if clusterRequest.Spec.JobSpec == nil {
 		return nil, fmt.Errorf("unexpected nil jobSpec")
 	}
