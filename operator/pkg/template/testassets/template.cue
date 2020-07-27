@@ -1,11 +1,11 @@
 // Copyright 2020 Authors of Cilium
 // SPDX-License-Identifier: Apache-2.0
 
-package cluster
+package template
 
 import "github.com/isovalent/gke-test-cluster-management/operator/pkg/template/testtypes"
 
-ClusterTemplate :: {
+#ClusterTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
 	items: [
@@ -61,6 +61,6 @@ variables: {
 	subnetCIDR: "\(defaults.spec.subnetCIDR)" | *"\(resource.spec.subnetCIDR)"
 }
 
-defaults: testtypes.Cluster
-resource: testtypes.Cluster
-template: ClusterTemplate
+defaults: testtypes.#Cluster
+resource: testtypes.#Cluster
+template: #ClusterTemplate

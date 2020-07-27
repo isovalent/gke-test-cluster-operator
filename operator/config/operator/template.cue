@@ -128,7 +128,7 @@ if parameters.test {
 	}
 }
 
-WorkloadTemplate :: {
+#WorkloadTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
 	items: [
@@ -164,11 +164,11 @@ WorkloadTemplate :: {
 	]
 }
 
-WorkloadParameters :: {
+#WorkloadParameters: {
 	namespace: string
 	image:     string
 	test:      bool
 }
 
-parameters: WorkloadParameters
-template:   WorkloadTemplate
+parameters: #WorkloadParameters
+template:   #WorkloadTemplate

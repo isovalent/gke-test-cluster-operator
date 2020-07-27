@@ -96,7 +96,7 @@ func TestGenerator(t *testing.T) {
 
 		_, err = gen.RenderJSON()
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: conflicting values Cluster and 0 (mismatched types struct and int)`))
+		g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: conflicting values #Cluster and 0 (mismatched types struct and int)`))
 	}
 
 	{

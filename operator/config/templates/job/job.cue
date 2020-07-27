@@ -11,7 +11,7 @@ _runnerImage: "\(defaults.spec.jobSpec.runnerImage)" | *"\(resource.spec.jobSpec
 
 _project: "cilium-ci"
 
-JobTemplate :: {
+#JobTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
 	items: [{
@@ -59,8 +59,8 @@ JobTemplate :: {
 	}]
 }
 
-defaults: v1alpha1.TestClusterGKE
+defaults: v1alpha1.#TestClusterGKE
 
-resource: v1alpha1.TestClusterGKE
+resource: v1alpha1.#TestClusterGKE
 
-template: JobTemplate
+template: #JobTemplate

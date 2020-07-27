@@ -3,7 +3,7 @@ module github.com/isovalent/gke-test-cluster-management/operator
 go 1.14
 
 require (
-	cuelang.org/go v0.2.1
+	cuelang.org/go v0.3.0-alpha1
 	github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d
 	github.com/errordeveloper/kue v0.2.3
 	github.com/go-logr/logr v0.1.0

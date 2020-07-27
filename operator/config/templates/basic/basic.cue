@@ -13,10 +13,10 @@ _machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
 
 _project: "cilium-ci"
 
-ClusterTemplate :: {
+#ClusterTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
-	items: [{
+	items:      [{
 		apiVersion: "container.cnrm.cloud.google.com/v1beta1"
 		kind:       "ContainerCluster"
 		metadata: {
@@ -99,11 +99,11 @@ ClusterTemplate :: {
 			networkRef: name: "\(_name)"
 			region: "\(_region)"
 		}
-	}] + IAM
+	}] + #IAM
 }
 
-defaults: v1alpha1.TestClusterGKE
+defaults: v1alpha1.#TestClusterGKE
 
-resource: v1alpha1.TestClusterGKE
+resource: v1alpha1.#TestClusterGKE
 
-template: ClusterTemplate
+template: #ClusterTemplate
