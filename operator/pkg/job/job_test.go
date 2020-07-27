@@ -56,7 +56,7 @@ func TestJob(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{}, "")
+		_, err = c.RenderJobAsJSON(&v1alpha1.TestClusterGKE{}, "")
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -69,7 +69,7 @@ func TestJob(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{}, "")
+		_, err = c.RenderJobAsJSON(&v1alpha1.TestClusterGKE{}, "")
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -82,7 +82,7 @@ func TestJob(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderJobAsJSON(&v1alpha1.TestClusterGKE{
 			Spec: v1alpha1.TestClusterGKESpec{
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{},
 			}}, "")
@@ -127,7 +127,7 @@ func TestJob(t *testing.T) {
 				},
 			}
 
-			data, err := c.RenderJSON(cluster, "baz-a0b1c2")
+			data, err := c.RenderJobAsJSON(cluster, "baz-a0b1c2")
 			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
@@ -190,7 +190,7 @@ func TestJob(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderObjects(cluster, "baz-a0b1c2")
+			objs, err := c.RenderJobResources(cluster, "baz-a0b1c2")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(1))
@@ -209,7 +209,7 @@ func TestJob(t *testing.T) {
 				},
 			}
 
-			data, err := c.RenderJSON(cluster, "bar-0a1b2c")
+			data, err := c.RenderJobAsJSON(cluster, "bar-0a1b2c")
 			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
@@ -272,7 +272,7 @@ func TestJob(t *testing.T) {
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderObjects(cluster, "bar-0a1b2c")
+			objs, err := c.RenderJobResources(cluster, "bar-0a1b2c")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(1))
@@ -291,7 +291,7 @@ func TestJob(t *testing.T) {
 				},
 			}
 
-			objs, err := c.RenderObjects(cluster, "baz-x2a8332")
+			objs, err := c.RenderJobResources(cluster, "baz-x2a8332")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(1))
@@ -316,7 +316,7 @@ func TestJob(t *testing.T) {
 				},
 			}
 
-			_, err := c.RenderJSON(cluster, "")
+			_, err := c.RenderJobAsJSON(cluster, "")
 			g.Expect(err).To(HaveOccurred())
 			// this is another weird error from CUE, but that's what you get when optional field is unspecified on export...
 			g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: field "name" is optional`))

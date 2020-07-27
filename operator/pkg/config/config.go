@@ -76,14 +76,16 @@ func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClust
 	return nil
 }
 
-func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, templateName string) ([]byte, error) {
 	if cluster == nil {
 		return nil, fmt.Errorf("unexpected nil object")
 	}
-	if cluster.Spec.ConfigTemplate == nil || *cluster.Spec.ConfigTemplate == "" {
-		return nil, fmt.Errorf("unexpected nil/empty configTemplate")
+	if templateName == "" {
+		if cluster.Spec.ConfigTemplate == nil || *cluster.Spec.ConfigTemplate == "" {
+			return nil, fmt.Errorf("unexpected nil/empty configTemplate")
+		}
+		templateName = *cluster.Spec.ConfigTemplate
 	}
-	templateName := *cluster.Spec.ConfigTemplate
 	if !c.HaveExistingTemplate(templateName) {
 		return nil, fmt.Errorf("no such template: %q", templateName)
 	}
@@ -95,8 +97,18 @@ func (c *Config) RenderJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	return template.RenderJSON()
 }
 
-func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
-	objs := &unstructured.UnstructuredList{}
+func (c *Config) RenderCoreResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, "")
+}
+
+func (c *Config) RenderAccessResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, "iam")
+}
+
+func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
+	allResources := &unstructured.UnstructuredList{}
+	coreResources := &unstructured.UnstructuredList{}
+	accessResources := &unstructured.UnstructuredList{}
 
 	if generateName {
 		clusterName := cluster.Name + "-" + utilrand.String(5)
@@ -112,13 +124,26 @@ func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, generateName bo
 		cluster.Name = clusterName
 	}
 
-	data, err := c.RenderJSON(cluster)
+	coreResourcesData, err := c.RenderCoreResourcesAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := objs.UnmarshalJSON(data); err != nil {
+	if err := coreResources.UnmarshalJSON(coreResourcesData); err != nil {
 		return nil, err
 	}
-	return objs, nil
+
+	accessResourcesData, err := c.RenderAccessResourcesAsJSON(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := accessResources.UnmarshalJSON(accessResourcesData); err != nil {
+		return nil, err
+	}
+
+	allResources.Items = append(allResources.Items, coreResources.Items...)
+	allResources.Items = append(allResources.Items, accessResources.Items...)
+
+	return allResources, nil
 }

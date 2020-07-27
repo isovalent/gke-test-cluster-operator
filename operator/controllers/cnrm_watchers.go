@@ -148,7 +148,7 @@ func (*CNRMContainerClusterWatcher) GetContainerClusterStatus(instance *unstruct
 }
 
 func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.TestClusterGKE, name string) (*unstructured.UnstructuredList, error) {
-	objs, err := r.JobRenderer.RenderObjects(ownerObj, name)
+	objs, err := r.JobRenderer.RenderJobResources(ownerObj, name)
 	if err != nil {
 		return nil, err
 	}

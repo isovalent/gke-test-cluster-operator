@@ -110,6 +110,10 @@ func initRenderers() (*config.Config, *job.Config, error) {
 		return nil, nil, err
 	}
 
+	if err := cr.ApplyDefaults("iam", basic.NewDefaults()); err != nil {
+		return nil, nil, err
+	}
+
 	jr := &job.Config{
 		BaseDirectory: "./config/templates",
 	}

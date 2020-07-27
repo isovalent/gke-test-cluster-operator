@@ -57,7 +57,7 @@ func TestConfig(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderJSON(&v1alpha1.TestClusterGKE{})
+		_, err = c.RenderCoreResourcesAsJSON(&v1alpha1.TestClusterGKE{})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil/empty configTemplate`))
 	}
@@ -90,6 +90,9 @@ func TestConfig(t *testing.T) {
 		err = c.ApplyDefaults(templateName, defCluster)
 		g.Expect(err).ToNot(HaveOccurred())
 
+		err = c.ApplyDefaults("iam", defCluster)
+		g.Expect(err).ToNot(HaveOccurred())
+
 		{
 			cluster := &v1alpha1.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
@@ -105,10 +108,10 @@ func TestConfig(t *testing.T) {
 			*cluster.Spec.Region = "europe-west2"
 			*cluster.Spec.Location = "europe-west2-b"
 
-			data, err := c.RenderJSON(cluster)
+			coreResourcesData, err := c.RenderCoreResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
-			const expected = `
+			const coreResourcesExpected = `
 			{
 				"kind": "List",
 				"apiVersion": "v1",
@@ -221,7 +224,19 @@ func TestConfig(t *testing.T) {
 					  },
 					  "ipCidrRange": "10.128.0.0/20"
 					}
-				  },
+				  }
+				]
+			}`
+			g.Expect(coreResourcesData).To(MatchJSON(coreResourcesExpected))
+
+			accessResourcesData, err := c.RenderAccessResourcesAsJSON(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+
+			const accessResourcesExpected = `
+			{
+				"kind": "List",
+				"apiVersion": "v1",
+				"items": [
 				  {
 					"kind": "IAMServiceAccount",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
@@ -285,9 +300,9 @@ func TestConfig(t *testing.T) {
 				  }
 				]
 			}`
-			g.Expect(data).To(MatchJSON(expected))
+			g.Expect(accessResourcesData).To(MatchJSON(accessResourcesExpected))
 
-			objs, err := c.RenderObjects(cluster, false)
+			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(7))
@@ -296,7 +311,8 @@ func TestConfig(t *testing.T) {
 		{
 			cluster := &v1alpha1.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "bar",
+					Name:      "bar",
+					Namespace: "default",
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					ConfigTemplate: &templateName,
@@ -304,10 +320,10 @@ func TestConfig(t *testing.T) {
 				},
 			}
 
-			data, err := c.RenderJSON(cluster)
+			coreResourcesData, err := c.RenderCoreResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
-			const expected = `
+			const coreResourcesExpected = `
 			{
 				"kind": "List",
 				"apiVersion": "v1",
@@ -420,7 +436,19 @@ func TestConfig(t *testing.T) {
 					  },
 					  "ipCidrRange": "10.128.0.0/20"
 					}
-				  },
+				  }
+				]
+			}`
+			g.Expect(coreResourcesData).To(MatchJSON(coreResourcesExpected))
+
+			accessResourcesData, err := c.RenderAccessResourcesAsJSON(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+
+			const accessResourcesExpected = `
+			{
+				"kind": "List",
+				"apiVersion": "v1",
+				"items": [
 				  {
 					"kind": "IAMServiceAccount",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
@@ -484,9 +512,9 @@ func TestConfig(t *testing.T) {
 				  }
 				]
 			}`
-			g.Expect(data).To(MatchJSON(expected))
+			g.Expect(accessResourcesData).To(MatchJSON(accessResourcesExpected))
 
-			objs, err := c.RenderObjects(cluster, false)
+			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(7))
@@ -503,7 +531,7 @@ func TestConfig(t *testing.T) {
 				},
 			}
 
-			objs, err := c.RenderObjects(cluster, true)
+			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(7))
@@ -534,7 +562,7 @@ func TestConfig(t *testing.T) {
 				},
 			}
 
-			objs, err := c.RenderObjects(cluster, true)
+			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(7))
@@ -557,7 +585,7 @@ func TestConfig(t *testing.T) {
 				},
 			}
 
-			_, err := c.RenderJSON(cluster)
+			_, err := c.RenderCoreResourcesAsJSON(cluster)
 			g.Expect(err).To(HaveOccurred())
 			// this is another weird error from CUE, but that's what you get when optional field is unspecified on export...
 			g.Expect(err.Error()).To(Equal(`cue: marshal error: template.items.0.metadata.name: field "name" is optional`))

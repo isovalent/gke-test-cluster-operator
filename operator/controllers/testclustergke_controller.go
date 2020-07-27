@@ -97,7 +97,7 @@ func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
-	objs, err := r.ConfigRenderer.RenderObjects(instance, true)
+	objs, err := r.ConfigRenderer.RenderAllClusterResources(instance, true)
 	if err != nil {
 		return nil, err
 	}

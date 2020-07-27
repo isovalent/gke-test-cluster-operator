@@ -90,6 +90,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	}
 	g.Expect(configRenderer.Load()).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaults("basic", basic.NewDefaults())).To(Succeed())
+	g.Expect(configRenderer.ApplyDefaults("iam", basic.NewDefaults())).To(Succeed())
 
 	jobRenderer := &job.Config{
 		BaseDirectory: "../config/templates",

@@ -40,7 +40,7 @@ func (c *Config) ApplyDefaults(defaults *v1alpha1.TestClusterGKE) error {
 	return nil
 }
 
-func (c *Config) RenderJSON(clusterRequest *v1alpha1.TestClusterGKE, actualName string) ([]byte, error) {
+func (c *Config) RenderJobAsJSON(clusterRequest *v1alpha1.TestClusterGKE, actualName string) ([]byte, error) {
 	if clusterRequest == nil {
 		return nil, fmt.Errorf("unexpected nil object")
 	}
@@ -59,10 +59,10 @@ func (c *Config) RenderJSON(clusterRequest *v1alpha1.TestClusterGKE, actualName 
 	return jobTemplate.RenderJSON()
 }
 
-func (c *Config) RenderObjects(cluster *v1alpha1.TestClusterGKE, actualName string) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderJobResources(cluster *v1alpha1.TestClusterGKE, actualName string) (*unstructured.UnstructuredList, error) {
 	objs := &unstructured.UnstructuredList{}
 
-	data, err := c.RenderJSON(cluster, actualName)
+	data, err := c.RenderJobAsJSON(cluster, actualName)
 	if err != nil {
 		return nil, err
 	}
