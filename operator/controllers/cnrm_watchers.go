@@ -21,7 +21,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
-	"github.com/isovalent/gke-test-cluster-management/operator/pkg/job"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
 // setup watchers only for functional depednencies of the cluster,
@@ -32,8 +32,8 @@ var cnrmEventHandler = &handler.EnqueueRequestForObject{}
 
 type CNRMContainerClusterWatcher struct {
 	ClientLogger
-	Scheme      *runtime.Scheme
-	JobRenderer *job.Config
+	Scheme         *runtime.Scheme
+	ConfigRenderer *config.Config
 }
 
 type CNRMContainerNodePoolSourceWatcher struct {
@@ -105,9 +105,9 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 	}
 
 	if status.HasReadyCondition() && owner.Object.Spec.JobSpec != nil {
-		objs, err := w.RenderObjects(owner.Object, req.Name)
+		objs, err := w.RenderObjects(owner.Object)
 		if err != nil {
-			log.Error(err, "failed to render job object")
+			log.Error(err, "failed to render job objects")
 			return ctrl.Result{}, err
 		}
 		log.Info("generated job", "items", objs.Items)
@@ -147,8 +147,8 @@ func (*CNRMContainerClusterWatcher) GetContainerClusterStatus(instance *unstruct
 	return status, nil
 }
 
-func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.TestClusterGKE, name string) (*unstructured.UnstructuredList, error) {
-	objs, err := r.JobRenderer.RenderJobResources(ownerObj, name)
+func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+	objs, err := r.ConfigRenderer.RenderTestRunnerJobResources(ownerObj)
 	if err != nil {
 		return nil, err
 	}

@@ -14,6 +14,11 @@ import (
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
 
+const (
+	ClusterAccessResourcesTemplateName = "iam"
+	TestRunnerJobResourcesTemplateName = "job"
+)
+
 type Config struct {
 	BaseDirectory string
 
@@ -75,6 +80,13 @@ func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClust
 	c.templates[templateName] = template
 	return nil
 }
+func (c *Config) ApplyDefaultsForClusterAccessResources(defaults *v1alpha1.TestClusterGKE) error {
+	return c.ApplyDefaults(ClusterAccessResourcesTemplateName, defaults)
+}
+
+func (c *Config) ApplyDefaultsForTestRunnerJobResources(defaults *v1alpha1.TestClusterGKE) error {
+	return c.ApplyDefaults(TestRunnerJobResourcesTemplateName, defaults)
+}
 
 func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, templateName string) ([]byte, error) {
 	if cluster == nil {
@@ -83,12 +95,30 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 	if cluster.Name == "" {
 		return nil, fmt.Errorf("unexpected unnamed object")
 	}
-	if templateName == "" {
+	switch templateName {
+	case ClusterAccessResourcesTemplateName:
+	case TestRunnerJobResourcesTemplateName:
+		if cluster.Spec.JobSpec == nil {
+			return nil, fmt.Errorf("unexpected nil jobSpec")
+		}
+		if cluster.Spec.JobSpec.RunnerImage == nil || *cluster.Spec.JobSpec.RunnerImage == "" {
+			return nil, fmt.Errorf("unexpected nil/empty runnerImage")
+		}
+		if cluster.Status.ClusterName == nil {
+			return nil, fmt.Errorf("unexpected nil status.clusterName")
+		}
+		cluster = cluster.DeepCopy()
+		cluster.Name = *cluster.Status.ClusterName
+	case "":
 		if cluster.Spec.ConfigTemplate == nil || *cluster.Spec.ConfigTemplate == "" {
 			return nil, fmt.Errorf("unexpected nil/empty configTemplate")
 		}
 		templateName = *cluster.Spec.ConfigTemplate
+		if templateName == TestRunnerJobResourcesTemplateName || templateName == ClusterAccessResourcesTemplateName {
+			return nil, fmt.Errorf("cannot create cluster directly with configTemplate=%q", templateName)
+		}
 	}
+
 	if !c.HaveExistingTemplate(templateName) {
 		return nil, fmt.Errorf("no such template: %q", templateName)
 	}
@@ -100,12 +130,16 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 	return template.RenderJSON()
 }
 
-func (c *Config) RenderCoreResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) RenderClusterCoreResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
 	return c.renderTemplateAsJSON(cluster, "")
 }
 
-func (c *Config) RenderAccessResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
-	return c.renderTemplateAsJSON(cluster, "iam")
+func (c *Config) RenderClusterAccessResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, ClusterAccessResourcesTemplateName)
+}
+
+func (c *Config) RenderTestRunnerJobResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, TestRunnerJobResourcesTemplateName)
 }
 
 func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
@@ -114,20 +148,20 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, gen
 	accessResources := &unstructured.UnstructuredList{}
 
 	if generateName {
-		clusterName := cluster.Name + "-" + utilrand.String(5)
+		generatedName := cluster.Name + "-" + utilrand.String(5)
 		if cluster.Status.ClusterName == nil {
 			// store generated name in status
-			cluster.Status.ClusterName = &clusterName
+			cluster.Status.ClusterName = &generatedName
 		} else {
 			// if name is already stored in status, use that instead
-			clusterName = *cluster.Status.ClusterName
+			generatedName = *cluster.Status.ClusterName
 		}
 		// make a copy and use new name as input to generator
 		cluster = cluster.DeepCopy()
-		cluster.Name = clusterName
+		cluster.Name = generatedName
 	}
 
-	coreResourcesData, err := c.RenderCoreResourcesAsJSON(cluster)
+	coreResourcesData, err := c.RenderClusterCoreResourcesAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +170,7 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, gen
 		return nil, err
 	}
 
-	accessResourcesData, err := c.RenderAccessResourcesAsJSON(cluster)
+	accessResourcesData, err := c.RenderClusterAccessResourcesAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -149,4 +183,19 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, gen
 	allResources.Items = append(allResources.Items, accessResources.Items...)
 
 	return allResources, nil
+}
+
+func (c *Config) RenderTestRunnerJobResources(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+	jobRunnerResources := &unstructured.UnstructuredList{}
+
+	jobRunnerResourcesData, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := jobRunnerResources.UnmarshalJSON(jobRunnerResourcesData); err != nil {
+		return nil, err
+	}
+
+	return jobRunnerResources, nil
 }

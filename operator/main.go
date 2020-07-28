@@ -18,7 +18,6 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
-	"github.com/isovalent/gke-test-cluster-management/operator/pkg/job"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -47,7 +46,7 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	configRenderer, jobRenderer, err := initRenderers()
+	configRenderer, err := initConfigRenderer()
 
 	if err != nil {
 		setupLog.Error(err, "unable to setup conig and job renderers")
@@ -84,9 +83,9 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		ClientLogger: controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
-		Scheme:       mgr.GetScheme(),
-		JobRenderer:  jobRenderer,
+		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
+		Scheme:         mgr.GetScheme(),
+		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
 		os.Exit(1)
@@ -98,32 +97,25 @@ func main() {
 	}
 }
 
-func initRenderers() (*config.Config, *job.Config, error) {
+func initConfigRenderer() (*config.Config, error) {
 	cr := &config.Config{
 		BaseDirectory: "./config/templates",
 	}
 	if err := cr.Load(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err := cr.ApplyDefaults("basic", basic.NewDefaults()); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	if err := cr.ApplyDefaults("iam", basic.NewDefaults()); err != nil {
-		return nil, nil, err
+	if err := cr.ApplyDefaultsForClusterAccessResources(basic.NewDefaults()); err != nil {
+		return nil, err
 	}
 
-	jr := &job.Config{
-		BaseDirectory: "./config/templates",
-	}
-	if err := jr.Load(); err != nil {
-		return nil, nil, err
+	if err := cr.ApplyDefaultsForClusterAccessResources(basic.NewDefaults()); err != nil {
+		return nil, err
 	}
 
-	if err := jr.ApplyDefaults(basic.NewDefaults()); err != nil {
-		return nil, nil, err
-	}
-
-	return cr, jr, nil
+	return cr, nil
 }
