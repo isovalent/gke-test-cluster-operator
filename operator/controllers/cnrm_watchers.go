@@ -252,7 +252,7 @@ func GetOwner(objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      owner.Name,
 			Namespace: objKey.Namespace,
-			UID:       owner.UID, // maybe not needed really?
+			UID:       owner.UID,
 		},
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: owner.APIVersion,
