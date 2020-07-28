@@ -45,8 +45,8 @@ import (
 // +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iamserviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iamserviceaccounts/status,verbs=get;update;patch
 
-// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicymembers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=iam.cnrm.cloud.google.com,resources=iampolicymembers/status,verbs=get;update;patch
 
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
 type TestClusterGKEReconciler struct {

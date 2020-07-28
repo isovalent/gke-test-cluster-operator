@@ -20,6 +20,8 @@ endif
 	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
+all-images: operator-image job-runner-init-image
+
 operator-image: .buildx_builder
 	$(IMAGINE) build \
 		--builder $$(cat .buildx_builder) \
@@ -45,7 +47,7 @@ job-runner-init-image: .buildx_builder
 		--cleanup
 	$(IMAGINE) image \
 		--base ./config/job-runner-init-image  \
-		--name gke-test-cluster-operator \
+		--name gke-test-cluster-job-runner-init \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-job-runner-init.tag
 

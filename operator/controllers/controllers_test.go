@@ -72,11 +72,19 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	g.Expect(clusterName).To(HavePrefix("test-1-"))
 	g.Expect(clusterName).To(HaveLen(12))
 
-	cnrmKey, cnrmObjs := newEmptyContainerClusterObjs(ns, clusterName)
+	cnrmClusterCore := newEmptyClusterCoreObjs(ns, clusterName)
 
-	g.Expect(cnrmObjs.EachListItem(func(obj runtime.Object) error {
-		return cst.Client.Get(ctx, cnrmKey, obj)
+	g.Expect(cnrmClusterCore.Objs.EachListItem(func(obj runtime.Object) error {
+		return cst.Client.Get(ctx, cnrmClusterCore.Key, obj)
 	})).Should(Succeed())
+
+	cnrmClusterAccessList := newEmptyClusterAccessObjs(ns, clusterName)
+
+	for _, resources := range cnrmClusterAccessList {
+		g.Expect(resources.Objs.EachListItem(func(obj runtime.Object) error {
+			return cst.Client.Get(ctx, resources.Key, obj)
+		})).Should(Succeed())
+	}
 
 	err = cst.Client.Delete(ctx, remoteObj)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -87,16 +95,24 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 
 	g.Eventually(func() bool {
 		deleted := 0
-		for i := range cnrmObjs.Items {
-			err := cst.Client.Get(ctx, cnrmKey, &cnrmObjs.Items[i])
+		for i := range cnrmClusterCore.Objs.Items {
+			err := cst.Client.Get(ctx, cnrmClusterCore.Key, &cnrmClusterCore.Objs.Items[i])
 			if apierrors.IsNotFound(err) {
 				deleted++
+			}
+		}
+		for _, resources := range cnrmClusterAccessList {
+			for i := range resources.Objs.Items {
+				err := cst.Client.Get(ctx, resources.Key, &resources.Objs.Items[i])
+				if apierrors.IsNotFound(err) {
+					deleted++
+				}
 			}
 		}
 		// we only check CNRM resrource, the service account is not
 		// part of this and there is no doubt it would get deleted
 		// just as well
-		return deleted == 6
+		return deleted == 7
 	}, *pollTimeout, *pollInterval).Should(BeTrue())
 }
 

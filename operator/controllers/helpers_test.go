@@ -139,7 +139,12 @@ func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv
 	return key, obj
 }
 
-func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName, *unstructured.UnstructuredList) {
+type KeyAndObjs struct {
+	Key  types.NamespacedName
+	Objs *unstructured.UnstructuredList
+}
+
+func newEmptyClusterCoreObjs(namespace, name string) *KeyAndObjs {
 	key := types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
@@ -150,11 +155,49 @@ func newEmptyContainerClusterObjs(namespace, name string) (types.NamespacedName,
 			*cnrm.NewContainerNodePool(),
 			*cnrm.NewComputeNetwork(),
 			*cnrm.NewComputeSubnetwork(),
-			*cnrm.NewIAMServiceAccount(),
-			*cnrm.NewIAMPolicy(),
 		},
 	}
-	return key, objs
+	return &KeyAndObjs{Key: key, Objs: objs}
+}
+
+func newEmptyClusterAccessObjs(namespace, name string) []*KeyAndObjs {
+	list := []*KeyAndObjs{
+		{
+			Key: types.NamespacedName{
+				Name:      name + "-admin",
+				Namespace: namespace,
+			},
+			Objs: &unstructured.UnstructuredList{
+				Items: []unstructured.Unstructured{
+					*cnrm.NewIAMServiceAccount(),
+				},
+			},
+		},
+		{
+			Key: types.NamespacedName{
+				Name:      name + "-workload-identity",
+				Namespace: namespace,
+			},
+			Objs: &unstructured.UnstructuredList{
+				Items: []unstructured.Unstructured{
+					*cnrm.NewIAMPolicyMember(),
+				},
+			},
+		},
+		{
+			Key: types.NamespacedName{
+				Name:      name + "-cluster-admin",
+				Namespace: namespace,
+			},
+			Objs: &unstructured.UnstructuredList{
+				Items: []unstructured.Unstructured{
+					*cnrm.NewIAMPolicyMember(),
+				},
+			},
+		},
+	}
+
+	return list
 }
 
 type TestCNRMContainerClusterWatcher struct {

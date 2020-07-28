@@ -189,7 +189,7 @@ rules:
 - apiGroups:
   - iam.cnrm.cloud.google.com
   resources:
-  - iampolicies
+  - iampolicymembers
   verbs:
   - create
   - delete
@@ -201,7 +201,7 @@ rules:
 - apiGroups:
   - iam.cnrm.cloud.google.com
   resources:
-  - iampolicies/status
+  - iampolicymembers/status
   verbs:
   - get
   - patch

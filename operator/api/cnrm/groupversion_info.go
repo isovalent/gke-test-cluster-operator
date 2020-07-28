@@ -180,11 +180,11 @@ func NewIAMServiceAccountList() *unstructured.UnstructuredList {
 	return objs
 }
 
-func NewIAMPolicy() *unstructured.Unstructured {
+func NewIAMPolicyMember() *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{}
 	obj.SetGroupVersionKind(
 		schema.GroupVersionKind{
-			Kind:    "IAMPolicy",
+			Kind:    "IAMPolicyMember",
 			Group:   "iam.cnrm.cloud.google.com",
 			Version: "v1beta1",
 		},
@@ -192,15 +192,15 @@ func NewIAMPolicy() *unstructured.Unstructured {
 	return obj
 }
 
-func NewIAMPolicySource() source.Source {
-	return &source.Kind{Type: NewIAMPolicy()}
+func NewIAMPolicyMemberSource() source.Source {
+	return &source.Kind{Type: NewIAMPolicyMember()}
 }
 
-func NewIAMPolicyList() *unstructured.UnstructuredList {
+func NewIAMPolicyMemberList() *unstructured.UnstructuredList {
 	objs := &unstructured.UnstructuredList{}
 	objs.SetGroupVersionKind(
 		schema.GroupVersionKind{
-			Kind:    "IAMPolicy",
+			Kind:    "IAMPolicyMember",
 			Group:   "ima.cnrm.cloud.google.com",
 			Version: "v1beta1",
 		},

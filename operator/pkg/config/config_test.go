@@ -241,7 +241,7 @@ func TestClusterResources(t *testing.T) {
 					"kind": "IAMServiceAccount",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
 					"metadata": {
-					  "name": "baz",
+					  "name": "baz-admin",
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz"
@@ -249,16 +249,13 @@ func TestClusterResources(t *testing.T) {
 					  "annotations": {
 						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
-					},
-					"spec": {
-					  "displayName": "baz-admin"
 					}
 				  },
 				  {
-					"kind": "IAMPolicy",
+					"kind": "IAMPolicyMember",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
 					"metadata": {
-					  "name": "baz",
+					  "name": "baz-workload-identity",
 					  "namespace": "other",
 					  "labels": {
 						"cluster": "baz"
@@ -273,14 +270,31 @@ func TestClusterResources(t *testing.T) {
 						"kind": "IAMServiceAccount",
 						"apiVersion": "iam.cnrm.cloud.google.com/v1beta1"
 					  },
-					  "bindings": [
-						{
-						  "role": "roles/iam.workloadIdentityUser",
-						  "members": [
-							"serviceAccount:cilium-ci.svc.id.goog[other/baz-admin]"
-						  ]
-						}
-					  ]
+					  "role": "roles/iam.workloadIdentityUser",
+					  "member":	"serviceAccount:cilium-ci.svc.id.goog[other/baz-admin]"
+					}
+				  },
+				  {
+					"kind": "IAMPolicyMember",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "baz-cluster-admin",
+					  "namespace": "other",
+					  "labels": {
+						"cluster": "baz"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
+					  }
+					},
+					"spec": {
+					  "resourceRef": {
+						"external": "projects/cilium-ci",
+						"kind": "Project",
+						"apiVersion": "resourcemanager.cnrm.cloud.google.com/v1beta1"
+					  },
+					  "role": "roles/container.clusterAdmin",
+					  "member":	"serviceAccount:baz-admin@cilium-ci.iam.gserviceaccount.com"
 					}
 				  },
 				  {
@@ -305,7 +319,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(7))
+			g.Expect(objs.Items).To(HaveLen(8))
 		}
 
 		{
@@ -453,7 +467,7 @@ func TestClusterResources(t *testing.T) {
 					"kind": "IAMServiceAccount",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
 					"metadata": {
-					  "name": "bar",
+					  "name": "bar-admin",
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar"
@@ -461,16 +475,13 @@ func TestClusterResources(t *testing.T) {
 					  "annotations": {
 						"cnrm.cloud.google.com/project-id": "cilium-ci"
 					  }
-					},
-					"spec": {
-					  "displayName": "bar-admin"
 					}
 				  },
 				  {
-					"kind": "IAMPolicy",
+					"kind": "IAMPolicyMember",
 					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
 					"metadata": {
-					  "name": "bar",
+					  "name": "bar-workload-identity",
 					  "namespace": "default",
 					  "labels": {
 						"cluster": "bar"
@@ -485,14 +496,31 @@ func TestClusterResources(t *testing.T) {
 						"kind": "IAMServiceAccount",
 						"apiVersion": "iam.cnrm.cloud.google.com/v1beta1"
 					  },
-					  "bindings": [
-						{
-						  "role": "roles/iam.workloadIdentityUser",
-						  "members": [
-							"serviceAccount:cilium-ci.svc.id.goog[default/bar-admin]"
-						  ]
-						}
-					  ]
+					  "role": "roles/iam.workloadIdentityUser",
+					  "member": "serviceAccount:cilium-ci.svc.id.goog[default/bar-admin]"
+					}
+				  },
+				  {
+					"kind": "IAMPolicyMember",
+					"apiVersion": "iam.cnrm.cloud.google.com/v1beta1",
+					"metadata": {
+					  "name": "bar-cluster-admin",
+					  "namespace": "default",
+					  "labels": {
+						"cluster": "bar"
+					  },
+					  "annotations": {
+						"cnrm.cloud.google.com/project-id": "cilium-ci"
+					  }
+					},
+					"spec": {
+					  "resourceRef": {
+						"external": "projects/cilium-ci",
+						"kind": "Project",
+						"apiVersion": "resourcemanager.cnrm.cloud.google.com/v1beta1"
+					  },
+					  "role": "roles/container.clusterAdmin",
+					  "member":	"serviceAccount:bar-admin@cilium-ci.iam.gserviceaccount.com"
 					}
 				  },
 				  {
@@ -517,7 +545,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(7))
+			g.Expect(objs.Items).To(HaveLen(8))
 		}
 
 		{
@@ -534,7 +562,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(7))
+			g.Expect(objs.Items).To(HaveLen(8))
 
 			name := objs.Items[1].GetName()
 			g.Expect(name).To(HavePrefix("baz-"))
@@ -565,7 +593,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(7))
+			g.Expect(objs.Items).To(HaveLen(8))
 
 			name := objs.Items[1].GetName()
 			g.Expect(name).To(Equal(clusterName))
@@ -682,11 +710,15 @@ func TestTestRunnerJobResources(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TestClusterGKESpec{
+				Region:   new(string),
+				Location: new(string),
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 					RunnerImage: &runnerImage,
 				},
 			},
 		}
+		*defCluster.Spec.Region = "europe-west2"
+		*defCluster.Spec.Location = "europe-west2-b"
 
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
@@ -739,28 +771,56 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  }
 						},
 						"spec": {
-						  "volumes": [],
+						  "volumes": [
+							{
+							  "name": "credentials",
+							  "emptyDir": {}
+							}
+						  ],
 						  "initContainers": [
 							{
 							  "name": "get-credentials",
-							  "command": [
-								"bash",
-								"-c",
-								"until gcloud auth list \"--format=value(account)\" | grep baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								}
 							  ],
-							  "image": "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a",
-							  "volumeMounts": []
+							  "command": [
+								"gcloud-auth-init.sh",
+								"baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com",
+								"baz-a0b1c2",
+								"europe-west2-b"
+							  ],
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd",
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								}
+							  ]
 							}
 						  ],
 						  "containers": [
 							{
 							  "name": "test-runner",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								}
+							  ],
 							  "command": [
 								"bash",
 								"-l"
 							  ],
 							  "image": "cilium-ci/cilium-e2e:80d4133f2b9317a0f08fcff9b2f8d625ea9f7b7a",
-							  "volumeMounts": [],
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								}
+							  ],
 							  "tty": true
 							}
 						  ],
@@ -825,28 +885,56 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  }
 						},
 						"spec": {
-						  "volumes": [],
+						  "volumes": [
+							{
+							  "name": "credentials",
+							  "emptyDir": {}
+							}
+						  ],
 						  "initContainers": [
 							{
 							  "name": "get-credentials",
-							  "command": [
-								"bash",
-								"-c",
-								"until gcloud auth list \"--format=value(account)\" | grep bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com ; do sleep 1 ; done"
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								}
 							  ],
-							  "image": "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a",
-							  "volumeMounts": []
+							  "command": [
+								"gcloud-auth-init.sh",
+								"bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com",
+								"bar-0a1b2c",
+								"europe-west2-b"
+							  ],
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd",
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								}
+							  ]
 							}
 						  ],
 						  "containers": [
 							{
 							  "name": "test-runner",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								}
+							  ],
 							  "command": [
 								"bash",
 								"-l"
 							  ],
 							  "image": "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a",
-							  "volumeMounts": [],
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								}
+							  ],
 							  "tty": true
 							}
 						  ],

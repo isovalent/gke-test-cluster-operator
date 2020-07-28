@@ -26,7 +26,7 @@ func NewDefaults() *v1alpha1.TestClusterGKE {
 	*defaults.Spec.MachineType = "n1-standard-4"
 	*defaults.Spec.Location = "europe-west2-b"
 	*defaults.Spec.Region = "europe-west2"
-	*defaults.Spec.JobSpec.RunnerImage = "sonobuoy/sonobuoy:v0.18.0"
+	*defaults.Spec.JobSpec.RunnerImage = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
 
 	return defaults
 }

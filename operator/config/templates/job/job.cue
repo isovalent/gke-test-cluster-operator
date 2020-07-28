@@ -7,6 +7,7 @@ import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
 _name:        "\(resource.metadata.name)"
 _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+_location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
 _runnerImage: "\(defaults.spec.jobSpec.runnerImage)" | *"\(resource.spec.jobSpec.runnerImage)"
 
 _project: "cilium-ci"
@@ -29,16 +30,33 @@ _project: "cilium-ci"
 					labels:
 						cluster: "\(_name)"
 				spec: {
-					volumes: []
+					volumes: [
+						{
+							name: "credentials"
+							emptyDir: {}
+						}
+					]
 					initContainers: [{
 						name: "get-credentials"
 						command: [
-							"bash",
-							"-c",
-							"until gcloud auth list \"--format=value(account)\" | grep \(_name)-admin@\(_project).iam.gserviceaccount.com ; do sleep 1 ; done",
+							"gcloud-auth-init.sh",
+							"\(_name)-admin@\(_project).iam.gserviceaccount.com",
+							"\(_name)",
+							"\(_location)",
 						]
-						image: "google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
-						volumeMounts: []
+						image: "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
+						env: [
+							{
+								name: "KUBECONFIG"
+								value: "/credentials/kubeconfig"
+							}
+						]
+						volumeMounts: [
+							{
+								name: "credentials"
+								mountPath: "/credentials"
+							}
+						]
 					}]
 					containers: [{
 						name: "test-runner"
@@ -48,7 +66,18 @@ _project: "cilium-ci"
 						]
 						tty:   true
 						image: "\(_runnerImage)"
-						volumeMounts: []
+						env: [
+							{
+								name: "KUBECONFIG"
+								value: "/credentials/kubeconfig"
+							}
+						]
+						volumeMounts: [
+							{
+								name: "credentials"
+								mountPath: "/credentials"
+							}
+						]
 					}]
 					dnsPolicy:          "ClusterFirst"
 					restartPolicy:      "Never"
