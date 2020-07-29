@@ -68,6 +68,8 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 				resourceRef: {
 					// At the moment ContainerCluster cannot be referenced here, so it's at project level for now
 					// (see https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/248)
+					// Note that the project-level clusterAdmin role doesn't get automatic access
+					// to Kubernetes API in all clusters, unless there is a CRB inside Kubernetes
 					apiVersion: "resourcemanager.cnrm.cloud.google.com/v1beta1"
 					kind:       "Project"
 					external:   "projects/cilium-ci"

@@ -9,7 +9,10 @@ require (
 	github.com/errordeveloper/kue v0.2.3
 	github.com/go-logr/logr v0.1.0
 	github.com/onsi/gomega v1.9.0
+	github.com/prometheus/common v0.4.1
+	golang.org/x/build v0.0.0-20200729153244-7478086087e9
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	google.golang.org/api v0.25.0
 	google.golang.org/genproto v0.0.0-20200527145253-8367513e4ece
 	k8s.io/api v0.18.5
 	k8s.io/apimachinery v0.18.5

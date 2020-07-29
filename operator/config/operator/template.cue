@@ -1,5 +1,6 @@
 constants: {
-	name: "gke-test-cluster-operator"
+	name:    "gke-test-cluster-operator"
+	project: "cilium-ci"
 }
 
 _workload: {
@@ -116,7 +117,7 @@ if parameters.test {
 		"-resource-prefix=\(parameters.namespace)",
 	]
 
-	// it's not normally desired to have difference in RBAC configuration
+	// in principle, there should be no difference in RBAC configuration
 	// between test and regular deployments, but it's currently inevitable
 	// to allow creation/deletion of namespaces while testing the operator
 	_extra_rbac_clusterrole: {
@@ -128,40 +129,105 @@ if parameters.test {
 	}
 }
 
+_adminServiceAccountEmail: "\(constants.name)@\(constants.project).iam.gserviceaccount.com"
+_adminServiceAccountRef:   "serviceAccount:\(constants.project).svc.id.goog[\(parameters.namespace)/\(constants.name)]"
+
+_clusterAdminAccess: [
+	{
+		apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
+		kind:       "IAMServiceAccount"
+		metadata: {
+			name:      "\(constants.name)"
+			namespace: "\(parameters.namespace)"
+			labels: name: "\(constants.name)"
+			annotations: {
+				"cnrm.cloud.google.com/project-id": "\(constants.project)"
+			}
+		}
+	},
+	{
+		apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
+		kind:       "IAMPolicyMember"
+		metadata: {
+			name: "\(constants.name)-workload-identity"
+			labels: name: "\(constants.name)"
+			namespace: "\(parameters.namespace)"
+			annotations: {
+				"cnrm.cloud.google.com/project-id": "\(constants.project)"
+			}
+		}
+		spec: {
+			member: "\(_adminServiceAccountRef)"
+			role:   "roles/iam.workloadIdentityUser"
+			resourceRef: {
+				apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
+				kind:       "IAMServiceAccount"
+				name:       "\(constants.name)"
+			}
+		}
+	},
+	{
+		apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
+		kind:       "IAMPolicyMember"
+		metadata: {
+			name: "\(constants.name)-cluster-admin"
+			labels: name: "\(constants.name)"
+			namespace: "\(parameters.namespace)"
+			annotations: {
+				"cnrm.cloud.google.com/project-id": "\(constants.project)"
+			}
+		}
+		spec: {
+			member: "serviceAccount:\(_adminServiceAccountEmail)"
+			role:   "roles/container.admin" // "roles/owner"
+			resourceRef: {
+				// At the moment ContainerCluster cannot be referenced here, so it's at project level for now
+				// (see https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/248)
+				apiVersion: "resourcemanager.cnrm.cloud.google.com/v1beta1"
+				kind:       "Project"
+				external:   "projects/cilium-ci"
+			}
+		}
+
+	},
+]
+
 #WorkloadTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
-	items: [
-		{
-			apiVersion: "v1"
-			kind:       "ServiceAccount"
-			metadata: {
-				name: "\(constants.name)"
-				labels: name: "\(constants.name)"
-				namespace: "\(parameters.namespace)"
+	items: [{
+		apiVersion: "v1"
+		kind:       "ServiceAccount"
+		metadata: {
+			name: "\(constants.name)"
+			labels: name: "\(constants.name)"
+			namespace: "\(parameters.namespace)"
+			annotations: {
+				"iam.gke.io/gcp-service-account": "\(_adminServiceAccountEmail)"
 			}
-		}, {
-			apiVersion: "rbac.authorization.k8s.io/v1beta1"
-			kind:       "ClusterRoleBinding"
-			metadata: {
-				name: "\(parameters.namespace)-\(constants.name)"
-				labels: name: "\(constants.name)"
-			}
-			roleRef: {
-				kind:     "ClusterRole"
-				name:     "\(constants.name)"
-				apiGroup: "rbac.authorization.k8s.io"
-			}
-			subjects: [{
-				kind:      "ServiceAccount"
-				name:      "\(constants.name)"
-				namespace: "\(parameters.namespace)"
-			}]
-		},
+		}
+	}, {
+		apiVersion: "rbac.authorization.k8s.io/v1beta1"
+		kind:       "ClusterRoleBinding"
+		metadata: {
+			name: "\(parameters.namespace)-\(constants.name)"
+			labels: name: "\(constants.name)"
+		}
+		roleRef: {
+			kind:     "ClusterRole"
+			name:     "\(constants.name)"
+			apiGroup: "rbac.authorization.k8s.io"
+		}
+		subjects: [{
+			kind:      "ServiceAccount"
+			name:      "\(constants.name)"
+			namespace: "\(parameters.namespace)"
+		}]
+	},
 		_workload,
 		_extra_rbac_clusterrole,
 		_extra_rbac_clusterrolebiding,
-	]
+	] + _clusterAdminAccess
 }
 
 #WorkloadParameters: {

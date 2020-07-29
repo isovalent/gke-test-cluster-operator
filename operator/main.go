@@ -17,6 +17,7 @@ import (
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
+	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 	// +kubebuilder:scaffold:imports
 )
@@ -82,10 +83,17 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
+	clientSetBuilder, err := gkeclient.NewClientSetBuilder()
+	if err != nil {
+		setupLog.Error(err, "unable to construct clientset builder")
+		os.Exit(1)
+	}
+
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
-		Scheme:         mgr.GetScheme(),
-		ConfigRenderer: configRenderer,
+		ClientLogger:     controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
+		Scheme:           mgr.GetScheme(),
+		ConfigRenderer:   configRenderer,
+		ClientSetBuilder: *clientSetBuilder,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
 		os.Exit(1)

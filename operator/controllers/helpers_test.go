@@ -18,6 +18,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -99,9 +101,10 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "CNRMWatcher"),
-		Scheme:         mgr.GetScheme(),
-		ConfigRenderer: configRenderer,
+		ClientLogger:     controllers.NewClientLogger(mgr, ctrl.Log, "CNRMWatcher"),
+		Scheme:           mgr.GetScheme(),
+		ConfigRenderer:   configRenderer,
+		ClientSetBuilder: FakeClientSetBuilder{},
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	objChan := make(chan *unstructured.Unstructured)
@@ -294,4 +297,10 @@ func (cst *ControllerSubTest) Run(name string, testFunc func(*WithT, *Controller
 		testFunc(NewGomegaWithT(t), cst)
 		cst.cleanup()
 	})
+}
+
+type FakeClientSetBuilder struct{}
+
+func (FakeClientSetBuilder) NewClientSet(*cnrm.PartialContainerCluster) (kubernetes.Interface, error) {
+	return fake.NewSimpleClientset(), nil
 }
