@@ -14,6 +14,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.25.0
 	google.golang.org/genproto v0.0.0-20200527145253-8367513e4ece
+	github.com/prometheus/client_golang v1.0.0
 	k8s.io/api v0.18.5
 	k8s.io/apimachinery v0.18.5
 	k8s.io/client-go v0.18.5

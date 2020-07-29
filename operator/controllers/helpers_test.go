@@ -6,12 +6,15 @@ package controllers_test
 import (
 	"context"
 	"flag"
+	"math"
 	"math/rand"
 	"testing"
 	"time"
 
 	. "github.com/onsi/gomega"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -42,6 +45,8 @@ var (
 	resourcePrefix = flag.String("resource-prefix", "test-"+utilrand.String(5), "resource prefix")
 	pollInterval   = flag.Duration("poll-interval", 5*time.Second, "polling interval")
 	pollTimeout    = flag.Duration("poll-timeout", 120*time.Second, "polling timeout")
+
+	gkeClusterReconcilerMetrics controllers.TestClusterGKEReconcilerMetrics
 )
 
 type TLogger struct {
@@ -94,11 +99,13 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(configRenderer.ApplyDefaultsForClusterAccessResources(basic.NewDefaults())).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaultsForTestRunnerJobResources(basic.NewDefaults())).To(Succeed())
 
-	g.Expect((&controllers.TestClusterGKEReconciler{
+	r := &controllers.TestClusterGKEReconciler{
 		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
-	}).SetupWithManager(mgr)).To(Succeed())
+	}
+	g.Expect(r.SetupWithManager(mgr)).To(Succeed())
+	gkeClusterReconcilerMetrics = r.Metrics
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
 		ClientLogger:     controllers.NewClientLogger(mgr, ctrl.Log, "CNRMWatcher"),
@@ -303,4 +310,8 @@ type FakeClientSetBuilder struct{}
 
 func (FakeClientSetBuilder) NewClientSet(*cnrm.PartialContainerCluster) (kubernetes.Interface, error) {
 	return fake.NewSimpleClientset(), nil
+}
+
+func getMetricIntValue(c prometheus.Collector) int {
+	return int(math.Round(testutil.ToFloat64(c)))
 }

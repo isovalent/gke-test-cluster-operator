@@ -17,6 +17,8 @@ import (
 type ClientLogger struct {
 	client.Client
 	Log logr.Logger
+
+	created bool
 }
 
 func NewClientLogger(mgr manager.Manager, l logr.Logger, name string) ClientLogger {
@@ -26,7 +28,7 @@ func NewClientLogger(mgr manager.Manager, l logr.Logger, name string) ClientLogg
 	}
 }
 
-func (w ClientLogger) createOrSkip(obj runtime.Object) error {
+func (w *ClientLogger) createOrSkip(obj runtime.Object) error {
 	key, err := client.ObjectKeyFromObject(obj)
 	if err != nil {
 		return err
@@ -40,6 +42,7 @@ func (w ClientLogger) createOrSkip(obj runtime.Object) error {
 	getErr := client.Get(ctx, key, remoteObj)
 	if apierrors.IsNotFound(getErr) {
 		log.Info("will create", "obj", obj)
+		w.created = true
 		return client.Create(ctx, obj)
 	}
 	if getErr == nil {
