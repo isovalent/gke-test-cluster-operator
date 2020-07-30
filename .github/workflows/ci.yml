@@ -83,7 +83,7 @@ jobs:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
-          args: apply --filename cilium-kind.yaml --filename config/cnrm/crds.yaml
+          args: apply --filename cilium-kind.yaml --filename config/cnrm-system/crds.yaml
       - name: Wait for nodes to become ready
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
