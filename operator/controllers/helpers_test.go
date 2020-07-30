@@ -36,6 +36,8 @@ import (
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
+	controllerscommon "github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
+
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
@@ -99,16 +101,16 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(configRenderer.ApplyDefaultsForClusterAccessResources(basic.NewDefaults())).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaultsForTestRunnerJobResources(basic.NewDefaults())).To(Succeed())
 
-	r := &controllers.TestClusterGKEReconciler{
-		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterGKE"),
+	metricTracker := controllerscommon.NewMetricTracker()
+
+	g.Expect((&controllers.TestClusterGKEReconciler{
+		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
-	}
-	g.Expect(r.SetupWithManager(mgr)).To(Succeed())
-	gkeClusterReconcilerMetrics = r.Metrics
+	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllers.NewClientLogger(mgr, ctrl.Log, "CNRMWatcher"),
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: FakeClientSetBuilder{},
@@ -131,7 +133,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		g.Expect(env.Stop()).To(Succeed())
 	}
 
-	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan), teardown
+	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan, metricTracker), teardown
 }
 
 func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv1alpha1.TestClusterGKE) {
@@ -241,22 +243,25 @@ type ControllerSubTestManager struct {
 	client          client.Client
 	namespacePrefix string
 	objChan         chan *unstructured.Unstructured
+	metricTracker   *controllerscommon.MetricTracker
 }
 
 type ControllerSubTest struct {
-	Client  client.Client
-	ObjChan chan *unstructured.Unstructured
+	Client        client.Client
+	ObjChan       chan *unstructured.Unstructured
+	MetricTracker *controllerscommon.MetricTracker
 
 	t                          *testing.T
 	testLabel, namespacePrefix string
 	namespaces                 []*corev1.Namespace
 }
 
-func NewControllerSubTestManager(client client.Client, namespacePrefix string, objChan chan *unstructured.Unstructured) *ControllerSubTestManager {
+func NewControllerSubTestManager(client client.Client, namespacePrefix string, objChan chan *unstructured.Unstructured, metricTracker *controllerscommon.MetricTracker) *ControllerSubTestManager {
 	return &ControllerSubTestManager{
 		client:          client,
 		namespacePrefix: namespacePrefix,
 		objChan:         objChan,
+		metricTracker:   metricTracker,
 	}
 }
 func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *ControllerSubTest {
@@ -267,6 +272,7 @@ func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *Contro
 		Client:          cstm.client,
 		namespacePrefix: cstm.namespacePrefix,
 		ObjChan:         cstm.objChan,
+		MetricTracker:   cstm.metricTracker,
 	}
 }
 

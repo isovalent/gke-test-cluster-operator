@@ -10,11 +10,13 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+
+	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 )
 
 // TestClusterPoolGKEReconciler reconciles a TestClusterPoolGKE object
 type TestClusterPoolGKEReconciler struct {
-	ClientLogger
+	common.ClientLogger
 	Scheme *runtime.Scheme
 }
 

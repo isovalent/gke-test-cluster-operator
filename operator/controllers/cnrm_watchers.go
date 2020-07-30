@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
+	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
@@ -34,24 +35,24 @@ import (
 var cnrmEventHandler = &handler.EnqueueRequestForObject{}
 
 type CNRMContainerClusterWatcher struct {
-	ClientLogger
+	common.ClientLogger
 	gkeclient.ClientSetBuilder
 	Scheme         *runtime.Scheme
 	ConfigRenderer *config.Config
 }
 
 type CNRMContainerNodePoolSourceWatcher struct {
-	ClientLogger
+	common.ClientLogger
 	Scheme *runtime.Scheme
 }
 
 type CNRMComputeNetworkWatcher struct {
-	ClientLogger
+	common.ClientLogger
 	Scheme *runtime.Scheme
 }
 
 type CNRMComputeSubnetworkWatcher struct {
-	ClientLogger
+	common.ClientLogger
 	Scheme *runtime.Scheme
 }
 
@@ -73,6 +74,9 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	instance := cnrm.NewContainerCluster()
 	if err := w.Get(ctx, req.NamespacedName, instance); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			w.MetricTracker.Errors.Inc()
+		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -105,11 +109,13 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	if err := owner.UpdateStatus(w.Client, status, req.NamespacedName); err != nil {
 		log.Error(err, "failed to update owner status")
+		w.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}
 
 	if status.HasReadyCondition() {
 		if err := w.EnsureTestRunnerJobClusterRoleBindingExists(ctx, instance); err != nil {
+			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
 		}
 
@@ -117,12 +123,14 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 			objs, err := w.RenderObjects(owner.Object)
 			if err != nil {
 				log.Error(err, "failed to render job objects")
+				w.MetricTracker.Errors.Inc()
 				return ctrl.Result{}, err
 			}
 			log.Info("generated job", "items", objs.Items)
 
-			if err := objs.EachListItem(w.createOrSkip); err != nil {
+			if err := w.MaybeCreate(objs, w.MetricTracker.JobsCreated); err != nil {
 				log.Error(err, "unable reconcile object")
+				w.MetricTracker.Errors.Inc()
 				return ctrl.Result{}, err
 			}
 		}
@@ -220,27 +228,6 @@ func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.T
 	}
 
 	return objs, nil
-}
-
-func (w *CNRMContainerClusterWatcher) createOrSkip(obj runtime.Object) error {
-	key, err := client.ObjectKeyFromObject(obj)
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	log := w.Log.WithValues("createOrSkip", key)
-
-	remoteObj := obj.DeepCopyObject()
-	getErr := w.Client.Get(ctx, key, remoteObj)
-	if apierrors.IsNotFound(getErr) {
-		log.Info("will create", "obj", obj)
-		return w.Client.Create(ctx, obj)
-	}
-	if getErr == nil {
-		log.Info("already exists", "remoteObj", remoteObj)
-	}
-	return getErr
 }
 
 func (w *CNRMContainerNodePoolSourceWatcher) SetupWithManager(mgr ctrl.Manager) error {

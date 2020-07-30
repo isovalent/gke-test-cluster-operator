@@ -3,18 +3,13 @@ module github.com/isovalent/gke-test-cluster-management/operator
 go 1.14
 
 require (
-	cloud.google.com/go v0.57.0
 	cuelang.org/go v0.3.0-alpha1
 	github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d
 	github.com/errordeveloper/kue v0.2.3
 	github.com/go-logr/logr v0.1.0
 	github.com/onsi/gomega v1.9.0
-	github.com/prometheus/common v0.4.1
-	golang.org/x/build v0.0.0-20200729153244-7478086087e9
+	github.com/prometheus/client_golang v1.7.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	google.golang.org/api v0.25.0
-	google.golang.org/genproto v0.0.0-20200527145253-8367513e4ece
-	github.com/prometheus/client_golang v1.0.0
 	k8s.io/api v0.18.5
 	k8s.io/apimachinery v0.18.5
 	k8s.io/client-go v0.18.5

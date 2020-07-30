@@ -36,7 +36,7 @@ func TestControllers(t *testing.T) {
 }
 
 func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
-	initialClusterCount := getMetricIntValue(gkeClusterReconcilerMetrics.ClustersCreatedMetric)
+	initialClusterCount := getMetricIntValue(cst.MetricTracker.ClustersCreated)
 	ctx := context.Background()
 	ns := cst.NextNamespace()
 
@@ -116,7 +116,7 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 		return deleted == 7
 	}, *pollTimeout, *pollInterval).Should(BeTrue())
 
-	g.Expect(getMetricIntValue(gkeClusterReconcilerMetrics.ClustersCreatedMetric)).To(Equal(initialClusterCount + 1))
+	g.Expect(getMetricIntValue(cst.MetricTracker.ClustersCreated)).To(Equal(initialClusterCount + 1))
 }
 
 func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {

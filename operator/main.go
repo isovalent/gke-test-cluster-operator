@@ -15,8 +15,10 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
+	controllerscommon "github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 	// +kubebuilder:scaffold:imports
@@ -66,8 +68,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	metricTracker := controllerscommon.NewMetricTracker()
+
 	if err := (&controllers.TestClusterGKEReconciler{
-		ClientLogger:   controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterGKE"),
+		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr); err != nil {
@@ -75,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err := (&controllers.TestClusterPoolGKEReconciler{
-		ClientLogger: controllers.NewClientLogger(mgr, ctrl.Log, "TestClusterPoolGKE"),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterPoolGKE"),
 		Scheme:       mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterPoolGKE")
@@ -90,7 +94,7 @@ func main() {
 	}
 
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllers.NewClientLogger(mgr, ctrl.Log, "CNRMContainerClusterWatcher"),
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: *clientSetBuilder,

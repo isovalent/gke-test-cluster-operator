@@ -13,10 +13,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
@@ -52,7 +52,7 @@ import (
 
 // TestClusterGKEReconciler reconciles a TestClusterGKE object
 type TestClusterGKEReconciler struct {
-	ClientLogger
+	common.ClientLogger
 	Scheme *runtime.Scheme
 
 	ConfigRenderer *config.Config
@@ -65,24 +65,6 @@ type TestClusterGKEReconcilerMetrics struct {
 	ClusterErrorMetric    prometheus.Counter
 }
 
-func (r *TestClusterGKEReconciler) InitMetrics() {
-	r.Metrics = TestClusterGKEReconcilerMetrics{
-		ClustersCreatedMetric: prometheus.NewCounter(
-			prometheus.CounterOpts{
-				Name: "gke_test_cluster_operator_clusters_created",
-			}),
-		ClusterErrorMetric: prometheus.NewCounter(
-			prometheus.CounterOpts{
-				Name: "gke_test_cluster_operator_errors",
-			}),
-	}
-
-	metrics.Registry.MustRegister(
-		r.Metrics.ClustersCreatedMetric,
-		r.Metrics.ClusterErrorMetric,
-	)
-}
-
 func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("Reconcile", req.NamespacedName)
@@ -91,6 +73,9 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	instance := &clustersv1alpha1.TestClusterGKE{}
 	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			r.MetricTracker.Errors.Inc()
+		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -98,7 +83,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	objs, err := r.RenderObjects(instance)
 	if err != nil {
 		log.Error(err, "unable render config template")
-		r.Metrics.ClusterErrorMetric.Inc()
+		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}
 
@@ -111,22 +96,16 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	// set flag to false to track whether we created anything
-	r.ClientLogger.created = false
-	if err := objs.EachListItem(r.createOrSkip); err != nil {
+	if err := r.MaybeCreate(objs, r.MetricTracker.ClustersCreated); err != nil {
 		log.Error(err, "unable reconcile object")
-		r.Metrics.ClusterErrorMetric.Inc()
+		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
-	} else {
-		if r.ClientLogger.created {
-			r.Metrics.ClustersCreatedMetric.Inc()
-		}
 	}
 
 	return ctrl.Result{}, nil
 }
+
 func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	r.InitMetrics()
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&clustersv1alpha1.TestClusterGKE{}).
 		Complete(r)
