@@ -312,6 +312,10 @@ github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d h1:cvgai3M5
 github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
 github.com/errordeveloper/kue v0.2.3 h1:teLjMnyibvutu34MPT7MbPfhD3j5cVpKZbpgxyVORqY=
 github.com/errordeveloper/kue v0.2.3/go.mod h1:3XKcXDhU7U8IuJ7jLCExYNfKT76C8MmrXel8bfO4TwM=
+github.com/errordeveloper/kue v0.2.4-0.20200730134225-10aa024eeb5c h1:FmLwwnqguS0d4eA5XQA4qFc/OZTEJN12RqNR+kVtCwI=
+github.com/errordeveloper/kue v0.2.4-0.20200730134225-10aa024eeb5c/go.mod h1:fq1IBSbKXyGxnamsVBDqoScY/zWtqHB7XC2QgI6eGQ8=
+github.com/errordeveloper/kue v0.2.4 h1:SR7OlvKkA65VMyOMJ74NswqXu+z0Qqx7zHO3wz031x4=
+github.com/errordeveloper/kue v0.2.4/go.mod h1:fq1IBSbKXyGxnamsVBDqoScY/zWtqHB7XC2QgI6eGQ8=
 github.com/evanphx/json-patch v4.2.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/evanphx/json-patch v4.5.0+incompatible h1:ouOWdg56aJriqS0huScTkVXPC5IcNrDCXZ6OoTAWu7M=
 github.com/evanphx/json-patch v4.5.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=

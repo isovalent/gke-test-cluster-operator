@@ -14,7 +14,7 @@ cat > config/operator/instances.json << EOF
 {
   "instances": [
     {
-      "output": "operator-test.json",
+      "output": "operator-test.yaml",
       "parameters": {
         "namespace": "${use_namespace}",
         "image": "${image}",
@@ -22,7 +22,7 @@ cat > config/operator/instances.json << EOF
       }
     },
     {
-      "output": "operator.json",
+      "output": "operator.yaml",
       "parameters": {
         "namespace": "${use_namespace}",
         "image": "${image}",

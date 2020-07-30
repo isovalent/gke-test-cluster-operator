@@ -38,7 +38,7 @@ jobs:
           path: |
             operator/image-*.oci
             operator/image-*.tag
-            operator/config/operator/operator-test.json
+            operator/config/operator/operator-test.yaml
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   build-and-test:
@@ -59,7 +59,7 @@ jobs:
           path: |
             operator/image-*.oci
             operator/image-*.tag
-            operator/config/operator/operator-test.json
+            operator/config/operator/operator-test.yaml
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:

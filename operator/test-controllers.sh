@@ -31,7 +31,7 @@ fi
 kubectl apply --filename="config/rbac/role.yaml"
 kubectl apply --filename="config/crd"
 
-kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.json"
+kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.yaml"
 
 # these tests should quick and there is no point in streaming logs,
 # completion should be within a minute or two, otherwise there is
@@ -49,7 +49,7 @@ troubleshoot() {
 
 bail() {
   echo "INFO: cleaning up..."
-  kubectl delete --wait="false" --filename="config/operator/operator-test.json"
+  kubectl delete --wait="false" --filename="config/operator/operator-test.yaml"
   # test namespaces are not deleted on test failure, so make sure those are cleaned up here
   kubectl delete namespace --selector="test=${namespace}" --field-selector="status.phase=Active" --wait="false"
   exit "$1"
