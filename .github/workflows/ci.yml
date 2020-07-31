@@ -22,7 +22,7 @@ jobs:
           QUAY_PUBLIC_ACCESS_ONLY: "true"
         with:
           entrypoint: make
-          args: -C operator operator-image manifests
+          args: -C operator images.operator manifests.generate
       - name: Get image cache key
         id: get-image-cache-key
         run: .github/workflows/ci.get-image-cache-key.sh

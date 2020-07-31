@@ -12,7 +12,7 @@ import (
 
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 type TestClusterGKESpec struct {
-	// Important: Run "make generate" to regenerate code after modifying this file
+	// Important: Run "make misc.generate" to regenerate code after modifying this file
 
 	// ConfigTemplate is the name of configuration template to use
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
@@ -42,7 +42,7 @@ type TestClusterGKEJobSpec struct {
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 // +kubebuilder:subresource:status
 type TestClusterGKEStatus struct {
-	// Important: Run "make generate" to regenerate code after modifying this file
+	// Important: Run "make misc.generate" to regenerate code after modifying this file
 
 	Conditions           []TestClusterGKEStatusCondition `json:"conditions,omitempty"`
 	Endpoint             *string                         `json:"endpoint,omitempty"`

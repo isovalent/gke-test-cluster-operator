@@ -20,9 +20,9 @@ endif
 	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
-all-images: operator-image job-runner-init-image
+images.all: images.operator images.job-runner-init
 
-operator-image: .buildx_builder
+images.operator: .buildx_builder
 	$(IMAGINE) build \
 		--builder $$(cat .buildx_builder) \
 		--base ./ \
@@ -36,7 +36,7 @@ operator-image: .buildx_builder
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-operator.tag
 
-job-runner-init-image: .buildx_builder
+images.job-runner-init: .buildx_builder
 	$(IMAGINE) build \
 		--builder $$(cat .buildx_builder) \
 		--base ./config/job-runner-init-image \
@@ -51,10 +51,13 @@ job-runner-init-image: .buildx_builder
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-job-runner-init.tag
 
-manifests:
+manifests.generate:
 	./generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)"
 
-test.controllers-local: operator-image
+manifests.promote:
+	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
+
+test.controllers-local: images.operator
 	docker load -i image-gke-test-cluster-operator.oci
 	$(MAKE) test.controllers
 
@@ -64,5 +67,5 @@ test.controllers:
 test.unit:
 	go test ./pkg/...
 
-generate:
+misc.generate:
 	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" crd:trivialVersions=false rbac:roleName=gke-test-cluster-operator webhook paths="./..."
