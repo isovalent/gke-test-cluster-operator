@@ -9,7 +9,7 @@ commandTests:
   command: "kubectl"
   args: ["version", "--client", "--short"]
   expectedOutput:
-  - 'Client\ Version:\ v1\.18\.5'
+  - 'Client\ Version:\ v1\.18\.*'
 
 fileExistenceTests:
 - name: '/usr/local/bin/gcloud-auth-init.sh'

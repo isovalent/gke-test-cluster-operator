@@ -7,22 +7,23 @@ on:
 
 jobs:
   build-image:
-    #if: github.repository == 'isovalent/gke-test-cluster-management'
-    name: Build new operator image locally
+    name: Build new images locally
     runs-on: ubuntu-18.04
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
-      - uses: docker://docker.io/errordeveloper/image-maker:1ba12edc0ddb3d7320cdcc3e2144e1cd0946c09b-dev # includes imagine and latest buildx
-        name: Run make operator-image and manifests
+      - uses: docker://docker.io/errordeveloper/image-maker:b6c1d2cf929dae37a851ded47b851188bac9d4d5-dev # includes imagine and latest buildx
+        name: Build all images and generate manifests
         env:
-          DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
-          QUAY_PUBLIC_ACCESS_ONLY: "true"
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         with:
           entrypoint: make
-          args: -C operator images.operator manifests.generate
+          args: -C operator images.all manifests.generate
       - name: Get image cache key
         id: get-image-cache-key
         run: .github/workflows/ci.get-image-cache-key.sh
@@ -41,15 +42,14 @@ jobs:
             operator/config/operator/operator-test.yaml
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
-  build-and-test:
-    #if: github.repository == 'isovalent/gke-test-cluster-management'
+  test-controllers:
     needs: build-image
     strategy:
       matrix:
         kube_version: [1.16, 1.17, 1.18]
     name: Create kind clusters and test new image
     runs-on: ubuntu-18.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
       - name: Restore OCI image and manifest from cache
@@ -99,3 +99,23 @@ jobs:
         with:
           entrypoint: make
           args: -C operator test.controllers
+  push-images:
+    if: github.repository == 'isovalent/gke-test-cluster-management' && github.ref == 'master'
+    needs: test-controllers
+    name: Build all images and push to the registry
+    runs-on: ubuntu-18.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # required for imagine to detect -dev suffix
+      - uses: docker://docker.io/errordeveloper/image-maker:b6c1d2cf929dae37a851ded47b851188bac9d4d5-dev # includes imagine and latest buildx
+        name: Build and push all images
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+        with:
+          entrypoint: make
+          args: -C operator images.all PUSH=true REGISTRY=docker.io/errordeveloper
