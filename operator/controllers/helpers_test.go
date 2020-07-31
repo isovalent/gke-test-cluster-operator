@@ -8,6 +8,7 @@ import (
 	"flag"
 	"math"
 	"math/rand"
+	"os"
 	"testing"
 	"time"
 
@@ -47,23 +48,17 @@ var (
 	resourcePrefix = flag.String("resource-prefix", "test-"+utilrand.String(5), "resource prefix")
 	pollInterval   = flag.Duration("poll-interval", 5*time.Second, "polling interval")
 	pollTimeout    = flag.Duration("poll-timeout", 120*time.Second, "polling timeout")
+	disableLogs    = flag.Bool("disable-logs", false, "disable controller logs")
 
 	gkeClusterReconcilerMetrics controllers.TestClusterGKEReconcilerMetrics
 )
 
-type TLogger struct {
-	t *testing.T
-}
-
-func (t *TLogger) Write(p []byte) (int, error) {
-	t.t.Log(string(p))
-	return len(p), nil
-}
-
 func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	t.Helper()
 
-	logf.SetLogger(zap.LoggerTo(&TLogger{t: t}, true))
+	if !*disableLogs {
+		logf.SetLogger(zap.LoggerTo(os.Stdout, true))
+	}
 
 	g := NewGomegaWithT(t)
 
@@ -127,8 +122,6 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()
 
 	teardown := func() {
-		logf.SetLogger(logf.NullLogger{}) // attempt to avoid panic "Log in goroutine after TestControllers has completed"
-
 		close(stop)
 		g.Expect(env.Stop()).To(Succeed())
 	}
