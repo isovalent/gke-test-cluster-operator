@@ -100,7 +100,7 @@ jobs:
           entrypoint: make
           args: -C operator test.controllers
   push-images:
-    if: github.repository == 'isovalent/gke-test-cluster-management' && github.ref == 'master'
+    if: github.repository == 'isovalent/gke-test-cluster-management' && github.ref == 'refs/heads/master'
     needs: test-controllers
     name: Build all images and push to the registry
     runs-on: ubuntu-18.04
