@@ -8,6 +8,7 @@ _workload: {
 		name: "\(constants.name)"
 		labels: name: "\(constants.name)"
 		namespace: "\(parameters.namespace)"
+		annotations: "fluxcd.io/automated": "true"
 	}
 	spec: _workloadSpec
 }
