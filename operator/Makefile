@@ -56,6 +56,7 @@ manifests.generate:
 
 manifests.promote:
 	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
+	cp config/crd/*.yaml config/rbac/*.yaml ../config/kube-system/
 
 test.controllers-local: images.operator
 	docker load -i image-gke-test-cluster-operator.oci
