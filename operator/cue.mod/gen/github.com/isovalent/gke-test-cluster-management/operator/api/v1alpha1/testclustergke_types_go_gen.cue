@@ -33,7 +33,7 @@ import (
 
 // JobSpec is the specification of test job
 #TestClusterGKEJobSpec: {
-	// Runner a container that will run control process that drives the tests
+	// Runner specifies a container that will run control process that drives the tests
 	runner?: null | #TestClusterGKEJobRunnerSpec @go(Runner,*TestClusterGKEJobRunnerSpec)
 
 	// ImagesToTest is a set of application images that will be tested

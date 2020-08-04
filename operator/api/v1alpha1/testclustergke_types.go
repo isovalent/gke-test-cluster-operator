@@ -32,7 +32,7 @@ type TestClusterGKESpec struct {
 
 // JobSpec is the specification of test job
 type TestClusterGKEJobSpec struct {
-	// Runner a container that will run control process that drives the tests
+	// Runner specifies a container that will run control process that drives the tests
 	Runner *TestClusterGKEJobRunnerSpec `json:"runner,omitempty"`
 	// ImagesToTest is a set of application images that will be tested
 	ImagesToTest *map[string]string `json:"imagesToTest,omitempty"`
