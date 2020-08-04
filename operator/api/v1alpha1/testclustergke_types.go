@@ -31,14 +31,20 @@ type TestClusterGKESpec struct {
 
 // JobSpec is the specification of test job
 type TestClusterGKEJobSpec struct {
-	// RunnerImage is the image that will drive the tests
-	RunnerImage *string `json:"runnerImage,omitempty"`
-	// RunnerCommand is the command that will use to drive the tests
-	RunnerCommand []string `json:"runnerCommand,omitempty"`
+	// Runner a container that will run control process that drives the tests
+	Runner *TestClusterGKEJobRunnerSpec `json:"runner,omitempty"`
 	// ImagesToTest is a set of application images that will be tested
 	ImagesToTest *map[string]string `json:"imagesToTest,omitempty"`
-	// RunnerConfigMap is a name of configmap of the runner
-	RunnerConfigMap *string `json:"runnerConfigMap,omitempty"`
+}
+
+// TestClusterGKEJobRunnerSpec is the specification of test job controll process container
+type TestClusterGKEJobRunnerSpec struct {
+	// Image that will drive the tests
+	Image *string `json:"image,omitempty"`
+	// Command that will be used
+	Command []string `json:"command,omitempty"`
+	// ConfigMap is a name of configmap of the runner
+	ConfigMap *string `json:"configMap,omitempty"`
 }
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE

@@ -101,8 +101,11 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 		if cluster.Spec.JobSpec == nil {
 			return nil, fmt.Errorf("unexpected nil jobSpec")
 		}
-		if cluster.Spec.JobSpec.RunnerImage == nil || *cluster.Spec.JobSpec.RunnerImage == "" {
-			return nil, fmt.Errorf("unexpected nil/empty runnerImage")
+		if cluster.Spec.JobSpec.Runner == nil {
+			return nil, fmt.Errorf("unexpected nil jobSpec.runner")
+		}
+		if cluster.Spec.JobSpec.Runner.Image == nil || *cluster.Spec.JobSpec.Runner.Image == "" {
+			return nil, fmt.Errorf("unexpected nil/empty jobSpec.runner.image")
 		}
 		if cluster.Status.ClusterName == nil {
 			return nil, fmt.Errorf("unexpected nil status.clusterName")

@@ -8,12 +8,12 @@ import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 _name:        "\(resource.metadata.name)"
 _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 _location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
-_runnerImage: "\(defaults.spec.jobSpec.runnerImage)" | *"\(resource.spec.jobSpec.runnerImage)"
+_runnerImage: "\(defaults.spec.jobSpec.runner.image)" | *"\(resource.spec.jobSpec.runner.image)"
 
 _runnerCommand: [...string]
 
-if len(resource.spec.jobSpec.runnerCommand) > 0 {
-	_runnerCommand: resource.spec.jobSpec.runnerCommand
+if len(resource.spec.jobSpec.runner.command) > 0 {
+	_runnerCommand: resource.spec.jobSpec.runner.command
 }
 
 _project: "cilium-ci"

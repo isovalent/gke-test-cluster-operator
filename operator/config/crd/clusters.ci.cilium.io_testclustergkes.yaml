@@ -47,18 +47,23 @@ spec:
                   description: ImagesToTest is a set of application images that will
                     be tested
                   type: object
-                runnerCommand:
-                  description: RunnerCommand is the command that will use to drive
-                    the tests
-                  items:
-                    type: string
-                  type: array
-                runnerConfigMap:
-                  description: RunnerConfigMap is a name of configmap of the runner
-                  type: string
-                runnerImage:
-                  description: RunnerImage is the image that will drive the tests
-                  type: string
+                runner:
+                  description: Runner a container that will run control process that
+                    drives the tests
+                  properties:
+                    command:
+                      description: RunnerCommand is the command that will use to drive
+                        the tests
+                      items:
+                        type: string
+                      type: array
+                    configMap:
+                      description: ConfigMap is a name of configmap of the runner
+                      type: string
+                    image:
+                      description: RunnerImage is the image that will drive the tests
+                      type: string
+                  type: object
               type: object
             kubernetesVersion:
               description: KubernetesVersion is the version of Kubernetes to use

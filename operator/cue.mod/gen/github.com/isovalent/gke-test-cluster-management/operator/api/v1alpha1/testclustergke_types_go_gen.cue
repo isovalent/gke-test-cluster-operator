@@ -30,17 +30,23 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // JobSpec is the specification of test job
 #TestClusterGKEJobSpec: {
-	// RunnerImage is the image that will drive the tests
-	runnerImage?: null | string @go(RunnerImage,*string)
-
-	// RunnerCommand is the command that will use to drive the tests
-	runnerCommand?: [...string] @go(RunnerCommand,[]string)
+	// Runner a container that will run control process that drives the tests
+	runner?: null | #TestClusterGKEJobRunnerSpec @go(Runner,*TestClusterGKEJobRunnerSpec)
 
 	// ImagesToTest is a set of application images that will be tested
 	imagesToTest?: null | {[string]: string} @go(ImagesToTest,*map[string]string)
+}
 
-	// RunnerConfigMap is a name of configmap of the runner
-	runnerConfigMap?: null | string @go(RunnerConfigMap,*string)
+// TestClusterGKEJobRunnerSpec is the specification of test job controll process container
+#TestClusterGKEJobRunnerSpec: {
+	// RunnerImage is the image that will drive the tests
+	image?: null | string @go(Image,*string)
+
+	// RunnerCommand is the command that will use to drive the tests
+	command?: [...string] @go(Command,[]string)
+
+	// ConfigMap is a name of configmap of the runner
+	configMap?: null | string @go(ConfigMap,*string)
 }
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE

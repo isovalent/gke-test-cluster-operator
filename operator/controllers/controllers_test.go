@@ -130,9 +130,11 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 	*obj.Spec.ConfigTemplate = "basic"
 
 	obj.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
-		RunnerImage: new(string),
+		Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+			Image: new(string),
+		},
 	}
-	*obj.Spec.JobSpec.RunnerImage = "sonobuoy/sonobuoy:v0.18.0"
+	*obj.Spec.JobSpec.Runner.Image = "sonobuoy/sonobuoy:v0.18.0"
 
 	err := cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())

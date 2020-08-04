@@ -675,7 +675,26 @@ func TestTestRunnerJobResources(t *testing.T) {
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{},
 			}})
 		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(Equal(`unexpected nil/empty runnerImage`))
+		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec.runner`))
+	}
+
+	{
+		c := &Config{
+			BaseDirectory: "../../config/templates",
+		}
+
+		err := c.Load()
+		g.Expect(err).ToNot(HaveOccurred())
+
+		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{
+			ObjectMeta: metav1.ObjectMeta{Name: "foo"},
+			Spec: v1alpha1.TestClusterGKESpec{
+				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
+					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{},
+				},
+			}})
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err.Error()).To(Equal(`unexpected nil/empty jobSpec.runner.image`))
 	}
 
 	{
@@ -692,7 +711,9 @@ func TestTestRunnerJobResources(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
 			Spec: v1alpha1.TestClusterGKESpec{
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					RunnerImage: &runnerImage,
+					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+						Image: &runnerImage,
+					},
 				},
 			}})
 		g.Expect(err).To(HaveOccurred())
@@ -713,7 +734,9 @@ func TestTestRunnerJobResources(t *testing.T) {
 				Region:   new(string),
 				Location: new(string),
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					RunnerImage: &defRunnerImage,
+					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+						Image: &defRunnerImage,
+					},
 				},
 			},
 		}
@@ -736,8 +759,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						RunnerImage:   &runnerImage,
-						RunnerCommand: []string{"app.test", "-test.v"},
+						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+							Image:   &runnerImage,
+							Command: []string{"app.test", "-test.v"},
+						},
 					},
 				},
 				Status: v1alpha1.TestClusterGKEStatus{
@@ -850,8 +875,9 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						RunnerImage: &runnerImage,
-					},
+						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+							Image: &runnerImage,
+						}},
 				},
 				Status: v1alpha1.TestClusterGKEStatus{
 					ClusterName: &actualName,
@@ -960,8 +986,9 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						RunnerImage: &runnerImage,
-					},
+						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+							Image: &runnerImage,
+						}},
 				},
 				Status: v1alpha1.TestClusterGKEStatus{
 					ClusterName: &actualName,
@@ -988,8 +1015,9 @@ func TestTestRunnerJobResources(t *testing.T) {
 			cluster := &v1alpha1.TestClusterGKE{
 				Spec: v1alpha1.TestClusterGKESpec{
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						RunnerImage: &runnerImage,
-					},
+						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+							Image: &runnerImage,
+						}},
 				},
 			}
 
