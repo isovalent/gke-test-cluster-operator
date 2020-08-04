@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d
 	github.com/errordeveloper/kue v0.2.5
+	sigs.k8s.io/controller-tools v0.3.0
 )
 
 replace github.com/containerd/containerd => github.com/containerd/containerd v1.3.1-0.20200227195959-4d242818bf55
