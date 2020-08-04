@@ -33,6 +33,9 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// RunnerImage is the image that will drive the tests
 	runnerImage?: null | string @go(RunnerImage,*string)
 
+	// RunnerCommand is the command that will use to drive the tests
+	runnerCommand?: [...string] @go(RunnerCommand,[]string)
+
 	// ImagesToTest is a set of application images that will be tested
 	imagesToTest?: null | {[string]: string} @go(ImagesToTest,*map[string]string)
 

@@ -10,6 +10,12 @@ _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace
 _location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
 _runnerImage: "\(defaults.spec.jobSpec.runnerImage)" | *"\(resource.spec.jobSpec.runnerImage)"
 
+_runnerCommand: [...string]
+
+if len(resource.spec.jobSpec.runnerCommand) > 0 {
+	_runnerCommand: resource.spec.jobSpec.runnerCommand
+}
+
 _project: "cilium-ci"
 
 #JobTemplate: {
@@ -60,11 +66,7 @@ _project: "cilium-ci"
 					}]
 					containers: [{
 						name: "test-runner"
-						command: [
-							"bash",
-							"-l",
-						]
-						tty:   true
+						command: _runnerCommand,
 						image: "\(_runnerImage)"
 						env: [
 							{

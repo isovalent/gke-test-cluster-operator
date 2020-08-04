@@ -47,6 +47,12 @@ spec:
                   description: ImagesToTest is a set of application images that will
                     be tested
                   type: object
+                runnerCommand:
+                  description: RunnerCommand is the command that will use to drive
+                    the tests
+                  items:
+                    type: string
+                  type: array
                 runnerConfigMap:
                   description: RunnerConfigMap is a name of configmap of the runner
                   type: string

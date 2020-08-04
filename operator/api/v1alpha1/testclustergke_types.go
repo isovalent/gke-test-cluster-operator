@@ -33,6 +33,8 @@ type TestClusterGKESpec struct {
 type TestClusterGKEJobSpec struct {
 	// RunnerImage is the image that will drive the tests
 	RunnerImage *string `json:"runnerImage,omitempty"`
+	// RunnerCommand is the command that will use to drive the tests
+	RunnerCommand []string `json:"runnerCommand,omitempty"`
 	// ImagesToTest is a set of application images that will be tested
 	ImagesToTest *map[string]string `json:"imagesToTest,omitempty"`
 	// RunnerConfigMap is a name of configmap of the runner

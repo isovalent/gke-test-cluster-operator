@@ -704,7 +704,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 			BaseDirectory: "../../config/templates",
 		}
 
-		runnerImage := "cilium-ci/cilium-e2e:latest"
+		defRunnerImage := "cilium-ci/cilium-e2e:latest"
 		defCluster := &v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",
@@ -713,7 +713,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 				Region:   new(string),
 				Location: new(string),
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					RunnerImage: &runnerImage,
+					RunnerImage: &defRunnerImage,
 				},
 			},
 		}
@@ -736,7 +736,8 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						RunnerImage: &runnerImage,
+						RunnerImage:   &runnerImage,
+						RunnerCommand: []string{"app.test", "-test.v"},
 					},
 				},
 				Status: v1alpha1.TestClusterGKEStatus{
@@ -811,8 +812,8 @@ func TestTestRunnerJobResources(t *testing.T) {
 								}
 							  ],
 							  "command": [
-								"bash",
-								"-l"
+								"app.test",
+								"-test.v"
 							  ],
 							  "image": "cilium-ci/cilium-e2e:80d4133f2b9317a0f08fcff9b2f8d625ea9f7b7a",
 							  "volumeMounts": [
@@ -820,8 +821,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "name": "credentials",
 								  "mountPath": "/credentials"
 								}
-							  ],
-							  "tty": true
+							  ]
 							}
 						  ],
 						  "dnsPolicy": "ClusterFirst",
@@ -924,18 +924,14 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "value": "/credentials/kubeconfig"
 								}
 							  ],
-							  "command": [
-								"bash",
-								"-l"
-							  ],
 							  "image": "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a",
+							  "command": [],
 							  "volumeMounts": [
 								{
 								  "name": "credentials",
 								  "mountPath": "/credentials"
 								}
-							  ],
-							  "tty": true
+							  ]
 							}
 						  ],
 						  "dnsPolicy": "ClusterFirst",

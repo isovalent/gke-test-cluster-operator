@@ -46,6 +46,11 @@ func (in *TestClusterGKEJobSpec) DeepCopyInto(out *TestClusterGKEJobSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RunnerCommand != nil {
+		in, out := &in.RunnerCommand, &out.RunnerCommand
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ImagesToTest != nil {
 		in, out := &in.ImagesToTest, &out.ImagesToTest
 		*out = new(map[string]string)
