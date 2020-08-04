@@ -57,6 +57,8 @@ func (GKEClientSetBuilder) NewClientSet(cluster *cnrm.PartialContainerCluster) (
 	return kubernetes.NewForConfig(config)
 }
 
+// NewExternalClient will return a ClientSet along with a REST client for the given management cluster,
+// it expect that given cluster to be present in exactly one GCP location
 func NewExternalClient(ctx context.Context, project, clusterName string) (kubernetes.Interface, client.Client, error) {
 	scheme := runtime.NewScheme()
 	if err := clientgoscheme.AddToScheme(scheme); err != nil {
@@ -89,6 +91,9 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 
 	var cluster *container.Cluster
 
+	// gke.Projects.Zones.Clusters.List returns a list of clusters for all regions and zones,
+	// which is handy, and prevents having to supply the exact location (and whether it is a
+	// region or just a zone)
 	for _, c := range clusters.Clusters {
 		if c.Name == clusterName {
 			matches++
@@ -135,6 +140,7 @@ func (g *googleAuthProvider) WrapTransport(rt http.RoundTripper) http.RoundTripp
 		Source: g.tokenSource,
 	}
 }
+
 func (g *googleAuthProvider) Login() error { return nil }
 
 func newConfig(endpoint, ecodedCACert string) (*rest.Config, error) {
