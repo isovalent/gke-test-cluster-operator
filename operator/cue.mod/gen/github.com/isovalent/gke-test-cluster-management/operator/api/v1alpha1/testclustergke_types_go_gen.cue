@@ -4,7 +4,10 @@
 
 package v1alpha1
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 #TestClusterGKESpec: {
@@ -39,11 +42,14 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // TestClusterGKEJobRunnerSpec is the specification of test job controll process container
 #TestClusterGKEJobRunnerSpec: {
-	// RunnerImage is the image that will drive the tests
+	// Image that will drive the tests
 	image?: null | string @go(Image,*string)
 
-	// RunnerCommand is the command that will use to drive the tests
+	// Command that will be used
 	command?: [...string] @go(Command,[]string)
+
+	// Env speficies environment variables for the runner
+	env?: [...corev1.#EnvVar] @go(Env,[]corev1.EnvVar)
 
 	// ConfigMap is a name of configmap of the runner
 	configMap?: null | string @go(ConfigMap,*string)

@@ -16,6 +16,17 @@ if len(resource.spec.jobSpec.runner.command) > 0 {
 	_runnerCommand: resource.spec.jobSpec.runner.command
 }
 
+_kubeconfigEnv: {
+	name:  "KUBECONFIG"
+	value: "/credentials/kubeconfig"
+}
+
+_runnerExtraEnv: [...{}]
+
+if len(resource.spec.jobSpec.runner.env) > 0 {
+	_runnerExtraEnv: resource.spec.jobSpec.runner.env
+}
+
 _project: "cilium-ci"
 
 #JobTemplate: {
@@ -40,7 +51,7 @@ _project: "cilium-ci"
 						{
 							name: "credentials"
 							emptyDir: {}
-						}
+						},
 					]
 					initContainers: [{
 						name: "get-credentials"
@@ -51,34 +62,24 @@ _project: "cilium-ci"
 							"\(_location)",
 						]
 						image: "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
-						env: [
-							{
-								name: "KUBECONFIG"
-								value: "/credentials/kubeconfig"
-							}
-						]
+						env: [_kubeconfigEnv]
 						volumeMounts: [
 							{
-								name: "credentials"
+								name:      "credentials"
 								mountPath: "/credentials"
-							}
+							},
 						]
 					}]
 					containers: [{
-						name: "test-runner"
-						command: _runnerCommand,
-						image: "\(_runnerImage)"
-						env: [
-							{
-								name: "KUBECONFIG"
-								value: "/credentials/kubeconfig"
-							}
-						]
+						name:    "test-runner"
+						command: _runnerCommand
+						image:   "\(_runnerImage)"
+						env:     [_kubeconfigEnv] + _runnerExtraEnv
 						volumeMounts: [
 							{
-								name: "credentials"
+								name:      "credentials"
 								mountPath: "/credentials"
-							}
+							},
 						]
 					}]
 					dnsPolicy:          "ClusterFirst"

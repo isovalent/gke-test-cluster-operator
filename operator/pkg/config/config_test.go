@@ -12,6 +12,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -762,6 +763,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
 							Image:   &runnerImage,
 							Command: []string{"app.test", "-test.v"},
+							Env: []corev1.EnvVar{{
+								Name:  "FOO",
+								Value: "bar",
+							}},
 						},
 					},
 				},
@@ -834,6 +839,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "KUBECONFIG",
 								  "value": "/credentials/kubeconfig"
+								},
+								{
+									"name": "FOO",
+									"value": "bar"
 								}
 							  ],
 							  "command": [

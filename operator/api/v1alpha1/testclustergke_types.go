@@ -4,6 +4,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -43,6 +44,8 @@ type TestClusterGKEJobRunnerSpec struct {
 	Image *string `json:"image,omitempty"`
 	// Command that will be used
 	Command []string `json:"command,omitempty"`
+	// Env speficies environment variables for the runner
+	Env []corev1.EnvVar `json:"env,omitempty"`
 	// ConfigMap is a name of configmap of the runner
 	ConfigMap *string `json:"configMap,omitempty"`
 }
