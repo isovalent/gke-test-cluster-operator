@@ -58,6 +58,7 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 			Namespace: tcr.key.Namespace,
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
+			Nodes:          new(int),
 			ConfigTemplate: &configTemplate,
 			Location:       new(string),
 			Region:         new(string),
@@ -69,6 +70,7 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 			},
 		},
 	}
+	*cluster.Spec.Nodes = 2
 	*cluster.Spec.Location = "europe-west2-b"
 	*cluster.Spec.Region = "europe-west2"
 
