@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
 	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -72,7 +73,14 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 		return nil, nil, err
 	}
 
-	opts := []option.ClientOption{}
+	ts, err := google.DefaultTokenSource(ctx, compute.CloudPlatformScope)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get a token source: %v", err)
+	}
+
+	opts := []option.ClientOption{
+		option.WithTokenSource(ts),
+	}
 
 	if serviceAccountKey := os.Getenv("GCP_SERVICE_ACCOUNT_KEY"); serviceAccountKey != "" {
 		credentials, err := base64.StdEncoding.DecodeString(serviceAccountKey)
