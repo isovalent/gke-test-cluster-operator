@@ -73,21 +73,20 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 		return nil, nil, err
 	}
 
-	ts, err := google.DefaultTokenSource(ctx, compute.CloudPlatformScope)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get a token source: %v", err)
-	}
-
-	opts := []option.ClientOption{
-		option.WithTokenSource(ts),
-	}
+	opts := []option.ClientOption{}
 
 	if serviceAccountKey := os.Getenv("GCP_SERVICE_ACCOUNT_KEY"); serviceAccountKey != "" {
-		credentials, err := base64.StdEncoding.DecodeString(serviceAccountKey)
+		credsData, err := base64.StdEncoding.DecodeString(serviceAccountKey)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error decoding GCP_SERVICE_ACCOUNT_KEY: %v", err)
 		}
-		opts = append(opts, option.WithCredentialsJSON([]byte(credentials)))
+
+		creds, err := google.CredentialsFromJSON(ctx, []byte(credsData), compute.CloudPlatformScope)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error loading credentials: %v", err)
+		}
+
+		opts = append(opts, option.WithCredentials(creds))
 	}
 
 	gke, err := container.NewService(ctx, opts...)
