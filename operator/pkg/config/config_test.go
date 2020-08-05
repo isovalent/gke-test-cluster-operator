@@ -70,6 +70,7 @@ func TestClusterResources(t *testing.T) {
 
 		templateName := "basic"
 		region := "us-west1"
+		nodes := 3
 		machineType := "n1-standard-4"
 
 		defCluster := &v1alpha1.TestClusterGKE{
@@ -77,6 +78,7 @@ func TestClusterResources(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TestClusterGKESpec{
+				Nodes:       &nodes,
 				MachineType: &machineType,
 				Location:    &region,
 				Region:      &region,
@@ -164,7 +166,7 @@ func TestClusterResources(t *testing.T) {
 					},
 					"spec": {
 					  "location": "europe-west2-b",
-					  "initialNodeCount": 0,
+					  "initialNodeCount": 3,
 					  "clusterRef": {
 						"name": "baz"
 					  },
@@ -390,7 +392,7 @@ func TestClusterResources(t *testing.T) {
 					},
 					"spec": {
 					  "location": "us-west1",
-					  "initialNodeCount": 0,
+					  "initialNodeCount": 3,
 					  "clusterRef": {
 						"name": "bar"
 					  },

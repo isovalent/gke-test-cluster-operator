@@ -28,6 +28,8 @@ type TestClusterGKESpec struct {
 	JobSpec *TestClusterGKEJobSpec `json:"jobSpec,omitempty"`
 	// MachineType is the GCP machine type
 	MachineType *string `json:"machineType,omitempty"`
+	// Nodes is the number of nodes
+	Nodes *int `json:"nodes,omitempty"`
 }
 
 // JobSpec is the specification of test job

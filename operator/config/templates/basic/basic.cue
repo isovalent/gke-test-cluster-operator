@@ -9,6 +9,7 @@ _name:        "\(resource.metadata.name)"
 _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 _location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
 _region:      "\(defaults.spec.region)" | *"\(resource.spec.region)"
+_nodes:       defaults.spec.nodes | *resource.spec.nodes
 _machineType: "\(defaults.spec.machineType)" | *"\(resource.spec.machineType)"
 
 _project: "cilium-ci"
@@ -52,7 +53,7 @@ _project: "cilium-ci"
 			}
 			spec: {
 				clusterRef: name: "\(_name)"
-				initialNodeCount: 0
+				initialNodeCount: _nodes
 				location:         "\(_location)"
 				management: {
 					autoRepair:  false

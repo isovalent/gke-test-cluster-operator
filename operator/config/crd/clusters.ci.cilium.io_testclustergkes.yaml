@@ -48,8 +48,8 @@ spec:
                     be tested
                   type: object
                 runner:
-                  description: Runner a container that will run control process that
-                    drives the tests
+                  description: Runner specifies a container that will run control
+                    process that drives the tests
                   properties:
                     command:
                       description: Command that will be used
@@ -184,6 +184,9 @@ spec:
             machineType:
               description: MachineType is the GCP machine type
               type: string
+            nodes:
+              description: Nodes is the number of nodes
+              type: integer
             region:
               description: 'Location is a GCP region (derived from location) TODO:
                 not user-settable, read-only'

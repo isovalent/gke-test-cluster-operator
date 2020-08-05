@@ -14,6 +14,7 @@ func NewDefaults() *v1alpha1.TestClusterGKE {
 			Namespace: "default",
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
+			Nodes:       new(int),
 			MachineType: new(string),
 			Location:    new(string),
 			Region:      new(string),
@@ -25,6 +26,7 @@ func NewDefaults() *v1alpha1.TestClusterGKE {
 		},
 	}
 
+	*defaults.Spec.Nodes = 2
 	*defaults.Spec.MachineType = "n1-standard-4"
 	*defaults.Spec.Location = "europe-west2-b"
 	*defaults.Spec.Region = "europe-west2"
