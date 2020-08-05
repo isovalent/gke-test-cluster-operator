@@ -6,7 +6,9 @@ package requester
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -23,9 +25,11 @@ const (
 )
 
 type TestClusterRequest struct {
-	restClient client.Client
-	podClient  typedcorev1.PodInterface
-	key        types.NamespacedName
+	restClient      client.Client
+	podClient       typedcorev1.PodInterface
+	configMapClient typedcorev1.ConfigMapInterface
+	key             types.NamespacedName
+	hasConfigMap    bool
 }
 
 func NewTestClusterRequest(ctx context.Context, project, managementCluster, namespace, name string) (*TestClusterRequest, error) {
@@ -39,10 +43,35 @@ func NewTestClusterRequest(ctx context.Context, project, managementCluster, name
 			Name:      name,
 			Namespace: namespace,
 		},
-		podClient:  clientSet.CoreV1().Pods(namespace),
-		restClient: restClient,
+		configMapClient: clientSet.CoreV1().ConfigMaps(namespace),
+		podClient:       clientSet.CoreV1().Pods(namespace),
+		restClient:      restClient,
 	}
 	return tcr, nil
+}
+
+func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initManifestPath string) error {
+	initManifestData, err := ioutil.ReadFile(initManifestPath)
+	if err != nil {
+		return err
+	}
+
+	cm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      tcr.key.Name,
+			Namespace: tcr.key.Namespace,
+		},
+		BinaryData: map[string][]byte{
+			"init-manifest": initManifestData,
+		},
+	}
+
+	_, err = tcr.configMapClient.Create(ctx, cm, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	tcr.hasConfigMap = true
+	return nil
 }
 
 func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, runnerJobImage string, runnerCommand ...string) error {
@@ -73,6 +102,10 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	*cluster.Spec.Nodes = 2
 	*cluster.Spec.Location = "europe-west2-b"
 	*cluster.Spec.Region = "europe-west2"
+
+	if tcr.hasConfigMap {
+		cluster.Spec.JobSpec.Runner.ConfigMap = &tcr.key.Name
+	}
 
 	return tcr.restClient.Create(ctx, cluster)
 }
