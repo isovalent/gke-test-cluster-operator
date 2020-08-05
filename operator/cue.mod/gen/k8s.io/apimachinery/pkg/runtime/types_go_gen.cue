@@ -75,7 +75,8 @@ package runtime
 // +k8s:deepcopy-gen=true
 // +protobuf=true
 // +k8s:openapi-gen=true
-#RawExtension: _
+#RawExtension: {
+}
 
 // Unknown allows api objects with unknown types to be passed-through. This can be used
 // to deal with the API objects from a plug-in. Unknown objects still have functioning
@@ -87,4 +88,19 @@ package runtime
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +protobuf=true
 // +k8s:openapi-gen=true
-#Unknown: _
+#Unknown: {
+	#TypeMeta
+
+	// Raw will hold the complete serialized object which couldn't be matched
+	// with a registered type. Most likely, nothing should be done with this
+	// except for passing it through the system.
+	Raw: bytes @go(,[]byte) @protobuf(2,bytes,opt,name=raw)
+
+	// ContentEncoding is encoding used to encode 'Raw' data.
+	// Unspecified means no encoding.
+	ContentEncoding: string @protobuf(3,bytes,opt,name=contentEncoding)
+
+	// ContentType  is serialization method used to serialize 'Raw'.
+	// Unspecified means ContentTypeJSON.
+	ContentType: string @protobuf(4,bytes,opt,name=contentType)
+}

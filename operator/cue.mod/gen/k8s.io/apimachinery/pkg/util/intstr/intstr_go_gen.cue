@@ -13,7 +13,11 @@ package intstr
 // +protobuf=true
 // +protobuf.options.(gogoproto.goproto_stringer)=false
 // +k8s:openapi-gen=true
-#IntOrString: _
+#IntOrString: {
+	Type:   #Type  @protobuf(1,varint,opt,name=type,casttype=Type)
+	IntVal: int32  @protobuf(2,varint,opt,name=intVal)
+	StrVal: string @protobuf(3,bytes,opt,name=strVal)
+}
 
 // Type represents the stored type of IntOrString.
 #Type: int64 // #enumType

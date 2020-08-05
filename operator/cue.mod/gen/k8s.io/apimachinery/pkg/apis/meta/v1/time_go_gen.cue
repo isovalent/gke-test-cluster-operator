@@ -4,6 +4,8 @@
 
 package v1
 
+import "time"
+
 // Time is a wrapper around time.Time which supports correct
 // marshaling to YAML and JSON.  Wrappers are provided for many
 // of the factory methods that the time package offers.
@@ -11,4 +13,6 @@ package v1
 // +protobuf.options.marshal=false
 // +protobuf.as=Timestamp
 // +protobuf.options.(gogoproto.goproto_stringer)=false
-#Time: _
+#Time: {
+	Time: time.Time @protobuf(-)
+}

@@ -29,6 +29,9 @@ import (
 
 	// MachineType is the GCP machine type
 	machineType?: null | string @go(MachineType,*string)
+
+	// Nodes is the number of nodes
+	nodes?: null | int @go(Nodes,*int)
 }
 
 // JobSpec is the specification of test job
