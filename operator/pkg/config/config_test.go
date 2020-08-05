@@ -836,7 +836,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								"baz-a0b1c2",
 								"europe-west2-b"
 							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd",
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",
@@ -962,7 +962,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								"bar-0a1b2c",
 								"europe-west2-b"
 							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd",
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",

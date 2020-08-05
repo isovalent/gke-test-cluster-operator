@@ -81,7 +81,7 @@ if resource.spec.jobSpec.runner.configMap != "" {
 							"\(_name)",
 							"\(_location)",
 						]
-						image:        "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
+						image:        "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427"
 						env:          [_kubeconfigEnv] + _extraEnv
 						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
 					}]
