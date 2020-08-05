@@ -5,6 +5,8 @@ package job
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
+_project: "cilium-ci"
+
 _name:        "\(resource.metadata.name)"
 _namespace:   "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 _location:    "\(defaults.spec.location)" | *"\(resource.spec.location)"
@@ -21,13 +23,25 @@ _kubeconfigEnv: {
 	value: "/credentials/kubeconfig"
 }
 
-_runnerExtraEnv: [...{}]
+_extraEnv: [...{}]
 
 if len(resource.spec.jobSpec.runner.env) > 0 {
-	_runnerExtraEnv: resource.spec.jobSpec.runner.env
+	_extraEnv: resource.spec.jobSpec.runner.env
 }
 
-_project: "cilium-ci"
+_kubeconfigVolume: {
+	name: "credentials"
+	emptyDir: {}
+}
+
+_kubeconfigVolumeMount: {
+	name:      "credentials"
+	mountPath: "/credentials"
+}
+
+_extraVolumes: [...{}]
+
+_extraVolumeMounts: [...{}]
 
 #JobTemplate: {
 	kind:       "List"
@@ -47,12 +61,7 @@ _project: "cilium-ci"
 					labels:
 						cluster: "\(_name)"
 				spec: {
-					volumes: [
-						{
-							name: "credentials"
-							emptyDir: {}
-						},
-					]
+					volumes: [_kubeconfigVolume] + _extraVolumes
 					initContainers: [{
 						name: "get-credentials"
 						command: [
@@ -62,25 +71,15 @@ _project: "cilium-ci"
 							"\(_location)",
 						]
 						image: "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
-						env: [_kubeconfigEnv]
-						volumeMounts: [
-							{
-								name:      "credentials"
-								mountPath: "/credentials"
-							},
-						]
+						env: [_kubeconfigEnv] + _extraEnv
+						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
 					}]
 					containers: [{
 						name:    "test-runner"
 						command: _runnerCommand
 						image:   "\(_runnerImage)"
-						env:     [_kubeconfigEnv] + _runnerExtraEnv
-						volumeMounts: [
-							{
-								name:      "credentials"
-								mountPath: "/credentials"
-							},
-						]
+						env:     [_kubeconfigEnv] + _extraEnv
+						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
 					}]
 					dnsPolicy:          "ClusterFirst"
 					restartPolicy:      "Never"

@@ -817,6 +817,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "KUBECONFIG",
 								  "value": "/credentials/kubeconfig"
+								},
+								{
+									"name": "FOO",
+									"value": "bar"
 								}
 							  ],
 							  "command": [
