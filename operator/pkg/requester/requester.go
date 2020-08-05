@@ -28,8 +28,8 @@ type TestClusterRequest struct {
 	key        types.NamespacedName
 }
 
-func NewTestClusterRequest(ctx context.Context, project, managementCluster, namespace, name string, credentialsDataFromEnv bool) (*TestClusterRequest, error) {
-	clientSet, restClient, err := gkeclient.NewExternalClient(ctx, project, managementCluster, credentialsDataFromEnv)
+func NewTestClusterRequest(ctx context.Context, project, managementCluster, namespace, name string) (*TestClusterRequest, error) {
+	clientSet, restClient, err := gkeclient.NewExternalClient(ctx, project, managementCluster)
 	if err != nil {
 		return nil, err
 	}

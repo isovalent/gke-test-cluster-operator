@@ -61,7 +61,7 @@ func (GKEClientSetBuilder) NewClientSet(cluster *cnrm.PartialContainerCluster) (
 
 // NewExternalClient will return a ClientSet along with a REST client for the given management cluster,
 // it expect that given cluster to be present in exactly one GCP location
-func NewExternalClient(ctx context.Context, project, clusterName string, credentialsDataFromEnv bool) (kubernetes.Interface, client.Client, error) {
+func NewExternalClient(ctx context.Context, project, clusterName string) (kubernetes.Interface, client.Client, error) {
 	scheme := runtime.NewScheme()
 	if err := clientgoscheme.AddToScheme(scheme); err != nil {
 		return nil, nil, err
@@ -82,8 +82,8 @@ func NewExternalClient(ctx context.Context, project, clusterName string, credent
 		option.WithTokenSource(ts),
 	}
 
-	if credentialsDataFromEnv {
-		credentials, err := base64.StdEncoding.DecodeString(os.Getenv("GCP_SERVICE_ACCOUNT_KEY"))
+	if serviceAccountKey := os.Getenv("GCP_SERVICE_ACCOUNT_KEY"); serviceAccountKey != "" {
+		credentials, err := base64.StdEncoding.DecodeString(serviceAccountKey)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error decoding GCP_SERVICE_ACCOUNT_KEY: %v", err)
 		}
