@@ -811,11 +811,11 @@ func TestTestRunnerJobResources(t *testing.T) {
 							  "emptyDir": {}
 							},
 							{
-                              "name": "config",
-                              "configMap": {
-                                "name": "baz-a0b1c2"
-                              }
-                            }
+							  "name": "config",
+							  "configMap": {
+							    "name": "baz-a0b1c2"
+							  }
+							}
 						  ],
 						  "initContainers": [
 							{
@@ -826,8 +826,8 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "value": "/credentials/kubeconfig"
 								},
 								{
-									"name": "FOO",
-									"value": "bar"
+								  "name": "FOO",
+								  "value": "bar"
 								}
 							  ],
 							  "command": [
