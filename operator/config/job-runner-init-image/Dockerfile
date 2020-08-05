@@ -9,7 +9,7 @@ FROM ${CLOUD_SDK_IMAGE} as builder
 COPY install-deps.sh /tmp/install-deps.sh
 RUN /tmp/install-deps.sh
 
-COPY gcloud-auth-init.sh /usr/local/bin/gcloud-auth-init.sh
+COPY init.sh /usr/local/bin/init.sh
 
 FROM ${TESTER_IMAGE} as test
 COPY --from=builder / /

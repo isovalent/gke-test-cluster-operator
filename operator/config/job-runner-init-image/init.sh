@@ -22,3 +22,7 @@ until gcloud auth list "--format=value(account)" | grep "${service_account}" ; d
 gcloud config set account "${service_account}"
 
 gcloud container clusters get-credentials --zone "${cluster_location}" "${cluster_name}"
+
+if [ -f /config/init-manifest ] ; then
+  kubectl apply -f /config/init-manifest
+fi

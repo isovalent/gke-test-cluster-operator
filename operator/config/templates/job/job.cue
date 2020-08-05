@@ -74,9 +74,9 @@ if resource.spec.jobSpec.runner.configMap != "" {
 				spec: {
 					volumes: [_kubeconfigVolume] + _extraVolumes
 					initContainers: [{
-						name: "get-credentials"
+						name: "init-runner"
 						command: [
-							"gcloud-auth-init.sh",
+							"init.sh",
 							"\(_name)-admin@\(_project).iam.gserviceaccount.com",
 							"\(_name)",
 							"\(_location)",

@@ -12,8 +12,15 @@ commandTests:
   - 'Client\ Version:\ v1\.18\.*'
 
 fileExistenceTests:
-- name: '/usr/local/bin/gcloud-auth-init.sh'
-  path: '/usr/local/bin/gcloud-auth-init.sh'
+- name: '/usr/local/bin/init.sh'
+  path: '/usr/local/bin/init.sh'
   shouldExist: true
   permissions: '-rwxr-xr-x'
 
+- name: '/config'
+  path: '/config'
+  shouldExist: false
+
+- name: '/config/init-manifest'
+  path: '/config/init-manifest'
+  shouldExist: false

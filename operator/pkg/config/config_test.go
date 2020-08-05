@@ -819,7 +819,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "get-credentials",
+							  "name": "init-runner",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -831,7 +831,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								}
 							  ],
 							  "command": [
-								"gcloud-auth-init.sh",
+								"init.sh",
 								"baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com",
 								"baz-a0b1c2",
 								"europe-west2-b"
@@ -949,7 +949,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "get-credentials",
+							  "name": "init-runner",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -957,7 +957,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								}
 							  ],
 							  "command": [
-								"gcloud-auth-init.sh",
+								"init.sh",
 								"bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com",
 								"bar-0a1b2c",
 								"europe-west2-b"
