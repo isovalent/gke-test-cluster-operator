@@ -62,11 +62,7 @@ package resource
 // +protobuf.options.(gogoproto.goproto_stringer)=false
 // +k8s:deepcopy-gen=true
 // +k8s:openapi-gen=true
-#Quantity: {
-	// Change Format at will. See the comment for Canonicalize for
-	// more details.
-	Format: #Format
-}
+#Quantity: _
 
 // CanonicalValue allows a quantity amount to be converted to a string.
 #CanonicalValue: _

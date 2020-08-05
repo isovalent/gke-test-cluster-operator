@@ -45,7 +45,4 @@ package v1
 // GroupVersion contains the "group" and the "version", which uniquely identifies the API.
 //
 // +protobuf.options.(gogoproto.goproto_stringer)=false
-#GroupVersion: {
-	group:   string @go(Group) @protobuf(1,bytes,opt)
-	version: string @go(Version) @protobuf(2,bytes,opt)
-}
+#GroupVersion: _
