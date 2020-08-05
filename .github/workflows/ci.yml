@@ -46,7 +46,7 @@ jobs:
     needs: build-image
     strategy:
       matrix:
-        kube_version: [1.16, 1.17, 1.18]
+        kube_version: [1.17, 1.18]
     name: Create kind clusters and test new image
     runs-on: ubuntu-18.04
     timeout-minutes: 15
