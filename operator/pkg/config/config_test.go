@@ -769,6 +769,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								Name:  "FOO",
 								Value: "bar",
 							}},
+							ConfigMap: &actualName,
 						},
 					},
 				},
@@ -808,7 +809,13 @@ func TestTestRunnerJobResources(t *testing.T) {
 							{
 							  "name": "credentials",
 							  "emptyDir": {}
-							}
+							},
+							{
+                              "name": "config",
+                              "configMap": {
+                                "name": "baz-a0b1c2"
+                              }
+                            }
 						  ],
 						  "initContainers": [
 							{
@@ -834,6 +841,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "credentials",
 								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config",
+								  "mountPath": "/config"
 								}
 							  ]
 							}
@@ -860,6 +871,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "credentials",
 								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config",
+								  "mountPath": "/config"
 								}
 							  ]
 							}

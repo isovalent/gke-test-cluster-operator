@@ -43,6 +43,17 @@ _extraVolumes: [...{}]
 
 _extraVolumeMounts: [...{}]
 
+if resource.spec.jobSpec.runner.configMap != "" {
+	_extraVolumes: [{
+		name: "config"
+		configMap: name: "\(resource.spec.jobSpec.runner.configMap)"
+	}]
+	_extraVolumeMounts: [{
+		name:      "config"
+		mountPath: "/config"
+	}]
+}
+
 #JobTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
@@ -70,15 +81,15 @@ _extraVolumeMounts: [...{}]
 							"\(_name)",
 							"\(_location)",
 						]
-						image: "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
-						env: [_kubeconfigEnv] + _extraEnv
+						image:        "docker.io/errordeveloper/gke-test-cluster-job-runner-init:1b1b875acb5fa546f9bf827f73c615f7db4f28dd"
+						env:          [_kubeconfigEnv] + _extraEnv
 						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
 					}]
 					containers: [{
-						name:    "test-runner"
-						command: _runnerCommand
-						image:   "\(_runnerImage)"
-						env:     [_kubeconfigEnv] + _extraEnv
+						name:         "test-runner"
+						command:      _runnerCommand
+						image:        "\(_runnerImage)"
+						env:          [_kubeconfigEnv] + _extraEnv
 						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
 					}]
 					dnsPolicy:          "ClusterFirst"
