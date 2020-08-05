@@ -9,11 +9,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/container/v1"
+	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -59,7 +61,7 @@ func (GKEClientSetBuilder) NewClientSet(cluster *cnrm.PartialContainerCluster) (
 
 // NewExternalClient will return a ClientSet along with a REST client for the given management cluster,
 // it expect that given cluster to be present in exactly one GCP location
-func NewExternalClient(ctx context.Context, project, clusterName string) (kubernetes.Interface, client.Client, error) {
+func NewExternalClient(ctx context.Context, project, clusterName string, credentialsDataFromEnv bool) (kubernetes.Interface, client.Client, error) {
 	scheme := runtime.NewScheme()
 	if err := clientgoscheme.AddToScheme(scheme); err != nil {
 		return nil, nil, err
@@ -76,8 +78,19 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 		return nil, nil, fmt.Errorf("failed to get a token source: %v", err)
 	}
 
-	httpClient := oauth2.NewClient(ctx, ts)
-	gke, err := container.New(httpClient)
+	opts := []option.ClientOption{
+		option.WithTokenSource(ts),
+	}
+
+	if credentialsDataFromEnv {
+		credentials, err := base64.StdEncoding.DecodeString(os.Getenv("GCP_SERVICE_ACCOUNT_KEY"))
+		if err != nil {
+			return nil, nil, fmt.Errorf("error decoding GCP_SERVICE_ACCOUNT_KEY: %v", err)
+		}
+		opts = append(opts, option.WithCredentialsJSON([]byte(credentials)))
+	}
+
+	gke, err := container.NewService(ctx, opts...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create GKE API client: %v", err)
 	}
