@@ -45,7 +45,7 @@ func NewTestClusterRequest(ctx context.Context, project, managementCluster, name
 	return tcr, nil
 }
 
-func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, runnerJobImage string, runnerCommand ...string) error {
+func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, runnerJobImage string, runnerCommand ...string) error {
 
 	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
@@ -58,6 +58,9 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, runnerJobI
 			Namespace: tcr.key.Namespace,
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
+			ConfigTemplate: &configTemplate,
+			Location:       new(string),
+			Region:         new(string),
 			JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
 					Image:   &runnerJobImage,
@@ -66,6 +69,8 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, runnerJobI
 			},
 		},
 	}
+	*cluster.Spec.Location = "europe-west2-b"
+	*cluster.Spec.Region = "europe-west2"
 
 	return tcr.restClient.Create(ctx, cluster)
 }
