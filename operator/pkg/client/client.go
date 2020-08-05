@@ -75,17 +75,12 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 
 	opts := []option.ClientOption{}
 
-	if serviceAccountKey := os.Getenv("GCP_SERVICE_ACCOUNT_KEY"); serviceAccountKey != "" {
-		credsData, err := base64.StdEncoding.DecodeString(serviceAccountKey)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error decoding GCP_SERVICE_ACCOUNT_KEY: %v", err)
-		}
+	creds, err := maybeGetCredenialsFromJSON(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
 
-		creds, err := google.CredentialsFromJSON(ctx, []byte(credsData), compute.CloudPlatformScope)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error loading credentials: %v", err)
-		}
-
+	if creds != nil {
 		opts = append(opts, option.WithCredentials(creds))
 	}
 
@@ -140,6 +135,22 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 	return clientSet, restClient, nil
 }
 
+func maybeGetCredenialsFromJSON(ctx context.Context) (*google.Credentials, error) {
+	if serviceAccountKey := os.Getenv("GCP_SERVICE_ACCOUNT_KEY"); serviceAccountKey != "" {
+		credsData, err := base64.StdEncoding.DecodeString(serviceAccountKey)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding GCP_SERVICE_ACCOUNT_KEY: %v", err)
+		}
+
+		creds, err := google.CredentialsFromJSON(ctx, []byte(credsData), compute.CloudPlatformScope)
+		if err != nil {
+			return nil, fmt.Errorf("error loading credentials: %v", err)
+		}
+		return creds, nil
+	}
+	return nil, nil
+}
+
 var _ rest.AuthProvider = &googleAuthProvider{}
 
 type googleAuthProvider struct {
@@ -174,7 +185,15 @@ func newConfig(endpoint, ecodedCACert string) (*rest.Config, error) {
 
 func registerAuthProviderPlugin() error {
 	newGoogleAuthProvider := func(_ string, _ map[string]string, _ rest.AuthProviderConfigPersister) (rest.AuthProvider, error) {
-		ts, err := google.DefaultTokenSource(context.Background(), googleScopes()...)
+		ctx := context.Background()
+		creds, err := maybeGetCredenialsFromJSON(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if creds != nil {
+			return &googleAuthProvider{tokenSource: creds.TokenSource}, nil
+		}
+		ts, err := google.DefaultTokenSource(ctx, googleScopes()...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create google token source: %+v", err)
 		}
