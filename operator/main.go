@@ -103,6 +103,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := (&controllers.JobWatcher{
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "JobWatcher")
+		os.Exit(1)
+	}
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
