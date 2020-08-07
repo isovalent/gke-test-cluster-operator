@@ -5,6 +5,7 @@ package controllers_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -131,10 +132,12 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 
 	obj.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
 		Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-			Image: new(string),
+			Image:   new(string),
+			Command: []string{"sleep", "10"},
 		},
+		SkipInit: true,
 	}
-	*obj.Spec.JobSpec.Runner.Image = "sonobuoy/sonobuoy:v0.18.0"
+	*obj.Spec.JobSpec.Runner.Image = "busybox:1.32"
 
 	err := cst.Client.Get(ctx, key, remoteObj)
 	g.Expect(err).To(HaveOccurred())
@@ -243,12 +246,27 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		return cst.Client.Get(ctx, jobKey, &jobObj)
 	}, *pollTimeout, *pollInterval).Should(Succeed())
 
-	g.Expect(cst.Client.Delete(ctx, remoteObj)).To(Succeed())
+	g.Eventually(func() error {
+		err := cst.Client.Get(ctx, jobKey, &jobObj)
+		if err != nil {
+			return err
+		}
+		if IsJobCompleted(jobObj) {
+			return nil
+		}
+		return fmt.Errorf("Test job is not complete yet")
 
-	// since there are no real expectations around state transitions on deletion,
-	// there is no need to simulate what happens there
+	}, *pollTimeout, *pollInterval).Should(Succeed())
 
-	err = cst.Client.Get(ctx, key, remoteObj)
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+	g.Eventually(func() error {
+		err := cst.Client.Get(ctx, key, remoteObj)
+		if err == nil {
+			return fmt.Errorf("Test cluster not deleted yet")
+		}
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}, *pollTimeout, *pollInterval).Should(Succeed())
+	return
 }

@@ -111,6 +111,10 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		ClientSetBuilder: FakeClientSetBuilder{},
 	}).SetupWithManager(mgr)).To(Succeed())
 
+	g.Expect((&controllers.JobWatcher{
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher"),
+	}).SetupWithManager(mgr)).To(Succeed())
+
 	objChan := make(chan *unstructured.Unstructured)
 	g.Expect((&TestCNRMContainerClusterWatcher{
 		Client:  mgr.GetClient(),
