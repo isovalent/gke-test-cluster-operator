@@ -54,6 +54,23 @@ if resource.spec.jobSpec.runner.configMap != "" {
 	}]
 }
 
+_initContainers: [...{}]
+
+if resource.spec.jobSpec.skipInit == false {
+	_initContainers: [{
+		name: "init-runner"
+		command: [
+			"init.sh",
+			"\(_name)-admin@\(_project).iam.gserviceaccount.com",
+			"\(_name)",
+			"\(_location)",
+		]
+		image:        "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427"
+		env:          [_kubeconfigEnv] + _extraEnv
+		volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
+	}]
+}
+
 #JobTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
@@ -73,18 +90,7 @@ if resource.spec.jobSpec.runner.configMap != "" {
 						cluster: "\(_name)"
 				spec: {
 					volumes: [_kubeconfigVolume] + _extraVolumes
-					initContainers: [{
-						name: "init-runner"
-						command: [
-							"init.sh",
-							"\(_name)-admin@\(_project).iam.gserviceaccount.com",
-							"\(_name)",
-							"\(_location)",
-						]
-						image:        "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427"
-						env:          [_kubeconfigEnv] + _extraEnv
-						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
-					}]
+					initContainers: [] + _initContainers
 					containers: [{
 						name:         "test-runner"
 						command:      _runnerCommand

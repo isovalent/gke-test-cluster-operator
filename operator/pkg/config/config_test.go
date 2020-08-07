@@ -907,7 +907,98 @@ func TestTestRunnerJobResources(t *testing.T) {
 					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
 							Image: &runnerImage,
-						}},
+						},
+						SkipInit: true,
+					},
+				},
+				Status: v1alpha1.TestClusterGKEStatus{
+					ClusterName: &actualName,
+				},
+			}
+
+			data, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+
+			const expected = `
+			{
+				"kind": "List",
+				"apiVersion": "v1",
+				"items": [
+				  {
+					"kind": "Job",
+					"apiVersion": "batch/v1",
+					"metadata": {
+					  "name": "test-runner-bar-0a1b2c",
+					  "namespace": "default",
+					  "labels": {
+						"cluster": "bar-0a1b2c"
+					  }
+					},
+					"spec": {
+					  "backoffLimit": 0,
+					  "template": {
+						"metadata": {
+						  "labels": {
+							"cluster": "bar-0a1b2c"
+						  }
+						},
+						"spec": {
+						  "volumes": [
+							{
+							  "name": "credentials",
+							  "emptyDir": {}
+							}
+						  ],
+						  "initContainers": [],
+						  "containers": [
+							{
+							  "name": "test-runner",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								}
+							  ],
+							  "image": "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a",
+							  "command": [],
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								}
+							  ]
+							}
+						  ],
+						  "dnsPolicy": "ClusterFirst",
+						  "restartPolicy": "Never",
+						  "serviceAccountName": "bar-0a1b2c-admin"
+						}
+					  }
+					}
+				  }
+				]
+			}`
+			g.Expect(data).To(MatchJSON(expected))
+
+			objs, err := c.RenderTestRunnerJobResources(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(1))
+		}
+
+		{
+			actualName := "bar-0a1b2c"
+			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
+			cluster := &v1alpha1.TestClusterGKE{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "bar",
+				},
+				Spec: v1alpha1.TestClusterGKESpec{
+					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
+						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+							Image: &runnerImage,
+						},
+					},
 				},
 				Status: v1alpha1.TestClusterGKEStatus{
 					ClusterName: &actualName,
