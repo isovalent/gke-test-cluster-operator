@@ -152,6 +152,9 @@ spec:
             nodes:
               description: Nodes is the number of nodes
               type: integer
+            project:
+              description: Project is the name of GCP project
+              type: string
             region:
               description: 'Location is a GCP region (derived from location) TODO: not user-settable, read-only'
               type: string

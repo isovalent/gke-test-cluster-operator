@@ -104,10 +104,12 @@ func TestClusterResources(t *testing.T) {
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
 					ConfigTemplate: &templateName,
+					Project:        new(string),
 					Region:         new(string),
 					Location:       new(string),
 				},
 			}
+			*cluster.Spec.Project = "cilium-ci"
 			*cluster.Spec.Region = "europe-west2"
 			*cluster.Spec.Location = "europe-west2-b"
 
@@ -332,10 +334,12 @@ func TestClusterResources(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
+					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
 			}
+			*cluster.Spec.Project = "cilium-ci"
 
 			coreResourcesData, err := c.RenderClusterCoreResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -557,10 +561,12 @@ func TestClusterResources(t *testing.T) {
 					Name: "baz",
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
+					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
 			}
+			*cluster.Spec.Project = "cilium-ci"
 
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -585,6 +591,7 @@ func TestClusterResources(t *testing.T) {
 					Name: "baz",
 				},
 				Spec: v1alpha1.TestClusterGKESpec{
+					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
@@ -592,6 +599,7 @@ func TestClusterResources(t *testing.T) {
 					ClusterName: &clusterName,
 				},
 			}
+			*cluster.Spec.Project = "cilium-ci"
 
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -728,6 +736,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 			BaseDirectory: "../../config/templates",
 		}
 
+		defProject := "cilium-ci"
 		defRunnerImage := "cilium-ci/cilium-e2e:latest"
 		defRunnerInitImage := "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6"
 		defCluster := &v1alpha1.TestClusterGKE{
@@ -735,11 +744,12 @@ func TestTestRunnerJobResources(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TestClusterGKESpec{
+				Project:  &defProject,
 				Region:   new(string),
 				Location: new(string),
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-						Image: &defRunnerImage,
+						Image:     &defRunnerImage,
 						InitImage: &defRunnerInitImage,
 					},
 				},

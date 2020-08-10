@@ -15,6 +15,8 @@ import (
 type TestClusterGKESpec struct {
 	// Important: Run "make misc.generate" to regenerate code after modifying this file
 
+	// Project is the name of GCP project
+	Project *string `json:"project,omitempty"`
 	// ConfigTemplate is the name of configuration template to use
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
 	// Location is a GCP zone or region

@@ -29,6 +29,7 @@ type TestClusterRequest struct {
 	podClient       typedcorev1.PodInterface
 	configMapClient typedcorev1.ConfigMapInterface
 	key             types.NamespacedName
+	project         string
 	hasConfigMap    bool
 }
 
@@ -39,6 +40,7 @@ func NewTestClusterRequest(ctx context.Context, project, managementCluster, name
 	}
 
 	tcr := &TestClusterRequest{
+		project: project,
 		key: types.NamespacedName{
 			Name:      name,
 			Namespace: namespace,
@@ -89,6 +91,7 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 		Spec: v1alpha1.TestClusterGKESpec{
 			Nodes:          new(int),
 			ConfigTemplate: &configTemplate,
+			Project:        &tcr.project,
 			Location:       new(string),
 			Region:         new(string),
 			JobSpec: &v1alpha1.TestClusterGKEJobSpec{

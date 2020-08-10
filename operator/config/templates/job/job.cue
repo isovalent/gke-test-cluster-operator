@@ -5,11 +5,12 @@ package job
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
-_project: "cilium-ci"
-
 _name:            "\(resource.metadata.name)"
 _namespace:       "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+
+_project:     	  "\(defaults.spec.project)" | *"\(resource.spec.project)"
 _location:        "\(defaults.spec.location)" | *"\(resource.spec.location)"
+
 _runnerImage:     "\(defaults.spec.jobSpec.runner.image)" | *"\(resource.spec.jobSpec.runner.image)"
 _runnerInitImage: "\(defaults.spec.jobSpec.runner.initImage)" | *"\(resource.spec.jobSpec.runner.initImage)"
 

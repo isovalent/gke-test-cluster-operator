@@ -11,6 +11,9 @@ import (
 
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 #TestClusterGKESpec: {
+	// Project is the name of GCP project
+	project?: null | string @go(Project,*string)
+
 	// ConfigTemplate is the name of configuration template to use
 	configTemplate?: null | string @go(ConfigTemplate,*string)
 

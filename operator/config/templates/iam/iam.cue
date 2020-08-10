@@ -8,7 +8,7 @@ import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 _name:      "\(resource.metadata.name)"
 _namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 
-_project: "cilium-ci"
+_project: "\(defaults.spec.project)" | *"\(resource.spec.project)"
 
 _adminServiceAccountName:  "\(_name)-admin"
 _adminServiceAccountEmail: "\(_adminServiceAccountName)@\(_project).iam.gserviceaccount.com"
@@ -72,7 +72,7 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 					// to Kubernetes API in all clusters, unless there is a CRB inside Kubernetes
 					apiVersion: "resourcemanager.cnrm.cloud.google.com/v1beta1"
 					kind:       "Project"
-					external:   "projects/cilium-ci"
+					external:   "projects/\(_project)"
 				}
 			}
 		},
