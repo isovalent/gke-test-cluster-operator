@@ -64,7 +64,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	if IsJobCompleted(*instance) {
+	if IsJobDone(*instance) {
 		cluster := owner.Object
 		key, err := client.ObjectKeyFromObject(cluster)
 		if err != nil {
@@ -101,6 +101,14 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, err
 }
 
-func IsJobCompleted(job batchv1.Job) bool {
-	return job.Status.CompletionTime != nil
+func IsJobDone(job batchv1.Job) bool {
+	hasCondition := func(t, s, r string) bool {
+		for _, condition := range job.Status.Conditions {
+			if string(condition.Type) == t && string(condition.Status) == s && condition.Reason == r {
+				return true
+			}
+		}
+		return false
+	}
+	return job.Status.CompletionTime != nil || hasCondition("Failed", "True", "BackoffLimitExceeded")
 }
