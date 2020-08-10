@@ -38,8 +38,6 @@ type TestClusterGKEJobSpec struct {
 	Runner *TestClusterGKEJobRunnerSpec `json:"runner,omitempty"`
 	// ImagesToTest is a set of application images that will be tested
 	ImagesToTest *map[string]string `json:"imagesToTest,omitempty"`
-	// SkipInit tells whether to use init container (default renders init containers)
-	SkipInit bool `json:"skipInit"`
 }
 
 // TestClusterGKEJobRunnerSpec is the specification of test job controll process container
@@ -48,6 +46,8 @@ type TestClusterGKEJobRunnerSpec struct {
 	Image *string `json:"image,omitempty"`
 	// Command that will be used
 	Command []string `json:"command,omitempty"`
+	// InitImage specifies the image used in init container
+	InitImage *string `json:"initImage,omitempty"`
 	// Env speficies environment variables for the runner
 	Env []corev1.EnvVar `json:"env,omitempty"`
 	// ConfigMap is a name of configmap of the runner

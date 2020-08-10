@@ -132,11 +132,12 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 
 	obj.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
 		Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+			InitImage:   new(string),
 			Image:   new(string),
 			Command: []string{"sleep", "10"},
 		},
-		SkipInit: true,
 	}
+	*obj.Spec.JobSpec.Runner.InitImage = "tianon/true@sha256:009cce421096698832595ce039aa13fa44327d96beedb84282a69d3dbcf5a81b"
 	*obj.Spec.JobSpec.Runner.Image = "busybox:1.32"
 
 	err := cst.Client.Get(ctx, key, remoteObj)
@@ -254,14 +255,14 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		if IsJobCompleted(jobObj) {
 			return nil
 		}
-		return fmt.Errorf("Test job is not complete yet")
+		return fmt.Errorf("test job is not completed yet")
 
 	}, *pollTimeout, *pollInterval).Should(Succeed())
 
 	g.Eventually(func() error {
 		err := cst.Client.Get(ctx, key, remoteObj)
 		if err == nil {
-			return fmt.Errorf("Test cluster not deleted yet")
+			return fmt.Errorf("test cluster not deleted yet")
 		}
 		if apierrors.IsNotFound(err) {
 			return nil

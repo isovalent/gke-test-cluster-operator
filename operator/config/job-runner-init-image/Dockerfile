@@ -19,3 +19,4 @@ RUN /test/bin/cst
 FROM scratch
 LABEL maintainer="maintainer@cilium.io"
 COPY --from=builder / /
+CMD [ "/usr/local/bin/init.sh" ]

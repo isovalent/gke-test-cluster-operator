@@ -8,20 +8,23 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-if [ "$#" -ne 3 ] ; then
-  echo "$0 expects exactly three argument"
-  exit 1
+if [ -z "${SERVICE_ACCOUNT+x}" ]; then
+  echo "SERVICE_ACCOUNT must be set"
 fi
 
-service_account="$1"
-cluster_name="$2"
-cluster_location="$3"
+if [ -z "${CLUSTER_LOCATION+x}" ]; then
+  echo "CLUSTER_LOCATION must be set"
+fi
 
-until gcloud auth list "--format=value(account)" | grep "${service_account}" ; do sleep 1 ; done
+if [ -z "${CLUSTER_NAME+x}" ]; then
+  echo "CLUSTER_NAME must be set"
+fi
 
-gcloud config set account "${service_account}"
+until gcloud auth list "--format=value(account)" | grep "${SERVICE_ACCOUNT}" ; do sleep 1 ; done
 
-gcloud container clusters get-credentials --zone "${cluster_location}" "${cluster_name}"
+gcloud config set account "${SERVICE_ACCOUNT}"
+
+gcloud container clusters get-credentials --zone "${CLUSTER_LOCATION}" "${CLUSTER_NAME}"
 
 if [ -f /config/init-manifest ] ; then
   kubectl apply -f /config/init-manifest

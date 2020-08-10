@@ -52,6 +52,11 @@ func (in *TestClusterGKEJobRunnerSpec) DeepCopyInto(out *TestClusterGKEJobRunner
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.InitImage != nil {
+		in, out := &in.InitImage, &out.InitImage
+		*out = new(string)
+		**out = **in
+	}
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
 		*out = make([]v1.EnvVar, len(*in))

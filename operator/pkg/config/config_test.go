@@ -729,6 +729,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		}
 
 		defRunnerImage := "cilium-ci/cilium-e2e:latest"
+		defRunnerInitImage := "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6"
 		defCluster := &v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",
@@ -739,6 +740,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
 						Image: &defRunnerImage,
+						InitImage: &defRunnerInitImage,
 					},
 				},
 			},
@@ -826,17 +828,23 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "value": "/credentials/kubeconfig"
 								},
 								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "baz-a0b1c2"
+								},
+								{
 								  "name": "FOO",
 								  "value": "bar"
 								}
 							  ],
-							  "command": [
-								"init.sh",
-								"baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com",
-								"baz-a0b1c2",
-								"europe-west2-b"
-							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427",
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",
@@ -856,6 +864,18 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "KUBECONFIG",
 								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "baz-a0b1c2"
 								},
 								{
 									"name": "FOO",
@@ -882,96 +902,6 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  "dnsPolicy": "ClusterFirst",
 						  "restartPolicy": "Never",
 						  "serviceAccountName": "baz-a0b1c2-admin"
-						}
-					  }
-					}
-				  }
-				]
-			}`
-			g.Expect(data).To(MatchJSON(expected))
-
-			objs, err := c.RenderTestRunnerJobResources(cluster)
-			g.Expect(err).ToNot(HaveOccurred())
-			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(1))
-		}
-
-		{
-			actualName := "bar-0a1b2c"
-			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
-			cluster := &v1alpha1.TestClusterGKE{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "bar",
-				},
-				Spec: v1alpha1.TestClusterGKESpec{
-					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-							Image: &runnerImage,
-						},
-						SkipInit: true,
-					},
-				},
-				Status: v1alpha1.TestClusterGKEStatus{
-					ClusterName: &actualName,
-				},
-			}
-
-			data, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
-			g.Expect(err).ToNot(HaveOccurred())
-
-			const expected = `
-			{
-				"kind": "List",
-				"apiVersion": "v1",
-				"items": [
-				  {
-					"kind": "Job",
-					"apiVersion": "batch/v1",
-					"metadata": {
-					  "name": "test-runner-bar-0a1b2c",
-					  "namespace": "default",
-					  "labels": {
-						"cluster": "bar-0a1b2c"
-					  }
-					},
-					"spec": {
-					  "backoffLimit": 0,
-					  "template": {
-						"metadata": {
-						  "labels": {
-							"cluster": "bar-0a1b2c"
-						  }
-						},
-						"spec": {
-						  "volumes": [
-							{
-							  "name": "credentials",
-							  "emptyDir": {}
-							}
-						  ],
-						  "initContainers": [],
-						  "containers": [
-							{
-							  "name": "test-runner",
-							  "env": [
-								{
-								  "name": "KUBECONFIG",
-								  "value": "/credentials/kubeconfig"
-								}
-							  ],
-							  "image": "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a",
-							  "command": [],
-							  "volumeMounts": [
-								{
-								  "name": "credentials",
-								  "mountPath": "/credentials"
-								}
-							  ]
-							}
-						  ],
-						  "dnsPolicy": "ClusterFirst",
-						  "restartPolicy": "Never",
-						  "serviceAccountName": "bar-0a1b2c-admin"
 						}
 					  }
 					}
@@ -1045,15 +975,21 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "KUBECONFIG",
 								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "bar-0a1b2c"
 								}
 							  ],
-							  "command": [
-								"init.sh",
-								"bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com",
-								"bar-0a1b2c",
-								"europe-west2-b"
-							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:e201df32d61efd57a1660e36512c19d43ae62427",
+							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",
@@ -1069,6 +1005,18 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "KUBECONFIG",
 								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "bar-0a1b2c"
 								}
 							  ],
 							  "image": "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a",

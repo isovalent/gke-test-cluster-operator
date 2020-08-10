@@ -135,12 +135,10 @@ spec:
                     image:
                       description: Image that will drive the tests
                       type: string
+                    initImage:
+                      description: InitImage specifies the image used in init container
+                      type: string
                   type: object
-                skipInit:
-                  description: SkipInit tells whether to use init container (default renders init containers)
-                  type: boolean
-              required:
-              - skipInit
               type: object
             kubernetesVersion:
               description: KubernetesVersion is the version of Kubernetes to use

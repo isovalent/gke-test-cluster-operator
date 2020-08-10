@@ -41,9 +41,6 @@ import (
 
 	// ImagesToTest is a set of application images that will be tested
 	imagesToTest?: null | {[string]: string} @go(ImagesToTest,*map[string]string)
-
-	// SkipInit tells whether to use init container (default renders init containers)
-	skipInit: bool @go(SkipInit)
 }
 
 // TestClusterGKEJobRunnerSpec is the specification of test job controll process container
@@ -53,6 +50,9 @@ import (
 
 	// Command that will be used
 	command?: [...string] @go(Command,[]string)
+
+	// InitImage specifies the image used in init container
+	initImage?: null | string @go(InitImage,*string)
 
 	// Env speficies environment variables for the runner
 	env?: [...corev1.#EnvVar] @go(Env,[]corev1.EnvVar)
