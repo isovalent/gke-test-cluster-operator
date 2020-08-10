@@ -71,6 +71,8 @@ test.unit:
 
 misc.generate:
 	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" crd:trivialVersions=false rbac:roleName=gke-test-cluster-operator webhook paths="./..."
+	go generate ./api/...
+	go generate ./pkg/...
 
 .PHONY: kind-cluster
 kind-cluster:
