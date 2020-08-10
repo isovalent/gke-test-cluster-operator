@@ -1,6 +1,8 @@
 // Copyright 2020 Authors of Cilium
 // SPDX-License-Identifier: Apache-2.0
 
+// +kubebuilder:skip
+
 // Package cnrm contains API Schema definitions for the CNRM API
 package cnrm
 
