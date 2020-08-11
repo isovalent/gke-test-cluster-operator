@@ -7,5 +7,6 @@
 !pkg/
 !api/
 !controllers/
+!logview/
 !config/templates
 !cue.mod/
