@@ -82,9 +82,24 @@ if !parameters.test {
 		kind:       "Deployment"
 	}
 	_workloadSpec: {
-		selector: matchLabels: name: "\(constants.name)"
-		template: metadata: labels: name: "\(constants.name)"
 		replicas: 1
+		selector: matchLabels: name: "\(constants.name)"
+		template: {
+			metadata: labels: name: "\(constants.name)"
+			spec: {
+				containers: [{
+					env: [{
+						name: "GITHUB_TOKEN"
+						valueFrom:
+							secretKeyRef: {
+								optional: true
+								name:     "\(constants.name)-github-token"
+								key:      "token"
+							}
+					}]
+				}]
+			}
+		}
 	}
 	_command: [
 		"/usr/bin/\(constants.name)",
@@ -196,7 +211,7 @@ _clusterAdminAccess: [
 #WorkloadTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
-	items: [{
+	items:      [{
 		apiVersion: "v1"
 		kind:       "ServiceAccount"
 		metadata: {
