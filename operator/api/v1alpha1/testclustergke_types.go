@@ -6,6 +6,8 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/google/go-github/v32/github"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -114,6 +116,26 @@ func (t *TestClusterGKE) WithoutTypeMeta() *TestClusterGKE_WithoutTypeMeta {
 		Spec:       t.Spec,
 		Status:     t.Status,
 	}
+}
+
+func (t *TestClusterGKE) GetGithubStatus() *github.RepoStatus {
+	state := ""
+
+	if t.Status.HasReadyCondition() {
+		state = "success"
+	} else {
+		state = "pending"
+	}
+
+	description := "Creating a cluster for PR"
+	context := "test-cluster-operator status"
+	status := &github.RepoStatus{
+		State:       &state,
+		Description: &description,
+		Context:     &context,
+	}
+
+	return status
 }
 
 // +kubebuilder:object:root=true

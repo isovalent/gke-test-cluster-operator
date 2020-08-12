@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -114,6 +115,12 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 	}
 
 	if status.HasReadyCondition() {
+		err = github.UpdateClusterStatus(ctx, owner.Object)
+		if err != nil {
+			log.Error(err, "unable to update github status")
+			w.MetricTracker.Errors.Inc()
+		}
+
 		if err := w.EnsureTestRunnerJobClusterRoleBindingExists(ctx, instance); err != nil {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
@@ -128,7 +135,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 			}
 			log.Info("generated job", "items", objs.Items)
 
-			if err := w.MaybeCreate(objs, w.MetricTracker.JobsCreated); err != nil {
+			if err, _ := w.MaybeCreate(objs, w.MetricTracker.JobsCreated); err != nil {
 				log.Error(err, "unable reconcile object")
 				w.MetricTracker.Errors.Inc()
 				return ctrl.Result{}, err

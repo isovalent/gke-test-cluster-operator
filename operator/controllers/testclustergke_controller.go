@@ -18,6 +18,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 )
 
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
@@ -96,10 +97,18 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	if err := r.MaybeCreate(objs, r.MetricTracker.ClustersCreated); err != nil {
+	err, created := r.MaybeCreate(objs, r.MetricTracker.ClustersCreated)
+	if err != nil {
 		log.Error(err, "unable reconcile object")
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
+	}
+	if created {
+		err = github.UpdateClusterStatus(ctx, instance)
+		if err != nil {
+			log.Error(err, "unable to update github status")
+			r.MetricTracker.Errors.Inc()
+		}
 	}
 
 	return ctrl.Result{}, nil

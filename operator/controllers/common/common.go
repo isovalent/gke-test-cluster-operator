@@ -7,8 +7,8 @@ import (
 	"context"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -25,7 +25,7 @@ type ClientLogger struct {
 
 type MetricTracker struct {
 	ClustersCreated prometheus.Counter
-	JobsCreated prometheus.Counter
+	JobsCreated     prometheus.Counter
 	Errors          prometheus.Counter
 }
 
@@ -35,10 +35,10 @@ func NewMetricTracker() *MetricTracker {
 			prometheus.CounterOpts{
 				Name: "gke_test_cluster_operator_clusters_created",
 			}),
-			JobsCreated: prometheus.NewCounter(
-				prometheus.CounterOpts{
-					Name: "gke_test_cluster_operator_jobs_created",
-				}),
+		JobsCreated: prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Name: "gke_test_cluster_operator_jobs_created",
+			}),
 		Errors: prometheus.NewCounter(
 			prometheus.CounterOpts{
 				Name: "gke_test_cluster_operator_errors",
@@ -60,13 +60,12 @@ func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name 
 	}
 }
 
-
-func (c *ClientLogger) MaybeCreate(list *unstructured.UnstructuredList, pc prometheus.Counter) error {
+func (c *ClientLogger) MaybeCreate(list *unstructured.UnstructuredList, pc prometheus.Counter) (err error, created bool) {
 	count := 0
-	for _, item := range list.Items{
+	for _, item := range list.Items {
 		created, err := c.createOrSkip(&item)
 		if err != nil {
-			return err
+			return err, false
 		}
 		if created {
 			count++
@@ -74,8 +73,9 @@ func (c *ClientLogger) MaybeCreate(list *unstructured.UnstructuredList, pc prome
 	}
 	if count == len(list.Items) && pc != nil {
 		pc.Inc()
+		created = true
 	}
-	return nil
+	return nil, created
 }
 
 func (c *ClientLogger) createOrSkip(obj runtime.Object) (bool, error) {
