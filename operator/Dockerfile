@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ARG GOLANG_IMAGE=docker.io/library/golang:1.14@sha256:ede9a57fa6d862ab87f5abcea707c3d55e445ff01d806334a1cb7aae45ec73bb
+ARG CA_CERTIFICATES_IMAGE=docker.io/cilium/ca-certificates:69a9f5d66ff96bf97e8b9dc107e92aa9ddbdc9a8
 
 FROM ${GOLANG_IMAGE} as builder
 
@@ -36,13 +37,7 @@ RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount
 RUN --mount=type=bind,target=/src  \
     tar -c config/templates cue.mod | tar -C /out -x
 
-FROM alpine
-RUN apk update \
-	&& apk upgrade \
-	&& apk add --no-cache \
-	ca-certificates \
-	&& update-ca-certificates 2>/dev/null
-WORKDIR /
+FROM ${CA_CERTIFICATES_IMAGE}
 COPY --from=builder /out /
 
 ENTRYPOINT ["/usr/bin/gke-test-cluster-operator"]
