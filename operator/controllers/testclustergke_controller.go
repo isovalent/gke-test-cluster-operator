@@ -101,16 +101,16 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	err, created := r.MaybeCreate(objs, r.MetricTracker.ClustersCreated)
-	if err != nil {
+	ifCreated := func() {
+		r.MetricTracker.ClustersCreated.Inc()
+		ghs.Update(ctx, github.StatePending, "cluster created")
+	}
+	if err := r.MaybeCreate(objs, ifCreated); err != nil {
 		errMsg := "unable to reconcile objects"
 		log.Error(err, errMsg)
 		ghs.Update(ctx, github.StateError, "controller error: "+errMsg)
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
-	}
-	if created {
-		ghs.Update(ctx, github.StatePending, "cluster created")
 	}
 
 	return ctrl.Result{}, nil

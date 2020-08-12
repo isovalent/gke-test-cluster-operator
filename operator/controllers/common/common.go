@@ -60,22 +60,21 @@ func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name 
 	}
 }
 
-func (c *ClientLogger) MaybeCreate(list *unstructured.UnstructuredList, pc prometheus.Counter) (err error, created bool) {
+func (c *ClientLogger) MaybeCreate(list *unstructured.UnstructuredList, createdCallback func()) error {
 	count := 0
 	for _, item := range list.Items {
 		created, err := c.createOrSkip(&item)
 		if err != nil {
-			return err, false
+			return err
 		}
 		if created {
 			count++
 		}
 	}
-	if count == len(list.Items) && pc != nil {
-		pc.Inc()
-		created = true
+	if count == len(list.Items) {
+		createdCallback()
 	}
-	return nil, created
+	return nil
 }
 
 func (c *ClientLogger) createOrSkip(obj runtime.Object) (bool, error) {
