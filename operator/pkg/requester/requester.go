@@ -76,7 +76,7 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 	return nil
 }
 
-func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, runnerImage string, runnerCommand ...string) error {
+func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, labels, annotations map[string]string, configTemplate, runnerImage string, runnerCommand ...string) error {
 
 	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
@@ -85,8 +85,10 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 
 	cluster := &v1alpha1.TestClusterGKE{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      tcr.key.Name,
-			Namespace: tcr.key.Namespace,
+			Name:        tcr.key.Name,
+			Namespace:   tcr.key.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
 			Nodes:          new(int),
@@ -96,8 +98,8 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 			Region:         new(string),
 			JobSpec: &v1alpha1.TestClusterGKEJobSpec{
 				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-					Image:   &runnerImage,
-					Command: runnerCommand,
+					Image:     &runnerImage,
+					Command:   runnerCommand,
 					InitImage: new(string),
 				},
 			},
