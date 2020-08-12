@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,6 +23,7 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
