@@ -87,18 +87,20 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		instance.ObjectMeta.OwnerReferences = nil
 		err = w.Client.Update(ctx, instance)
 		if err != nil {
-			log.V(1).Info("failed to remove job owner")
+			log.V(1).Info("failed to disown job")
+			return ctrl.Result{}, err
 		}
 
-		log.V(1).Info("job is completed, deleting owner")
+		log.V(1).Info("job has completed, deleting owner")
 		err = w.Client.Delete(ctx, cluster)
 		if err != nil {
 			log.V(1).Info("deletion failed")
 			w.MetricTracker.Errors.Inc()
+			return ctrl.Result{}, err
 		}
 	}
 
-	return ctrl.Result{}, err
+	return ctrl.Result{}, nil
 }
 
 func IsJobDone(job batchv1.Job) bool {
