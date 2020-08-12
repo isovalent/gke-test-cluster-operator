@@ -15,11 +15,10 @@ import (
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 )
 
-func GetClient(ctx context.Context) (*github.Client, error) {
-	token := os.Getenv("GH_TOKEN")
-
+func NewClient(ctx context.Context) (*github.Client, error) {
+	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		return nil, fmt.Errorf("GH_TOKEN not set")
+		return nil, fmt.Errorf("GITHUB_TOKEN not set")
 	}
 
 	ts := oauth2.StaticTokenSource(
@@ -30,25 +29,33 @@ func GetClient(ctx context.Context) (*github.Client, error) {
 	return github.NewClient(tc), nil
 }
 
+const (
+	metadataKeyPrefix   = "ci.cilium.io/github-"
+	annotationRepoOwner = metadataKeyPrefix + "repo-owner"
+	annotationRepoName  = metadataKeyPrefix + "repo-name"
+	labelCommitHash     = metadataKeyPrefix + "commit-hash"
+)
+
 func UpdateClusterStatus(ctx context.Context, cluster *clustersv1alpha1.TestClusterGKE) error {
-	repo, ok := cluster.Annotations["ci.cilium.io/repository-name"]
+	commitHash, ok := cluster.Labels[labelCommitHash]
 	if !ok {
-		return fmt.Errorf("repository name not present in cluster %s annotations", cluster.Name)
-	}
-	owner, ok := cluster.Annotations["ci.cilium.io/repository-owner"]
-	if !ok {
-		return fmt.Errorf("repository owner not present in cluster %s annotations", cluster.Name)
-	}
-	hash, ok := cluster.Annotations["ci.cilium.io/commit-hash"]
-	if !ok {
-		return fmt.Errorf("commit hash not present in cluster %s annotations", cluster.Name)
+		return nil
 	}
 
-	client, err := GetClient(ctx)
+	name, ok := cluster.Annotations[annotationRepoOwner]
+	if !ok {
+		return fmt.Errorf("annotations %q is not set", annotationRepoOwner)
+	}
+	owner, ok := cluster.Annotations[annotationRepoName]
+	if !ok {
+		return fmt.Errorf("annotations %q is not set", annotationRepoName)
+	}
+
+	client, err := NewClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = client.Repositories.CreateStatus(ctx, owner, repo, hash, cluster.GetGithubStatus())
+	_, _, err = client.Repositories.CreateStatus(ctx, owner, name, commitHash, cluster.GetGithubStatus())
 	return err
 }

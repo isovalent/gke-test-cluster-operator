@@ -104,7 +104,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 	if created {
-		err = github.UpdateClusterStatus(ctx, instance)
+		err = github.UpdateClusterStatus(ctx, r.Log.WithValues("GitHubStatus", req.NamespacedName), instance)
 		if err != nil {
 			log.Error(err, "unable to update github status")
 			r.MetricTracker.Errors.Inc()
