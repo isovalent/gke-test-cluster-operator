@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 )
 
 const (
@@ -25,12 +27,14 @@ const (
 )
 
 type TestClusterRequest struct {
-	restClient      client.Client
-	podClient       typedcorev1.PodInterface
-	configMapClient typedcorev1.ConfigMapInterface
-	key             types.NamespacedName
-	project         string
-	hasConfigMap    bool
+	restClient        client.Client
+	podClient         typedcorev1.PodInterface
+	configMapClient   typedcorev1.ConfigMapInterface
+	key               types.NamespacedName
+	project           string
+	hasConfigMap      bool
+	fromGitHubActions bool
+	cluster           *v1alpha1.TestClusterGKE
 }
 
 func NewTestClusterRequest(ctx context.Context, project, managementCluster, namespace, name string) (*TestClusterRequest, error) {
@@ -45,9 +49,10 @@ func NewTestClusterRequest(ctx context.Context, project, managementCluster, name
 			Name:      name,
 			Namespace: namespace,
 		},
-		configMapClient: clientSet.CoreV1().ConfigMaps(namespace),
-		podClient:       clientSet.CoreV1().Pods(namespace),
-		restClient:      restClient,
+		configMapClient:   clientSet.CoreV1().ConfigMaps(namespace),
+		podClient:         clientSet.CoreV1().Pods(namespace),
+		restClient:        restClient,
+		fromGitHubActions: os.Getenv("GITHUB_ACTIONS") == "true",
 	}
 	return tcr, nil
 }
@@ -76,8 +81,7 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 	return nil
 }
 
-func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, labels, annotations map[string]string, configTemplate, runnerImage string, runnerCommand ...string) error {
-
+func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, runnerImage string, runnerCommand ...string) error {
 	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
 		return fmt.Errorf("cluster %q already exists in namespace %q", tcr.key.Name, tcr.key.Namespace)
@@ -85,10 +89,8 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, labels, an
 
 	cluster := &v1alpha1.TestClusterGKE{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        tcr.key.Name,
-			Namespace:   tcr.key.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
+			Name:      tcr.key.Name,
+			Namespace: tcr.key.Namespace,
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
 			Nodes:          new(int),
@@ -114,5 +116,26 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, labels, an
 		cluster.Spec.JobSpec.Runner.ConfigMap = &tcr.key.Name
 	}
 
+	if tcr.fromGitHubActions {
+		event, err := github.ParsePushEvent()
+		if err != nil {
+			return err
+		}
+		if event != nil {
+			github.SetMetadata(cluster, *event.HeadCommit.ID, *event.Repo.Organization, *event.Repo.Name, "")
+		}
+	}
+	tcr.cluster = cluster
 	return tcr.restClient.Create(ctx, cluster)
+}
+
+func (tcr *TestClusterRequest) MaybeSendInitialGitHubStatusUpdate(ctx context.Context) error {
+	if !tcr.fromGitHubActions {
+		return nil
+	}
+	client, err := github.NewClient(ctx)
+	if err != nil {
+		return err
+	}
+	return github.InitalStatusUpdate(ctx, client, tcr.cluster)
 }

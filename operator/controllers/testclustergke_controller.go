@@ -80,10 +80,14 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	ghs := github.NewStatusUpdater(r.Log.WithValues("GitHubStatus", req.NamespacedName), instance.ObjectMeta)
+
 	// it's safe to re-generate object, as same name will be used
 	objs, err := r.RenderObjects(instance)
 	if err != nil {
-		log.Error(err, "unable render config template")
+		errMsg := "unable render config template"
+		log.Error(err, errMsg)
+		ghs.Update(ctx, github.StateError, "controller error: "+errMsg)
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}
@@ -99,16 +103,14 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	err, created := r.MaybeCreate(objs, r.MetricTracker.ClustersCreated)
 	if err != nil {
-		log.Error(err, "unable reconcile object")
+		errMsg := "unable to reconcile objects"
+		log.Error(err, errMsg)
+		ghs.Update(ctx, github.StateError, "controller error: "+errMsg)
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}
 	if created {
-		err = github.UpdateClusterStatus(ctx, r.Log.WithValues("GitHubStatus", req.NamespacedName), instance)
-		if err != nil {
-			log.Error(err, "unable to update github status")
-			r.MetricTracker.Errors.Inc()
-		}
+		ghs.Update(ctx, github.StatePending, "cluster created")
 	}
 
 	return ctrl.Result{}, nil

@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
+	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 )
 
 // watch for object, check ownership separately
@@ -59,6 +60,8 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
+	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.Object.ObjectMeta)
+
 	if instance.GetDeletionTimestamp() != nil {
 		log.V(1).Info("object is being deleted")
 		return ctrl.Result{}, nil
@@ -70,6 +73,12 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if err != nil {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
+		}
+
+		if IsJobCompleted(*instance) {
+			ghs.Update(ctx, github.StateSuccess, "test job completed")
+		} else {
+			ghs.Update(ctx, github.StateFailure, "test job failed")
 		}
 
 		err = w.Client.Get(ctx, key, cluster)
@@ -103,6 +112,10 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+func IsJobCompleted(job batchv1.Job) bool {
+	return job.Status.CompletionTime != nil
+}
+
 func IsJobDone(job batchv1.Job) bool {
 	hasCondition := func(t, s, r string) bool {
 		for _, condition := range job.Status.Conditions {
@@ -112,5 +125,5 @@ func IsJobDone(job batchv1.Job) bool {
 		}
 		return false
 	}
-	return job.Status.CompletionTime != nil || hasCondition("Failed", "True", "BackoffLimitExceeded")
+	return IsJobCompleted(job) || hasCondition("Failed", "True", "BackoffLimitExceeded")
 }

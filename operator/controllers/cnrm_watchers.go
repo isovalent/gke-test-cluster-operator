@@ -90,6 +90,8 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, nil
 	}
 
+	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.Object.ObjectMeta)
+
 	if instance.GetDeletionTimestamp() != nil {
 		log.V(1).Info("object is being deleted")
 		return ctrl.Result{}, nil
@@ -115,12 +117,6 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 	}
 
 	if status.HasReadyCondition() {
-		err = github.UpdateClusterStatus(ctx, owner.Object)
-		if err != nil {
-			log.Error(err, "unable to update github status")
-			w.MetricTracker.Errors.Inc()
-		}
-
 		if err := w.EnsureTestRunnerJobClusterRoleBindingExists(ctx, instance); err != nil {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
@@ -135,10 +131,14 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 			}
 			log.Info("generated job", "items", objs.Items)
 
-			if err, _ := w.MaybeCreate(objs, w.MetricTracker.JobsCreated); err != nil {
+			err, created := w.MaybeCreate(objs, w.MetricTracker.JobsCreated)
+			if err != nil {
 				log.Error(err, "unable reconcile object")
 				w.MetricTracker.Errors.Inc()
 				return ctrl.Result{}, err
+			}
+			if created {
+				ghs.Update(ctx, github.StatePending, "test job launched")
 			}
 		}
 	}
