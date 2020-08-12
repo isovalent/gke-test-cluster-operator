@@ -36,7 +36,12 @@ RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount
 RUN --mount=type=bind,target=/src  \
     tar -c config/templates cue.mod | tar -C /out -x
 
-FROM scratch
+FROM alpine
+RUN apk update \
+	&& apk upgrade \
+	&& apk add --no-cache \
+	ca-certificates \
+	&& update-ca-certificates 2>/dev/null
 WORKDIR /
 COPY --from=builder /out /
 
