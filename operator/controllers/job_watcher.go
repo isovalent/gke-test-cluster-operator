@@ -50,7 +50,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	owner, err := GetOwner(req.NamespacedName, instance.GetOwnerReferences())
+	owner, err := w.GetOwner(ctx, req.NamespacedName, instance.GetOwnerReferences())
 	if err != nil {
 		w.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err

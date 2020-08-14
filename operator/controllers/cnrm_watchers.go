@@ -13,7 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -81,7 +80,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	owner, err := GetOwner(req.NamespacedName, instance.GetOwnerReferences())
+	owner, err := w.GetOwner(ctx, req.NamespacedName, instance.GetOwnerReferences())
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -283,59 +282,4 @@ func (w *CNRMComputeSubnetworkWatcher) Reconcile(req ctrl.Request) (ctrl.Result,
 	log := w.Log.WithValues("Reconcile", req.NamespacedName)
 	log.V(1).Info("request")
 	return ctrl.Result{}, nil
-}
-
-type Owner struct {
-	Object *clustersv1alpha1.TestClusterGKE
-}
-
-func GetOwner(objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*Owner, error) {
-	numOwners := len(ownerRefs)
-	if numOwners == 0 {
-		return nil, nil
-	}
-
-	if numOwners > 1 {
-		return nil, fmt.Errorf("object %q unexpected number of owners (%d)", objKey, numOwners)
-	}
-
-	owner := ownerRefs[0]
-
-	ownerObj := &clustersv1alpha1.TestClusterGKE{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      owner.Name,
-			Namespace: objKey.Namespace,
-			UID:       owner.UID,
-		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: owner.APIVersion,
-			Kind:       owner.Kind,
-		},
-	}
-
-	return &Owner{Object: ownerObj}, nil
-}
-
-func (o *Owner) Key() types.NamespacedName {
-	return types.NamespacedName{
-		Name:      o.Object.Name,
-		Namespace: o.Object.Namespace,
-	}
-}
-
-func (o *Owner) UpdateStatus(client client.Client, status *ContainerClusterStatus, objKey types.NamespacedName) error {
-	ctx := context.Background()
-
-	if err := client.Get(ctx, o.Key(), o.Object); err != nil {
-		return err
-	}
-
-	o.Object.Status.Conditions = status.Conditions
-	o.Object.Status.Endpoint = status.Endpoint
-
-	if err := client.Update(ctx, o.Object); err != nil {
-		return err
-	}
-
-	return nil
 }
