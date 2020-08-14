@@ -41,7 +41,7 @@ _workloadSpec: {
 					}
 				}
 				ports: [{
-					name: "http"
+					name:          "http"
 					containerPort: 8080
 				}]
 			}]
@@ -124,8 +124,26 @@ _workloadSpec: {
 			spec: {
 				selector: name: "\(constants.name)"
 				ports: [{
-					name: "http"
-					port: 80
+					name:       "http"
+					port:       80
+					targetPort: 8080
+				}]
+			}
+		},
+		{
+			apiVersion: "projectcontour.io/v1"
+			kind:       "HTTPProxy"
+			metadata: {
+				name: "\(constants.name)"
+				labels: name: "\(constants.name)"
+				namespace: "\(parameters.namespace)"
+			}
+			spec: {
+				routes: [{
+					services: [{
+						name: "\(constants.name)"
+						port: 80
+					}]
 				}]
 			}
 		},
