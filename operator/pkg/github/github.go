@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/google/go-github/v32/github"
@@ -175,7 +176,7 @@ func ParsePushEvent() (*github.PushEvent, error) {
 }
 
 func NewClient(ctx context.Context) (*github.Client, error) {
-	token := os.Getenv("GITHUB_TOKEN")
+	token := strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
 	if token == "" {
 		return nil, fmt.Errorf("GITHUB_TOKEN must be set")
 	}
