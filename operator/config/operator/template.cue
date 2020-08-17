@@ -13,6 +13,8 @@ _workload: {
 	spec: _workloadSpec
 }
 
+_extra_rbac_ClusterRoleAndBinding: [...{}]
+
 _workloadSpec: {
 	template: {
 		metadata: labels: name: "\(constants.name)"
@@ -48,34 +50,6 @@ _workloadSpec: {
 
 _command: [...string]
 _optionalLogviewDomainFlag: [...string]
-
-// you cannot easily append to a list in CUE, so the extra role is declared
-// without any rules
-_extra_rbac_clusterrole: {
-	apiVersion: "rbac.authorization.k8s.io/v1"
-	kind:       "ClusterRole"
-	metadata:
-		name: "\(parameters.namespace)-\(constants.name)-extra"
-}
-
-_extra_rbac_clusterrolebiding: {
-	apiVersion: "rbac.authorization.k8s.io/v1beta1"
-	kind:       "ClusterRoleBinding"
-	metadata: {
-		name: "\(parameters.namespace)-\(constants.name)-extra"
-		labels: name: "\(constants.name)"
-	}
-	roleRef: {
-		kind:     "ClusterRole"
-		name:     "\(parameters.namespace)-\(constants.name)-extra"
-		apiGroup: "rbac.authorization.k8s.io"
-	}
-	subjects: [{
-		kind:      "ServiceAccount"
-		name:      "\(constants.name)"
-		namespace: "\(parameters.namespace)"
-	}]
-}
 
 if !parameters.test {
 	_workload: {
@@ -143,19 +117,74 @@ if parameters.test {
 	// in principle, there should be no difference in RBAC configuration
 	// between test and regular deployments, but it's currently inevitable
 	// to allow creation/deletion of namespaces while testing the operator
-	_extra_rbac_clusterrole: {
-		rules: [{
-			apiGroups: [""]
-			resources: ["namespaces"]
-			verbs: ["create", "delete"]
-		}]
-	}
+	_extra_rbac_ClusterRoleAndBinding: [
+		{
+			apiVersion: "rbac.authorization.k8s.io/v1"
+			kind:       "ClusterRole"
+			metadata:
+				name: "\(parameters.namespace)-\(constants.name)-extra"
+			rules: [{
+				apiGroups: [""]
+				resources: ["namespaces"]
+				verbs: ["create", "delete"]
+			}]
+		}, {
+			apiVersion: "rbac.authorization.k8s.io/v1beta1"
+			kind:       "ClusterRoleBinding"
+			metadata: {
+				name: "\(parameters.namespace)-\(constants.name)-extra"
+				labels: name: "\(constants.name)"
+			}
+			roleRef: {
+				kind:     "ClusterRole"
+				name:     "\(parameters.namespace)-\(constants.name)-extra"
+				apiGroup: "rbac.authorization.k8s.io"
+			}
+			subjects: [{
+				kind:      "ServiceAccount"
+				name:      "\(constants.name)"
+				namespace: "\(parameters.namespace)"
+			}]
+		},
+	]
 }
 
 _adminServiceAccountEmail: "\(constants.name)@\(constants.project).iam.gserviceaccount.com"
 _adminServiceAccountRef:   "serviceAccount:\(constants.project).svc.id.goog[\(parameters.namespace)/\(constants.name)]"
 
-_clusterAdminAccess: [
+_serviceAccount: {
+	apiVersion: "v1"
+	kind:       "ServiceAccount"
+	metadata: {
+		name: "\(constants.name)"
+		labels: name: "\(constants.name)"
+		namespace: "\(parameters.namespace)"
+		annotations: {
+			"iam.gke.io/gcp-service-account": "\(_adminServiceAccountEmail)"
+		}
+	}
+}
+
+_rbac_ClusterRoleBinding: {
+	apiVersion: "rbac.authorization.k8s.io/v1beta1"
+	kind:       "ClusterRoleBinding"
+	metadata: {
+		name: "\(parameters.namespace)-\(constants.name)"
+		labels: name: "\(constants.name)"
+	}
+	roleRef: {
+		kind:     "ClusterRole"
+		name:     "\(constants.name)"
+		apiGroup: "rbac.authorization.k8s.io"
+	}
+	subjects: [{
+		kind:      "ServiceAccount"
+		name:      "\(constants.name)"
+		namespace: "\(parameters.namespace)"
+	}]
+}
+
+_iam_clusterAdminAccess: [
 	{
 		apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
 		kind:       "IAMServiceAccount"
@@ -215,42 +244,20 @@ _clusterAdminAccess: [
 	},
 ]
 
+_core_items: [
+	_serviceAccount,
+	_workload,
+	_rbac_ClusterRoleBinding,
+]
+
 #WorkloadTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
-	items:      [{
-		apiVersion: "v1"
-		kind:       "ServiceAccount"
-		metadata: {
-			name: "\(constants.name)"
-			labels: name: "\(constants.name)"
-			namespace: "\(parameters.namespace)"
-			annotations: {
-				"iam.gke.io/gcp-service-account": "\(_adminServiceAccountEmail)"
-			}
-		}
-	}, {
-		apiVersion: "rbac.authorization.k8s.io/v1beta1"
-		kind:       "ClusterRoleBinding"
-		metadata: {
-			name: "\(parameters.namespace)-\(constants.name)"
-			labels: name: "\(constants.name)"
-		}
-		roleRef: {
-			kind:     "ClusterRole"
-			name:     "\(constants.name)"
-			apiGroup: "rbac.authorization.k8s.io"
-		}
-		subjects: [{
-			kind:      "ServiceAccount"
-			name:      "\(constants.name)"
-			namespace: "\(parameters.namespace)"
-		}]
-	},
-		_workload,
-		_extra_rbac_clusterrole,
-		_extra_rbac_clusterrolebiding,
-	] + _clusterAdminAccess
+	items:
+		_core_items +
+		_iam_clusterAdminAccess +
+		_extra_rbac_ClusterRoleAndBinding +
+		[]
 }
 
 #WorkloadParameters: {
