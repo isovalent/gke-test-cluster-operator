@@ -74,10 +74,12 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
+		url := w.GetLogURL(ctx, instance)
+
 		if IsJobCompleted(*instance) {
-			ghs.Update(ctx, github.StateSuccess, "test job completed")
+			ghs.Update(ctx, github.StateSuccess, "test job completed", url)
 		} else {
-			ghs.Update(ctx, github.StateFailure, "test job failed")
+			ghs.Update(ctx, github.StateFailure, "test job failed", url)
 		}
 
 		err = w.Client.Get(ctx, key, owner)

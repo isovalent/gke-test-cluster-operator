@@ -79,7 +79,7 @@ func NewStatusUpdater(log logr.Logger, meta metav1.ObjectMeta) *StatusUpdater {
 	}
 }
 
-func (s *StatusUpdater) Update(ctx context.Context, state State, description string) {
+func (s *StatusUpdater) Update(ctx context.Context, state State, description, url string) {
 	if s == nil {
 		return
 	}
@@ -94,6 +94,7 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description str
 		State:       new(string),
 		Description: &description,
 		Context:     &s.context,
+		URL:         &url,
 	}
 	*status.State = string(state)
 

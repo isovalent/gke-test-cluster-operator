@@ -87,7 +87,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	if err != nil {
 		errMsg := "unable render config template"
 		log.Error(err, errMsg)
-		ghs.Update(ctx, github.StateError, "controller error: "+errMsg)
+		ghs.Update(ctx, github.StateError, "controller error: "+errMsg, "")
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}
@@ -103,12 +103,12 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	ifCreated := func() {
 		r.MetricTracker.ClustersCreated.Inc()
-		ghs.Update(ctx, github.StatePending, "cluster created")
+		ghs.Update(ctx, github.StatePending, "cluster created", "")
 	}
 	if err := r.MaybeCreate(objs, ifCreated); err != nil {
 		errMsg := "unable to reconcile objects"
 		log.Error(err, errMsg)
-		ghs.Update(ctx, github.StateError, "controller error: "+errMsg)
+		ghs.Update(ctx, github.StateError, "controller error: "+errMsg, "")
 		r.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
 	}

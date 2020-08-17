@@ -7,10 +7,14 @@ import (
 	"context"
 	"fmt"
 
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -25,6 +29,7 @@ type ClientLogger struct {
 	client.Client
 	Log           logr.Logger
 	MetricTracker *MetricTracker
+	LogDomain     string
 }
 
 type MetricTracker struct {
@@ -56,11 +61,13 @@ func NewMetricTracker() *MetricTracker {
 
 	return &t
 }
-func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name string) ClientLogger {
+
+func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name, logDomain string) ClientLogger {
 	return ClientLogger{
 		Client:        mgr.GetClient(),
 		Log:           l.WithName("controllers").WithName(name),
 		MetricTracker: t,
+		LogDomain:     logDomain,
 	}
 }
 
@@ -141,4 +148,57 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, status *clustersv1
 	}
 
 	return nil
+}
+
+func (c *ClientLogger) GetLogURL(ctx context.Context, job *batchv1.Job) string {
+	if c.LogDomain == "" {
+		return ""
+	}
+
+	logviewConfig := &corev1.ConfigMap{}
+
+	key := types.NamespacedName{
+		Name:      "gke-test-cluster-logview",
+		Namespace: job.Namespace,
+	}
+
+	err := c.Get(ctx, key, logviewConfig)
+	if err != nil {
+		c.Log.Error(err, "unable to retrieve configmap", "key", key)
+		return ""
+	}
+
+	prefix, ok := logviewConfig.Data["ingressRoutePrefix"]
+	if !ok {
+		c.Log.Error(err, "ingressRoutePrefix not set in configmap")
+		return ""
+	}
+
+	pods := &corev1.PodList{
+		Items: []corev1.Pod{
+			corev1.Pod{},
+		},
+	}
+
+	req, err := labels.NewRequirement("job-name", selection.Equals, []string{job.Name})
+	if err != nil {
+		c.Log.Error(err, "unable to create pod selector")
+		return ""
+	}
+
+	selector := labels.NewSelector().Add(*req)
+
+	listOptions := &client.ListOptions{
+		Namespace:     job.Namespace,
+		LabelSelector: selector,
+	}
+
+	err = c.List(ctx, pods, listOptions)
+	if err != nil {
+		c.Log.Error(err, "unable to retrieve pods for job")
+	}
+
+	pod := pods.Items[0]
+
+	return fmt.Sprintf("https://%s/logs/%s/%s", c.LogDomain, prefix, pod.Name)
 }

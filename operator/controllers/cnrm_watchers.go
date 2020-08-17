@@ -131,7 +131,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 			log.Info("generated job", "items", objs.Items)
 			ifCreated := func() {
 				w.MetricTracker.JobsCreated.Inc()
-				ghs.Update(ctx, github.StatePending, "test job launched")
+				ghs.Update(ctx, github.StatePending, "test job launched", "")
 			}
 			if err := w.MaybeCreate(objs, ifCreated); err != nil {
 				log.Error(err, "unable reconcile object")
