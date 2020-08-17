@@ -89,7 +89,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, nil
 	}
 
-	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.Object.ObjectMeta)
+	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.ObjectMeta)
 
 	if instance.GetDeletionTimestamp() != nil {
 		log.V(1).Info("object is being deleted")
@@ -109,7 +109,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	log.V(1).Info("reconciling status", "status", status)
 
-	if err := owner.UpdateStatus(w.Client, status, req.NamespacedName); err != nil {
+	if err := w.UpdateOwnerStatus(ctx, status, owner); err != nil {
 		log.Error(err, "failed to update owner status")
 		w.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
@@ -121,8 +121,8 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 			return ctrl.Result{}, err
 		}
 
-		if owner.Object.Spec.JobSpec != nil {
-			objs, err := w.RenderObjects(owner.Object)
+		if owner.Spec.JobSpec != nil {
+			objs, err := w.RenderObjects(owner)
 			if err != nil {
 				log.Error(err, "failed to render job objects")
 				w.MetricTracker.Errors.Inc()

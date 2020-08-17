@@ -107,7 +107,7 @@ func (c *ClientLogger) createOrSkip(obj runtime.Object) (bool, error) {
 	return false, getErr
 }
 
-func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*Owner, error) {
+func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*clustersv1alpha1.TestClusterGKE, error) {
 	numOwners := len(ownerRefs)
 	if numOwners == 0 {
 		return nil, nil
@@ -124,33 +124,19 @@ func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName
 		Namespace: objKey.Namespace,
 	}
 	ownerObj := &clustersv1alpha1.TestClusterGKE{}
-	c.Get(ctx, key, ownerObj)
-
-	return &Owner{Object: ownerObj}, nil
-}
-
-type Owner struct {
-	Object *clustersv1alpha1.TestClusterGKE
-}
-
-func (o *Owner) Key() types.NamespacedName {
-	return types.NamespacedName{
-		Name:      o.Object.Name,
-		Namespace: o.Object.Namespace,
-	}
-}
-
-func (o *Owner) UpdateStatus(client client.Client, status *clustersv1alpha1.TestClusterGKEStatus, objKey types.NamespacedName) error {
-	ctx := context.Background()
-
-	if err := client.Get(ctx, o.Key(), o.Object); err != nil {
-		return err
+	err := c.Get(ctx, key, ownerObj)
+	if err != nil {
+		return nil, err
 	}
 
-	o.Object.Status.Conditions = status.Conditions
-	o.Object.Status.Endpoint = status.Endpoint
+	return ownerObj, nil
+}
 
-	if err := client.Update(ctx, o.Object); err != nil {
+func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, status *clustersv1alpha1.TestClusterGKEStatus, owner *clustersv1alpha1.TestClusterGKE) error {
+	owner.Status.Conditions = status.Conditions
+	owner.Status.Endpoint = status.Endpoint
+
+	if err := c.Update(ctx, owner); err != nil {
 		return err
 	}
 

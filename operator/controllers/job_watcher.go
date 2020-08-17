@@ -60,7 +60,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.Object.ObjectMeta)
+	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.ObjectMeta)
 
 	if instance.GetDeletionTimestamp() != nil {
 		log.V(1).Info("object is being deleted")
@@ -68,8 +68,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if IsJobDone(*instance) {
-		cluster := owner.Object
-		key, err := client.ObjectKeyFromObject(cluster)
+		key, err := client.ObjectKeyFromObject(owner)
 		if err != nil {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
@@ -81,7 +80,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			ghs.Update(ctx, github.StateFailure, "test job failed")
 		}
 
-		err = w.Client.Get(ctx, key, cluster)
+		err = w.Client.Get(ctx, key, owner)
 		if apierrors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
@@ -89,7 +88,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
 		}
-		if cluster.DeletionTimestamp != nil {
+		if owner.DeletionTimestamp != nil {
 			return ctrl.Result{}, nil
 		}
 
@@ -101,7 +100,7 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 
 		log.V(1).Info("job has completed, deleting owner")
-		err = w.Client.Delete(ctx, cluster)
+		err = w.Client.Delete(ctx, owner)
 		if err != nil {
 			log.V(1).Info("deletion failed")
 			w.MetricTracker.Errors.Inc()
