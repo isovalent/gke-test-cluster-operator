@@ -15,6 +15,8 @@ namespace="${name}-$(date +%s)"
 # this is a simple script for runnig controller tests on kind,
 # it could eventually become a Go program
 
+wait_for_cert_manager
+
 echo "INFO: creating test job"
 
 # since we rely on external dependencie, CI uses a different
@@ -63,6 +65,11 @@ one_pod_running() {
 one_pod_failed() {
   pods=($(kubectl get pods --namespace="${namespace}" --selector="name=${name}" --output="jsonpath={range .items[?(.status.phase == \"Failed\")]}{.metadata.name}{\"\n\"}{end}"))
   test "${#pods[@]}" -eq 1
+}
+
+wait_for_cert_manager() {
+  echo "INFO: waiting for cert-manager to start..."
+  kubectl wait pods --namespace="cert-manager" --for="condition=Ready" --all
 }
 
 wait_for_pod() {
