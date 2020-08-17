@@ -170,7 +170,7 @@ _workloadSpec: {
 				labels: name: "\(constants.name)"
 				namespace: "\(parameters.namespace)"
 			}
-			stringData: {
+			data: {
 				ingressRoutePrefix: constants.ingressRoutePrefix
 			}
 		},
