@@ -98,9 +98,24 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 	}
 	*status.State = string(state)
 
+	currentCombinedStatus, _, err := client.Repositories.GetCombinedStatus(ctx, s.owner, s.name, s.commitHash, nil)
+	if err != nil {
+		s.log.Error(err, "unable to get current GitHub status", "repo", fmt.Sprintf("%s/%s", s.owner, s.name), "ref", s.commitHash)
+		return
+	}
+	needsUpdate := false
+	for _, currentStatus := range currentCombinedStatus.Statuses {
+		if *currentStatus.Context == s.context && *currentStatus.State == string(StatePending) {
+			needsUpdate = true
+		}
+	}
+	if !needsUpdate {
+		s.log.V(1).Info("GitHub status already up-to-date")
+		return
+	}
 	_, _, err = client.Repositories.CreateStatus(ctx, s.owner, s.name, s.commitHash, status)
 	if err != nil {
-		s.log.Error(err, "unable to update GitHub status")
+		s.log.Error(err, "unable to update GitHub status", "repo", fmt.Sprintf("%s/%s", s.owner, s.name), "ref", s.commitHash)
 		return
 	}
 	return
