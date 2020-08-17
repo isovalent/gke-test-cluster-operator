@@ -5,7 +5,7 @@ import (
 
 constants: {
 	name:               "gke-test-cluster-logview"
-	ingressRoutePrefix: "/\(hex.Encode(sha256.Sum256(constants.name+parameters.ingressRoutePrefixSalt)))"
+	ingressRoutePrefix: "/\(hex.Encode(sha256.Sum256(parameters.namespace+parameters.ingressRoutePrefixSalt)))"
 }
 
 _workload: {
