@@ -244,6 +244,41 @@ _iam_clusterAdminAccess: [
 	},
 ]
 
+_extra_certManager_IssuerAndCertificater: [...{}]
+
+if parameters.certManager {
+	_extra_certManager_IssuerAndCertificater: [{
+		apiVersion: "cert-manager.io/v1beta1"
+		kind:       "Issuer"
+		metadata: {
+			name: constants.name
+			labels: name: constants.name
+			namespace: parameters.namespace
+		}
+		spec: selfSigned: {}
+	}, {
+		apiVersion: "cert-manager.io/v1beta1"
+		kind:       "Certificate"
+		metadata: {
+			name: constants.name
+			labels: name: constants.name
+			namespace: parameters.namespace
+		}
+		spec: {
+			dnsNames: [
+				"\(constants.name)",
+				"\(constants.name).\(parameters.namespace).svc",
+				"\(constants.name).\(parameters.namespace).svc.cluster.local",
+			]
+			issuerRef: {
+				kind: "Issuer"
+				name: "\(constants.name)"
+			}
+			secretName: "\(constants.name)-webhook-server-cert"
+		}
+	}]
+}
+
 _core_items: [
 	_serviceAccount,
 	_workload,
@@ -257,6 +292,7 @@ _core_items: [
 		_core_items +
 		_iam_clusterAdminAccess +
 		_extra_rbac_ClusterRoleAndBinding +
+		_extra_certManager_IssuerAndCertificater +
 		[]
 }
 
@@ -265,6 +301,7 @@ _core_items: [
 	image:          string
 	test:           bool
 	logviewDomain?: string
+	certManager: bool
 }
 
 parameters: #WorkloadParameters

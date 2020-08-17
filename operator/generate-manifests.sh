@@ -25,7 +25,8 @@ cat > config/operator/instances.json << EOF
       "parameters": {
         "namespace": "${use_namespace}",
         "image": "${operator_image}",
-        "test": true
+        "test": true,
+        "certManager": true
       }
     },
     {
@@ -34,7 +35,8 @@ cat > config/operator/instances.json << EOF
         "namespace": "${use_namespace}",
         "image": "${operator_image}",
         "test": false,
-        "logviewDomain": "${logview_domain}"
+        "logviewDomain": "${logview_domain}",
+        "certManager": true
       }
     }
   ]
