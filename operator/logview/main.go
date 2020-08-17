@@ -1,3 +1,8 @@
+// Copyright 2020 Authors of Cilium
+// SPDX-License-Identifier: Apache-2.0
+
+// based on https://gist.github.com/ahmetb/548059cdbf12fb571e4e2f1e29c48997
+
 package main
 
 import (
