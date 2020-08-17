@@ -33,6 +33,12 @@ cat > config/operator/instances.json << EOF
 }
 EOF
 
+ingress_route_prefix_salt="${INGRESS_ROUTE_PREFIX_SALT:-""}"
+
+if [ -z "${ingress_route_prefix_salt}" ] ; then
+  echo "WARNING: INGRESS_ROUTE_PREFIX_SALT is not set, it's required for production"
+fi
+
 cat > config/logview/instances.json << EOF
 {
   "instances": [
@@ -40,7 +46,8 @@ cat > config/logview/instances.json << EOF
       "output": "test-clusters-atlantis/logview.yaml",
       "parameters": {
         "namespace": "test-clusters-atlantis",
-        "image": "${image}"
+        "image": "${image}",
+        "ingressRoutePrefixSalt": "${ingress_route_prefix_salt}"
       }
     }
   ]

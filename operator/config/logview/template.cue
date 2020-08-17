@@ -1,5 +1,11 @@
+import (
+	"encoding/hex"
+	"crypto/sha256"
+)
+
 constants: {
-	name: "gke-test-cluster-logview"
+	name:               "gke-test-cluster-logview"
+	ingressRoutePrefix: "/\(hex.Encode(sha256.Sum256(constants.name+parameters.ingressRoutePrefixSalt)))"
 }
 
 _workload: {
@@ -140,19 +146,41 @@ _workloadSpec: {
 			}
 			spec: {
 				routes: [{
+					conditions: [{
+						prefix: constants.ingressRoutePrefix
+					}]
 					services: [{
 						name: "\(constants.name)"
 						port: 80
 					}]
+					pathRewritePolicy: {
+						replacePrefix: [{
+							prefix:      constants.ingressRoutePrefix
+							replacement: "/"
+						}]
+					}
 				}]
+			}
+		},
+		{
+			apiVersion: "v1"
+			kind:       "ConfigMap"
+			metadata: {
+				name: "\(constants.name)"
+				labels: name: "\(constants.name)"
+				namespace: "\(parameters.namespace)"
+			}
+			stringData: {
+				ingressRoutePrefix: constants.ingressRoutePrefix
 			}
 		},
 	]
 }
 
 #WorkloadParameters: {
-	namespace: string
-	image:     string
+	namespace:              string
+	image:                  string
+	ingressRoutePrefixSalt: string
 }
 
 parameters: #WorkloadParameters
