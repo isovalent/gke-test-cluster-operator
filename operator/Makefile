@@ -71,7 +71,8 @@ test.unit:
 	go test ./pkg/...
 
 misc.generate:
-	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" crd:trivialVersions=false rbac:roleName=gke-test-cluster-operator webhook paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" crd:trivialVersions=false object paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" rbac:roleName=gke-test-cluster-operator webhook paths="./..."
 	go generate ./api/...
 	go generate ./pkg/...
 
