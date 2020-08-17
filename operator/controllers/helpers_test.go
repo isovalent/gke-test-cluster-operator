@@ -51,8 +51,6 @@ var (
 	disableLogs    = flag.Bool("disable-logs", false, "disable controller logs")
 
 	gkeClusterReconcilerMetrics controllers.TestClusterGKEReconcilerMetrics
-
-	testDomain = "cilium.test"
 )
 
 func setup(t *testing.T) (*ControllerSubTestManager, func()) {
@@ -101,20 +99,21 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	metricTracker := controllerscommon.NewMetricTracker()
 
 	g.Expect((&controllers.TestClusterGKEReconciler{
-		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE", testDomain),
+		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMWatcher", testDomain),
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: FakeClientSetBuilder{},
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.JobWatcher{
-		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher", testDomain),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher"),
+		Logview:      &controllerscommon.LogviewService{Domain: "cilium.test"},
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	objChan := make(chan *unstructured.Unstructured)

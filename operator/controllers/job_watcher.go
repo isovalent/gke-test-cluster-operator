@@ -24,6 +24,7 @@ var jobEventHandler = &handler.EnqueueRequestForObject{}
 
 type JobWatcher struct {
 	common.ClientLogger
+	Logview *common.LogviewService
 }
 
 func (w *JobWatcher) SetupWithManager(mgr ctrl.Manager) error {
@@ -67,6 +68,8 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
+	logviewURL := w.Logview.AccessURL(ctx, &w.ClientLogger, instance)
+
 	if IsJobDone(*instance) {
 		key, err := client.ObjectKeyFromObject(owner)
 		if err != nil {
@@ -74,12 +77,10 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
-		url := w.GetLogURL(ctx, instance)
-
 		if IsJobCompleted(*instance) {
-			ghs.Update(ctx, github.StateSuccess, "test job completed", url)
+			ghs.Update(ctx, github.StateSuccess, "test job completed", logviewURL)
 		} else {
-			ghs.Update(ctx, github.StateFailure, "test job failed", url)
+			ghs.Update(ctx, github.StateFailure, "test job failed", logviewURL)
 		}
 
 		err = w.Client.Get(ctx, key, owner)
@@ -108,6 +109,8 @@ func (w *JobWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
 		}
+	} else {
+		ghs.Update(ctx, github.StatePending, "test job running", logviewURL)
 	}
 
 	return ctrl.Result{}, nil

@@ -29,7 +29,6 @@ type ClientLogger struct {
 	client.Client
 	Log           logr.Logger
 	MetricTracker *MetricTracker
-	LogDomain     string
 }
 
 type MetricTracker struct {
@@ -62,12 +61,11 @@ func NewMetricTracker() *MetricTracker {
 	return &t
 }
 
-func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name, logDomain string) ClientLogger {
+func NewClientLogger(mgr manager.Manager, l logr.Logger, t *MetricTracker, name string) ClientLogger {
 	return ClientLogger{
 		Client:        mgr.GetClient(),
 		Log:           l.WithName("controllers").WithName(name),
 		MetricTracker: t,
-		LogDomain:     logDomain,
 	}
 }
 
@@ -150,27 +148,30 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, status *clustersv1
 	return nil
 }
 
-func (c *ClientLogger) GetLogURL(ctx context.Context, job *batchv1.Job) string {
-	if c.LogDomain == "" {
+type LogviewService struct {
+	Domain string
+}
+
+func (s *LogviewService) AccessURL(ctx context.Context, cl *ClientLogger, job *batchv1.Job) string {
+	if s == nil {
 		return ""
 	}
 
-	logviewConfig := &corev1.ConfigMap{}
+	logviewCM := &corev1.ConfigMap{}
 
 	key := types.NamespacedName{
 		Name:      "gke-test-cluster-logview",
 		Namespace: job.Namespace,
 	}
 
-	err := c.Get(ctx, key, logviewConfig)
-	if err != nil {
-		c.Log.Error(err, "unable to retrieve configmap", "key", key)
+	if err := cl.Get(ctx, key, logviewCM); err != nil {
+		cl.Log.Error(err, "unable to retrieve configmap", "key", key)
 		return ""
 	}
 
-	prefix, ok := logviewConfig.Data["ingressRoutePrefix"]
+	prefix, ok := logviewCM.Data["ingressRoutePrefix"]
 	if !ok {
-		c.Log.Error(err, "ingressRoutePrefix not set in configmap")
+		cl.Log.Info("ingressRoutePrefix not set in configmap")
 		return ""
 	}
 
@@ -182,7 +183,7 @@ func (c *ClientLogger) GetLogURL(ctx context.Context, job *batchv1.Job) string {
 
 	req, err := labels.NewRequirement("job-name", selection.Equals, []string{job.Name})
 	if err != nil {
-		c.Log.Error(err, "unable to create pod selector")
+		cl.Log.Error(err, "unable to create pod selector")
 		return ""
 	}
 
@@ -193,12 +194,15 @@ func (c *ClientLogger) GetLogURL(ctx context.Context, job *batchv1.Job) string {
 		LabelSelector: selector,
 	}
 
-	err = c.List(ctx, pods, listOptions)
-	if err != nil {
-		c.Log.Error(err, "unable to retrieve pods for job")
+	if err := cl.List(ctx, pods, listOptions); err != nil {
+		cl.Log.Error(err, "unable to retrieve pods for job")
+	}
+
+	if len(pods.Items) == 0 {
+		return ""
 	}
 
 	pod := pods.Items[0]
 
-	return fmt.Sprintf("https://%s/logs/%s/%s", c.LogDomain, prefix, pod.Name)
+	return fmt.Sprintf("https://%s/%s/logs/%s", s.Domain, prefix, pod.Name)
 }

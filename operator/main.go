@@ -18,6 +18,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
+	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	controllerscommon "github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
@@ -72,7 +73,7 @@ func main() {
 	metricTracker := controllerscommon.NewMetricTracker()
 
 	if err := (&controllers.TestClusterGKEReconciler{
-		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE", *logviewDomain),
+		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
 		Scheme:         mgr.GetScheme(),
 		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr); err != nil {
@@ -80,7 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err := (&controllers.TestClusterPoolGKEReconciler{
-		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterPoolGKE", *logviewDomain),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterPoolGKE"),
 		Scheme:       mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterPoolGKE")
@@ -95,7 +96,7 @@ func main() {
 	}
 
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher", *logviewDomain),
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: *clientSetBuilder,
@@ -105,7 +106,8 @@ func main() {
 	}
 
 	if err := (&controllers.JobWatcher{
-		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher", *logviewDomain),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "JobWatcher"),
+		Logview:      &common.LogviewService{Domain: *logviewDomain},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "JobWatcher")
 		os.Exit(1)
