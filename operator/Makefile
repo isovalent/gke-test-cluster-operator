@@ -80,6 +80,7 @@ kind-cluster:
 	if ! kind get clusters | grep $(KIND_CLUSTER_NAME) ; then \
 		kind create cluster --name $(KIND_CLUSTER_NAME) ; \
 	fi
+	kind export kubeconfig --name $(KIND_CLUSTER_NAME)
 	kubectl apply -f ../config/cnrm-system/crds.yaml
 
 test.controllers-kind: kind-cluster images.operator
