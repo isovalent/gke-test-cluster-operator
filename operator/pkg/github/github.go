@@ -94,15 +94,23 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 		State:       new(string),
 		Description: &description,
 		Context:     &s.context,
-		URL:         &url,
+	}
+	if url != "" {
+		status.URL = &url
 	}
 	*status.State = string(state)
 
+	log := s.log.WithValues("repo", fmt.Sprintf("%s/%s", s.owner, s.name), "ref", s.commitHash)
+
 	currentCombinedStatus, _, err := client.Repositories.GetCombinedStatus(ctx, s.owner, s.name, s.commitHash, nil)
 	if err != nil {
-		s.log.Error(err, "unable to get current GitHub status", "repo", fmt.Sprintf("%s/%s", s.owner, s.name), "ref", s.commitHash)
+		log.Error(err, "unable to get current GitHub status")
 		return
 	}
+
+	log.V(1).Info("inspecting if GitHub status is already up-to-date",
+		"currentCombinedStatus.Statuses", currentCombinedStatus.Statuses, "ourStatus", status)
+
 	needsUpdate := false
 	for _, currentStatus := range currentCombinedStatus.Statuses {
 		if *currentStatus.Context == s.context {
@@ -112,12 +120,15 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 		}
 	}
 	if !needsUpdate {
-		s.log.V(1).Info("GitHub status already up-to-date")
+		log.V(1).Info("GitHub status already up-to-date")
 		return
 	}
+
+	log.V(1).Info("updating GitHub status",
+		"currentCombinedStatus.Statuses", currentCombinedStatus.Statuses, "ourStatus", status)
 	_, _, err = client.Repositories.CreateStatus(ctx, s.owner, s.name, s.commitHash, status)
 	if err != nil {
-		s.log.Error(err, "unable to update GitHub status", "repo", fmt.Sprintf("%s/%s", s.owner, s.name), "ref", s.commitHash)
+		log.Error(err, "unable to update GitHub status")
 		return
 	}
 	return
