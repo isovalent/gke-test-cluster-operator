@@ -105,8 +105,10 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 	}
 	needsUpdate := false
 	for _, currentStatus := range currentCombinedStatus.Statuses {
-		if *currentStatus.Context == s.context && *currentStatus.State == string(StatePending) {
-			needsUpdate = true
+		if *currentStatus.Context == s.context {
+			if *currentStatus.State == string(StateError) || *currentStatus.State == string(StatePending) {
+				needsUpdate = true
+			}
 		}
 	}
 	if !needsUpdate {
