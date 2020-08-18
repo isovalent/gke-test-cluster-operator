@@ -9,7 +9,7 @@ ifeq ($(MAKER_CONTAINER),true)
   KG=kg
 endif
 
-REGISTRY ?= docker.io/isovalent
+REGISTRY ?= quay.io/isovalent
 imagine_push_or_export = --export
 ifeq ($(PUSH),true)
 imagine_push_or_export = --push

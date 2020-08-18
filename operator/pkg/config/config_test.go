@@ -738,7 +738,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 
 		defProject := "cilium-ci"
 		defRunnerImage := "cilium-ci/cilium-e2e:latest"
-		defRunnerInitImage := "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6"
+		defRunnerInitImage := "quay.io/isovalent/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6"
 		defCluster := &v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",
@@ -854,7 +854,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "value": "bar"
 								}
 							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
+							  "image": "quay.io/isovalent/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",
@@ -999,7 +999,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "value": "bar-0a1b2c"
 								}
 							  ],
-							  "image": "docker.io/errordeveloper/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
+							  "image": "quay.io/isovalent/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
 							  "volumeMounts": [
 								{
 								  "name": "credentials",

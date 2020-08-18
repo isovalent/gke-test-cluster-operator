@@ -118,4 +118,4 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         with:
           entrypoint: make
-          args: -C operator images.all PUSH=true REGISTRY=docker.io/errordeveloper
+          args: -C operator images.all PUSH=true
