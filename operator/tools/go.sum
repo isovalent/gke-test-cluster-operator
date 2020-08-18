@@ -296,6 +296,10 @@ github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d h1:cvgai3M5
 github.com/errordeveloper/imagine v0.0.0-20200721105117-936fd11a086d/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
 github.com/errordeveloper/imagine v0.0.0-20200811092946-97d806f9167f h1:f+2hyEJ9ovr+wt7CEyidgnGrreYlW5qIRHGhBEUWbSg=
 github.com/errordeveloper/imagine v0.0.0-20200811092946-97d806f9167f/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
+github.com/errordeveloper/imagine v0.0.0-20200818093626-3df9cce53694 h1:Dm+17rMUD62+arPrZ8G7VYetOglPGxfjzGLeDVIrUts=
+github.com/errordeveloper/imagine v0.0.0-20200818093626-3df9cce53694/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
+github.com/errordeveloper/imagine v0.0.0-20200818094050-fb0ee6b2279b h1:kJkKT7fv5XTusvMq9BF+Shfg9qQq1Yyi82iykSwFBJE=
+github.com/errordeveloper/imagine v0.0.0-20200818094050-fb0ee6b2279b/go.mod h1:wyWWef016M4m5D7Es1MVwvFwqS6xc2E2g4mI669SsmI=
 github.com/errordeveloper/kue v0.2.5 h1:z1eR3/vpFuFfU0k1LFUtb0IkM1LbRuCt6akStKGHP9Q=
 github.com/errordeveloper/kue v0.2.5/go.mod h1:fq1IBSbKXyGxnamsVBDqoScY/zWtqHB7XC2QgI6eGQ8=
 github.com/evanphx/json-patch v4.2.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
