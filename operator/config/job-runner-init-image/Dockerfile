@@ -18,5 +18,7 @@ RUN /test/bin/cst
 
 FROM scratch
 LABEL maintainer="maintainer@cilium.io"
+# work-around for quay.io 400 error: https://gist.github.com/errordeveloper/7a078c53d4694f0cad9a727255fb23a6
+COPY empty /tmp/empty
 COPY --from=builder / /
 CMD [ "/usr/local/bin/init.sh" ]
