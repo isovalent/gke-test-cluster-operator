@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"flag"
+	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/requester"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
@@ -30,6 +33,8 @@ func main() {
 	if namespace == nil || *namespace == "" {
 		log.Fatal("--namespace must be set")
 	}
+
+	maybeReadImageFromFile(image)
 
 	ctx := context.Background()
 
@@ -58,5 +63,20 @@ func main() {
 	err = tcr.MaybeSendInitialGitHubStatusUpdate(ctx)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func maybeReadImageFromFile(image *string) {
+	imageFileInfo, err := os.Stat(*image)
+	if os.IsNotExist(err) || imageFileInfo.IsDir() {
+		return
+	}
+	data, err := ioutil.ReadFile(*image)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	if len(lines) > 0 {
+		*image = lines[0]
 	}
 }
