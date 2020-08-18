@@ -110,7 +110,7 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	*cluster.Spec.Nodes = 2
 	*cluster.Spec.Location = "europe-west2-b"
 	*cluster.Spec.Region = "europe-west2"
-	*cluster.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:e8e34968c060a23cfbfb27012d38e5ccbd3e27fe"
+	*cluster.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 
 	if tcr.hasConfigMap {
 		cluster.Spec.JobSpec.Runner.ConfigMap = &tcr.key.Name
