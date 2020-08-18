@@ -7,7 +7,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-image="${1}"
+operator_image="${1}"
+logview_image="${2}"
 use_namespace="${NAMESPACE:-kube-system}"
 
 cat > config/operator/instances.json << EOF
@@ -17,7 +18,7 @@ cat > config/operator/instances.json << EOF
       "output": "operator-test.yaml",
       "parameters": {
         "namespace": "${use_namespace}",
-        "image": "${image}",
+        "image": "${operator_image}",
         "test": true
       }
     },
@@ -25,7 +26,7 @@ cat > config/operator/instances.json << EOF
       "output": "operator.yaml",
       "parameters": {
         "namespace": "${use_namespace}",
-        "image": "${image}",
+        "image": "${operator_image}",
         "test": false
       }
     }
@@ -46,7 +47,7 @@ cat > config/logview/instances.json << EOF
       "output": "test-clusters-atlantis/logview.yaml",
       "parameters": {
         "namespace": "test-clusters-atlantis",
-        "image": "${image}",
+        "image": "${logview_image}",
         "ingressRoutePrefixSalt": "${ingress_route_prefix_salt}"
       }
     }

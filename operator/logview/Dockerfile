@@ -9,7 +9,6 @@ ARG CA_CERTIFICATES_IMAGE=docker.io/cilium/ca-certificates:69a9f5d66ff96bf97e8b9
 FROM ${GOLANG_IMAGE} as builder
 
 WORKDIR /src
-ENV GOPRIVATE=github.com/isovalent
 
 RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
     go mod download
@@ -21,19 +20,9 @@ RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount
 
 RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-        go build -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-operator ./
-
-RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-        go test -c -ldflags '-s -w' -o /out/usr/bin/test.gke-test-cluster-operator-controllers ./controllers
-
-RUN --mount=type=bind,target=/src --mount=target=/root/.cache,type=cache --mount=target=/go/pkg/mod,type=cache \
-    go test ./pkg/...
-
-RUN --mount=type=bind,target=/src  \
-    tar -c config/templates cue.mod | tar -C /out -x
+        go build -ldflags '-s -w' -o /out/usr/bin/gke-test-cluster-logview ./
 
 FROM ${CA_CERTIFICATES_IMAGE}
 COPY --from=builder /out /
 
-ENTRYPOINT ["/usr/bin/gke-test-cluster-operator"]
+ENTRYPOINT ["/usr/bin/gke-test-cluster-logview"]

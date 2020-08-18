@@ -21,7 +21,7 @@ KIND_CLUSTER_NAME = operator-kind
 	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
-images.all: images.operator images.job-runner-init
+images.all: images.operator images.job-runner-init images.logview
 
 images.operator: .buildx_builder
 	$(IMAGINE) build \
@@ -52,8 +52,22 @@ images.job-runner-init: .buildx_builder
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-job-runner-init.tag
 
+images.logview: .buildx_builder
+	$(IMAGINE) build \
+		--builder $$(cat .buildx_builder) \
+		--base ./logview \
+		--name gke-test-cluster-logview \
+		--registry $(REGISTRY) \
+		$(imagine_push_or_export) \
+		--cleanup
+	$(IMAGINE) image \
+		--base ./logview \
+		--name gke-test-cluster-logview \
+		--registry $(REGISTRY) \
+		> image-gke-test-cluster-logview.tag
+
 manifests.generate:
-	./generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)"
+	./generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)" "$$(cat image-gke-test-cluster-logview.tag)"
 
 manifests.promote:
 	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
