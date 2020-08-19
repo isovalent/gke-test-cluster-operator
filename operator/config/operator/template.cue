@@ -47,6 +47,7 @@ _workloadSpec: {
 }
 
 _command: [...string]
+_optionalLogviewDomainFlag: [...string]
 
 // you cannot easily append to a list in CUE, so the extra role is declared
 // without any rules
@@ -102,8 +103,14 @@ if !parameters.test {
 		}
 	}
 	_command: [
-		"/usr/bin/\(constants.name)",
-		"--enable-leader-election",
+			"/usr/bin/\(constants.name)",
+			"--enable-leader-election",
+	] + _optionalLogviewDomainFlag
+}
+
+if parameters.logviewDomain != null && len(parameters.logviewDomain) > 0{
+	_optionalLogviewDomainFlag: [
+		"--logview-domain=\(parameters.logviewDomain)",
 	]
 }
 
@@ -247,9 +254,10 @@ _clusterAdminAccess: [
 }
 
 #WorkloadParameters: {
-	namespace: string
-	image:     string
-	test:      bool
+	namespace:      string
+	image:          string
+	test:           bool
+	logviewDomain?: string
 }
 
 parameters: #WorkloadParameters

@@ -11,6 +11,12 @@ operator_image="${1}"
 logview_image="${2}"
 use_namespace="${NAMESPACE:-kube-system}"
 
+logview_domain="${LOGVIEW_DOMAIN:-""}"
+
+if [ -z "${logview_domain}" ] ; then
+  echo "WARNING: LOGVIEW_DOMAIN is not set, it's required for production"
+fi
+
 cat > config/operator/instances.json << EOF
 {
   "instances": [
@@ -27,7 +33,8 @@ cat > config/operator/instances.json << EOF
       "parameters": {
         "namespace": "${use_namespace}",
         "image": "${operator_image}",
-        "test": false
+        "test": false,
+        "logviewDomain": "${logview_domain}"
       }
     }
   ]
