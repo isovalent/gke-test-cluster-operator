@@ -123,6 +123,10 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 		}
 		if event != nil {
 			github.SetMetadata(cluster, *event.HeadCommit.ID, *event.Repo.Organization, *event.Repo.Name, "")
+		} else {
+			// only push events are support, reset this to prevent
+			// MaybeSendInitialGitHubStatusUpdate from being called
+			tcr.fromGitHubActions = false
 		}
 	}
 	tcr.cluster = cluster
