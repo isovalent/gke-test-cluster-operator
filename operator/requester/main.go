@@ -14,7 +14,7 @@ import (
 
 func main() {
 
-	image := flag.String("image", "", "image to test")
+	image := flag.String("image", "", "image to test - this should be ether full image name, or path to a file containing the name")
 	namespace := flag.String("namespace", "", "namespace to use")
 
 	namePrefix := flag.String("name-prefix", "test-", "name prefix for the test cluster")
@@ -66,6 +66,9 @@ func main() {
 	}
 }
 
+// maybeReadImageFromFile will attempt to treat &image as a path to a file
+// and read the first line, it will not fail, but if it succeeds the first
+// line of the file's contents (if non-empty) will be store in &image
 func maybeReadImageFromFile(image *string) {
 	imageFileInfo, err := os.Stat(*image)
 	if os.IsNotExist(err) || imageFileInfo.IsDir() {
@@ -76,7 +79,11 @@ func maybeReadImageFromFile(image *string) {
 		return
 	}
 	lines := strings.Split(string(data), "\n")
-	if len(lines) > 0 {
-		*image = lines[0]
+	if len(lines) < 1 {
+		return
 	}
+	if lines[0] == "" {
+		return
+	}
+	*image = lines[0]
 }
