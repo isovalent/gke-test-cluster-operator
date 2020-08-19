@@ -96,7 +96,7 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 		Context:     &s.context,
 	}
 	if url != "" {
-		status.URL = &url
+		status.TargetURL = &url
 	}
 	*status.State = string(state)
 
