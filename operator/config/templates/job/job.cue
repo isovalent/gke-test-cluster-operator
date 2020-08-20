@@ -5,11 +5,11 @@ package job
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 
-_name:            "\(resource.metadata.name)"
-_namespace:       "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+_name:      "\(resource.metadata.name)"
+_namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
 
-_project:     	  "\(defaults.spec.project)" | *"\(resource.spec.project)"
-_location:        "\(defaults.spec.location)" | *"\(resource.spec.location)"
+_project:  "\(defaults.spec.project)" | *"\(resource.spec.project)"
+_location: "\(defaults.spec.location)" | *"\(resource.spec.location)"
 
 _runnerImage:     "\(defaults.spec.jobSpec.runner.image)" | *"\(resource.spec.jobSpec.runner.image)"
 _runnerInitImage: "\(defaults.spec.jobSpec.runner.initImage)" | *"\(resource.spec.jobSpec.runner.initImage)"
@@ -22,15 +22,15 @@ if len(resource.spec.jobSpec.runner.command) > 0 {
 
 _authInfoEnv: [
 	{
-		name: "SERVICE_ACCOUNT"
+		name:  "SERVICE_ACCOUNT"
 		value: "\(_name)-admin@\(_project).iam.gserviceaccount.com"
 	},
 	{
-		name: "CLUSTER_LOCATION"
+		name:  "CLUSTER_LOCATION"
 		value: "\(_location)"
 	},
 	{
-		name: "CLUSTER_NAME"
+		name:  "CLUSTER_NAME"
 		value: "\(_name)"
 	},
 ]
@@ -89,7 +89,9 @@ if resource.spec.jobSpec.runner.configMap != "" {
 					labels:
 						cluster: "\(_name)"
 				spec: {
-					volumes: [_kubeconfigVolume] + _extraVolumes
+					enableServiceLinks:           false
+					automountServiceAccountToken: false
+					volumes:                      [_kubeconfigVolume] + _extraVolumes
 					initContainers: [{
 						name:         "init-runner"
 						image:        "\(_runnerInitImage)"

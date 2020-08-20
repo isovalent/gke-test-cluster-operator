@@ -817,6 +817,8 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  }
 						},
 						"spec": {
+						  "enableServiceLinks": false,
+						  "automountServiceAccountToken": false,
 						  "volumes": [
 							{
 							  "name": "credentials",
@@ -972,6 +974,8 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  }
 						},
 						"spec": {
+						  "enableServiceLinks": false,
+						  "automountServiceAccountToken": false,
 						  "volumes": [
 							{
 							  "name": "credentials",
