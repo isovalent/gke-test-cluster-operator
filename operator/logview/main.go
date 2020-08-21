@@ -68,6 +68,10 @@ func (l *logview) handleLogs(w http.ResponseWriter, r *http.Request) {
 	defer logStream.Close()
 	defer log.Printf("stopped streaming logs for %q to %q", pod, r.RemoteAddr)
 
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
 	log.Printf("started streaming logs for %q to %q", pod, r.RemoteAddr)
 	if _, err := io.Copy(w, logStream); err != nil {
 		log.Printf("error: %s", err)
