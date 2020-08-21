@@ -24,14 +24,19 @@ func main() {
 
 	initManifest := flag.String("init-manifest", "", "path to manifest to use to initialise the cluster")
 
-	flag.Parse()
+	description := flag.String("description", "", "definition of the purpose of this cluster")
 
-	if image == nil || *image == "" {
-		log.Fatal("--image must be set")
-	}
+	flag.Parse()
 
 	if namespace == nil || *namespace == "" {
 		log.Fatal("--namespace must be set")
+	}
+
+	if image == nil || *image == "" {
+		if description == nil || *description == "" {
+			log.Fatal("--description must be set when --image is not set")
+		}
+		log.Println("cluster will be created without a test job since --image was not set")
 	}
 
 	maybeReadImageFromFile(image)
@@ -54,7 +59,7 @@ func main() {
 		log.Printf("configmap created with init manifiest %q\n", *initManifest)
 	}
 
-	err = tcr.CreateTestCluster(ctx, "basic", *image, flag.Args()...)
+	err = tcr.CreateTestCluster(ctx, "basic", description, image, flag.Args()...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,6 +75,9 @@ func main() {
 // and read the first line, it will not fail, but if it succeeds the first
 // line of the file's contents (if non-empty) will be store in &image
 func maybeReadImageFromFile(image *string) {
+	if image == nil || *image == "" {
+		return
+	}
 	imageFileInfo, err := os.Stat(*image)
 	if os.IsNotExist(err) || imageFileInfo.IsDir() {
 		return

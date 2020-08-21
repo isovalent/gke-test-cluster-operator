@@ -81,7 +81,7 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 	return nil
 }
 
-func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, runnerImage string, runnerCommand ...string) error {
+func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate string, description, runnerImage *string, runnerCommand ...string) error {
 	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
 		return fmt.Errorf("cluster %q already exists in namespace %q", tcr.key.Name, tcr.key.Namespace)
@@ -98,19 +98,28 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 			Project:        &tcr.project,
 			Location:       new(string),
 			Region:         new(string),
-			JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-					Image:     &runnerImage,
-					Command:   runnerCommand,
-					InitImage: new(string),
-				},
-			},
 		},
 	}
+
+	if runnerImage != nil && *runnerImage != "" {
+		cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
+			Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+				Image:     runnerImage,
+				Command:   runnerCommand,
+				InitImage: new(string),
+			},
+		}
+		*cluster.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
+	}
+	if description != nil && *description != "" {
+		cluster.Annotations = map[string]string{
+			"ci.cilium.io/cluster-description": *description,
+		}
+	}
+
 	*cluster.Spec.Nodes = 2
 	*cluster.Spec.Location = "europe-west2-b"
 	*cluster.Spec.Region = "europe-west2"
-	*cluster.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 
 	if tcr.hasConfigMap {
 		cluster.Spec.JobSpec.Runner.ConfigMap = &tcr.key.Name
