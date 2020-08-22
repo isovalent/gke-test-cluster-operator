@@ -35,6 +35,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
 	controllerscommon "github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
@@ -77,6 +78,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 
 	g.Expect(clientgoscheme.AddToScheme(scheme)).To(Succeed())
 	g.Expect(clustersv1alpha1.AddToScheme(scheme)).To(Succeed())
+	g.Expect(clustersv1alpha2.AddToScheme(scheme)).To(Succeed())
 	g.Expect(cnrm.AddToScheme(scheme)).To(Succeed())
 
 	kubeClient, err := client.New(cfg, client.Options{Scheme: scheme})
@@ -126,7 +128,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		objChan: objChan,
 	}).SetupWithManager(mgr)).To(Succeed())
 
-	g.Expect((&clustersv1alpha1.TestClusterGKE{}).
+	g.Expect((&clustersv1alpha2.TestClusterGKE{}).
 		SetupWebhookWithManager(mgr)).To(Succeed())
 
 	waitForCert(t)
@@ -167,17 +169,17 @@ func waitForCert(t *testing.T) {
 	}
 }
 
-func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv1alpha1.TestClusterGKE) {
+func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv1alpha2.TestClusterGKE) {
 	key := types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
 	}
-	obj := &clustersv1alpha1.TestClusterGKE{
+	obj := &clustersv1alpha2.TestClusterGKE{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Spec: clustersv1alpha1.TestClusterGKESpec{},
+		Spec: clustersv1alpha2.TestClusterGKESpec{},
 	}
 	return key, obj
 }

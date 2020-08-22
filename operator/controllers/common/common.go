@@ -6,6 +6,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
 	"github.com/go-logr/logr"
-	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -112,7 +113,7 @@ func (c *ClientLogger) createOrSkip(obj runtime.Object) (bool, error) {
 	return false, getErr
 }
 
-func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*clustersv1alpha1.TestClusterGKE, error) {
+func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName, ownerRefs []metav1.OwnerReference) (*clustersv1alpha2.TestClusterGKE, error) {
 	numOwners := len(ownerRefs)
 	if numOwners == 0 {
 		return nil, nil
@@ -128,7 +129,7 @@ func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName
 		Name:      owner.Name,
 		Namespace: objKey.Namespace,
 	}
-	ownerObj := &clustersv1alpha1.TestClusterGKE{}
+	ownerObj := &clustersv1alpha2.TestClusterGKE{}
 	err := c.Get(ctx, key, ownerObj)
 	if err != nil {
 		return nil, err
@@ -137,9 +138,30 @@ func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName
 	return ownerObj, nil
 }
 
-func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, status *clustersv1alpha1.TestClusterGKEStatus, owner *clustersv1alpha1.TestClusterGKE) error {
-	owner.Status.Conditions = status.Conditions
-	owner.Status.Endpoint = status.Endpoint
+func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind string, dependencyKey types.NamespacedName, status *clustersv1alpha2.TestClusterGKEStatus, owner *clustersv1alpha2.TestClusterGKE) error {
+	if owner.Status.Dependencies == nil {
+		owner.Status.Dependencies = map[string]clustersv1alpha2.TestClusterGKEConditions{}
+	}
+	key := fmt.Sprintf("%s:%s", dependencyKind, dependencyKey.String())
+	owner.Status.Dependencies[key] = status.Conditions
+
+	readinessStatus := "False"
+	readinessReason := "DependenciesNotReady"
+	readinessMessage := "Some depenendcies are not ready yet"
+
+	if owner.Status.AllDependeciesReady() {
+		readinessStatus = "True"
+		readinessReason = "AllDependenciesReady"
+		readinessMessage = fmt.Sprintf("All %d depenendcies are ready", len(owner.Status.Dependencies))
+	}
+
+	owner.Status.Conditions = clustersv1alpha2.TestClusterGKEConditions{{
+		Type:               "Ready",
+		Status:             readinessStatus,
+		LastTransitionTime: metav1.Time{Time: time.Now()},
+		Reason:             readinessReason,
+		Message:            readinessMessage,
+	}}
 
 	if err := c.Update(ctx, owner); err != nil {
 		return err

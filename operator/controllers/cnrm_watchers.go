@@ -24,7 +24,7 @@ import (
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 
-	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
@@ -109,7 +109,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	log.V(1).Info("reconciling status", "status", status)
 
-	if err := w.UpdateOwnerStatus(ctx, status, owner); err != nil {
+	if err := w.UpdateOwnerStatus(ctx, "ContainerCluster", req.NamespacedName, status, owner); err != nil {
 		log.Error(err, "failed to update owner status")
 		w.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
@@ -194,8 +194,8 @@ func (w *CNRMContainerClusterWatcher) EnsureTestRunnerJobClusterRoleBindingExist
 	return nil
 }
 
-type ContainerClusterStatus = clustersv1alpha1.TestClusterGKEStatus
-type ContainerClusterStatusCondition = clustersv1alpha1.TestClusterGKEStatusCondition
+type ContainerClusterStatus = clustersv1alpha2.TestClusterGKEStatus
+type ContainerClusterStatusCondition = clustersv1alpha2.TestClusterGKECondition
 
 func (*CNRMContainerClusterWatcher) GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerClusterStatus, error) {
 	// TestClusterGKEStatus is really based on CNRM's ContainerClusterStatus,
@@ -220,7 +220,7 @@ func (*CNRMContainerClusterWatcher) GetContainerClusterStatus(instance *unstruct
 	return status, nil
 }
 
-func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	objs, err := r.ConfigRenderer.RenderTestInfraWorkloads(ownerObj)
 	if err != nil {
 		return nil, err

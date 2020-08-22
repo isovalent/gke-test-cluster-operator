@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 )
 
 func googleScopes() []string {
@@ -69,7 +69,7 @@ func NewExternalClient(ctx context.Context, project, clusterName string) (kubern
 	if err := cnrm.AddToScheme(scheme); err != nil {
 		return nil, nil, err
 	}
-	if err := v1alpha1.AddToScheme(scheme); err != nil {
+	if err := v1alpha2.AddToScheme(scheme); err != nil {
 		return nil, nil, err
 	}
 

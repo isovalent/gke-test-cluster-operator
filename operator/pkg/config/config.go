@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/template"
 
 	corev1 "k8s.io/api/core/v1"
@@ -73,7 +73,7 @@ func (c *Config) ExistingTemplates() []string {
 	return templates
 }
 
-func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClusterGKE) error {
+func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha2.TestClusterGKE) error {
 	if !c.HaveExistingTemplate(templateName) {
 		return fmt.Errorf("no such template: %q", templateName)
 	}
@@ -85,15 +85,15 @@ func (c *Config) ApplyDefaults(templateName string, defaults *v1alpha1.TestClust
 	c.templates[templateName] = template
 	return nil
 }
-func (c *Config) ApplyDefaultsForClusterAccessResources(defaults *v1alpha1.TestClusterGKE) error {
+func (c *Config) ApplyDefaultsForClusterAccessResources(defaults *v1alpha2.TestClusterGKE) error {
 	return c.ApplyDefaults(ClusterAccessResourcesTemplateName, defaults)
 }
 
-func (c *Config) ApplyDefaultsForTestInfraWorkloads(defaults *v1alpha1.TestClusterGKE) error {
+func (c *Config) ApplyDefaultsForTestInfraWorkloads(defaults *v1alpha2.TestClusterGKE) error {
 	return c.ApplyDefaults(TestInfraWorkloadsTemplateName, defaults)
 }
 
-func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, templateName string) ([]byte, error) {
+func (c *Config) renderTemplateAsJSON(cluster *v1alpha2.TestClusterGKE, templateName string) ([]byte, error) {
 	if cluster == nil {
 		return nil, fmt.Errorf("unexpected nil object")
 	}
@@ -138,23 +138,23 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 	return template.RenderJSON()
 }
 
-func (c *Config) RenderClusterCoreResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) RenderClusterCoreResourcesAsJSON(cluster *v1alpha2.TestClusterGKE) ([]byte, error) {
 	return c.renderTemplateAsJSON(cluster, "")
 }
 
-func (c *Config) RenderClusterAccessResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) RenderClusterAccessResourcesAsJSON(cluster *v1alpha2.TestClusterGKE) ([]byte, error) {
 	return c.renderTemplateAsJSON(cluster, ClusterAccessResourcesTemplateName)
 }
 
-func (c *Config) RenderTestInfraWorkloadsAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) RenderTestInfraWorkloadsAsJSON(cluster *v1alpha2.TestClusterGKE) ([]byte, error) {
 	return c.renderTemplateAsJSON(cluster, TestInfraWorkloadsTemplateName)
 }
 
-func (c *Config) RenderPromResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+func (c *Config) RenderPromResourcesAsJSON(cluster *v1alpha2.TestClusterGKE) ([]byte, error) {
 	return c.renderTemplateAsJSON(cluster, PromResourcesTemplateName)
 }
 
-func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderAllClusterResources(cluster *v1alpha2.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
 	allResources := &unstructured.UnstructuredList{}
 	coreResources := &unstructured.UnstructuredList{}
 	accessResources := &unstructured.UnstructuredList{}
@@ -237,7 +237,7 @@ func toUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
 	return u, nil
 }
 
-func (c *Config) RenderTestInfraWorkloads(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderTestInfraWorkloads(cluster *v1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	jobRunnerResources := &unstructured.UnstructuredList{}
 
 	jobRunnerResourcesData, err := c.RenderTestInfraWorkloadsAsJSON(cluster)

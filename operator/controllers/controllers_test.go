@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	. "github.com/isovalent/gke-test-cluster-management/operator/controllers"
 )
 
@@ -156,8 +156,8 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		obj.Spec.ConfigTemplate = new(string)
 		*obj.Spec.ConfigTemplate = "basic"
 
-		obj.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
-			Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+		obj.Spec.JobSpec = &v1alpha2.TestClusterGKEJobSpec{
+			Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 				InitImage: new(string),
 				Image:     new(string),
 				Command:   tc.command,
@@ -221,34 +221,44 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			}},
 		}
 
+		cnrmClusterDependecyKey := fmt.Sprintf("ContainerCluster:%s/%s", cnrmCluster.GetNamespace(), clusterName)
+
 		for _, conditions := range createConditionSequence {
 			cnrmCluster.Object["status"] = ContainerClusterStatus{
 				Conditions: conditions,
 			}
 			// check status is not the same initially
 			g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
-			g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha1.TestClusterGKEStatus).Conditions))
+			g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha2.TestClusterGKEStatus).Conditions))
 			// make an update simulating what CNRM would do
 			g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
-			// expect the status to be exactly the same soon enough
-			g.Eventually(func() []v1alpha1.TestClusterGKEStatusCondition {
+			// expect the depenencies status to be exactly the same soon enough
+			g.Eventually(func() []v1alpha2.TestClusterGKECondition {
 				err := cst.Client.Get(ctx, key, obj)
 				if err != nil {
 					return nil
 				}
 
-				if len(obj.Status.Conditions) == 0 {
+				if len(obj.Status.Dependencies) == 0 {
 					return nil
 				}
-				return obj.Status.Conditions
+
+				if _, ok := obj.Status.Dependencies[cnrmClusterDependecyKey]; !ok {
+					return nil
+				}
+
+				return obj.Status.Dependencies[cnrmClusterDependecyKey]
 			}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
 
 			g.Expect(obj.Status.ClusterName).ToNot(BeNil())
 			g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
 
 			if conditions[0].Status == "True" {
+				g.Expect(obj.Status.AllDependeciesReady()).To(BeTrue())
 				g.Expect(obj.Status.HasReadyCondition()).To(BeTrue())
+
 			} else {
+				g.Expect(obj.Status.AllDependeciesReady()).To(BeFalse())
 				g.Expect(obj.Status.HasReadyCondition()).To(BeFalse())
 			}
 		}

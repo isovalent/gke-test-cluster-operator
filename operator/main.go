@@ -15,6 +15,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/cnrm"
 	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/config/templates/basic"
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers"
@@ -34,6 +35,7 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
 	_ = clustersv1alpha1.AddToScheme(scheme)
+	_ = clustersv1alpha2.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 
 	// register Config Connector scheme, so that the client can access its objects
@@ -90,6 +92,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&clustersv1alpha1.TestClusterGKE{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "TestClusterGKE")
+		os.Exit(1)
+	}
+	if err = (&clustersv1alpha2.TestClusterGKE{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "TestClusterGKE")
 		os.Exit(1)
 	}

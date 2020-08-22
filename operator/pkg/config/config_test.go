@@ -10,7 +10,7 @@ import (
 
 	. "github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,7 +59,7 @@ func TestClusterResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderClusterCoreResourcesAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+		_, err = c.RenderClusterCoreResourcesAsJSON(&v1alpha2.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil/empty configTemplate`))
 	}
@@ -74,11 +74,11 @@ func TestClusterResources(t *testing.T) {
 		nodes := 3
 		machineType := "n1-standard-4"
 
-		defCluster := &v1alpha1.TestClusterGKE{
+		defCluster := &v1alpha2.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",
 			},
-			Spec: v1alpha1.TestClusterGKESpec{
+			Spec: v1alpha2.TestClusterGKESpec{
 				Nodes:       &nodes,
 				MachineType: &machineType,
 				Location:    &region,
@@ -98,12 +98,12 @@ func TestClusterResources(t *testing.T) {
 		g.Expect(err).ToNot(HaveOccurred())
 
 		{
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "baz",
 					Namespace: "other",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
+				Spec: v1alpha2.TestClusterGKESpec{
 					ConfigTemplate: &templateName,
 					Project:        new(string),
 					Region:         new(string),
@@ -329,12 +329,12 @@ func TestClusterResources(t *testing.T) {
 		}
 
 		{
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "bar",
 					Namespace: "default",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
+				Spec: v1alpha2.TestClusterGKESpec{
 					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
@@ -557,11 +557,11 @@ func TestClusterResources(t *testing.T) {
 		}
 
 		{
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "baz",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
+				Spec: v1alpha2.TestClusterGKESpec{
 					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
@@ -587,16 +587,16 @@ func TestClusterResources(t *testing.T) {
 
 		{
 			clusterName := "baz-abc2sax"
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "baz",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
+				Spec: v1alpha2.TestClusterGKESpec{
 					Project:        new(string),
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
-				Status: v1alpha1.TestClusterGKEStatus{
+				Status: v1alpha2.TestClusterGKEStatus{
 					ClusterName: &clusterName,
 				},
 			}
@@ -618,8 +618,8 @@ func TestClusterResources(t *testing.T) {
 		}
 
 		{
-			cluster := &v1alpha1.TestClusterGKE{
-				Spec: v1alpha1.TestClusterGKESpec{
+			cluster := &v1alpha2.TestClusterGKE{
+				Spec: v1alpha2.TestClusterGKESpec{
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
@@ -655,7 +655,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha2.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -668,7 +668,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha2.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -681,10 +681,10 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha2.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo"},
-			Spec: v1alpha1.TestClusterGKESpec{
-				JobSpec: &v1alpha1.TestClusterGKEJobSpec{},
+			Spec: v1alpha2.TestClusterGKESpec{
+				JobSpec: &v1alpha2.TestClusterGKEJobSpec{},
 			}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec.runner`))
@@ -698,11 +698,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha2.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo"},
-			Spec: v1alpha1.TestClusterGKESpec{
-				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{},
+			Spec: v1alpha2.TestClusterGKESpec{
+				JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+					Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{},
 				},
 			}})
 		g.Expect(err).To(HaveOccurred())
@@ -719,11 +719,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 
 		runnerImage := "cilium-ci/cilium-e2e:latest"
 
-		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha2.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
-			Spec: v1alpha1.TestClusterGKESpec{
-				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+			Spec: v1alpha2.TestClusterGKESpec{
+				JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+					Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 						Image: &runnerImage,
 					},
 				},
@@ -740,16 +740,16 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		defProject := "cilium-ci"
 		defRunnerImage := "cilium-ci/cilium-e2e:latest"
 		defRunnerInitImage := "quay.io/isovalent/gke-test-cluster-initutil:660e365e201df32d61efd57a112c19d242743ae6"
-		defCluster := &v1alpha1.TestClusterGKE{
+		defCluster := &v1alpha2.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",
 			},
-			Spec: v1alpha1.TestClusterGKESpec{
+			Spec: v1alpha2.TestClusterGKESpec{
 				Project:  &defProject,
 				Region:   new(string),
 				Location: new(string),
-				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-					Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+				JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+					Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 						Image:     &defRunnerImage,
 						InitImage: &defRunnerInitImage,
 					},
@@ -768,14 +768,14 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		{
 			actualName := "baz-a0b1c2"
 			runnerImage := "cilium-ci/cilium-e2e:80d4133f2b9317a0f08fcff9b2f8d625ea9f7b7a"
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "baz",
 					Namespace: "other",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
-					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+				Spec: v1alpha2.TestClusterGKESpec{
+					JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+						Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 							Image:   &runnerImage,
 							Command: []string{"app.test", "-test.v"},
 							Env: []corev1.EnvVar{{
@@ -786,7 +786,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						},
 					},
 				},
-				Status: v1alpha1.TestClusterGKEStatus{
+				Status: v1alpha2.TestClusterGKEStatus{
 					ClusterName: &actualName,
 				},
 			}
@@ -1133,18 +1133,18 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		{
 			actualName := "bar-0a1b2c"
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "bar",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
-					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+				Spec: v1alpha2.TestClusterGKESpec{
+					JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+						Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 							Image: &runnerImage,
 						},
 					},
 				},
-				Status: v1alpha1.TestClusterGKEStatus{
+				Status: v1alpha2.TestClusterGKEStatus{
 					ClusterName: &actualName,
 				},
 			}
@@ -1444,17 +1444,17 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		{
 			actualName := "baz-x2a8332"
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "baz",
 				},
-				Spec: v1alpha1.TestClusterGKESpec{
-					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+				Spec: v1alpha2.TestClusterGKESpec{
+					JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+						Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 							Image: &runnerImage,
 						}},
 				},
-				Status: v1alpha1.TestClusterGKEStatus{
+				Status: v1alpha2.TestClusterGKEStatus{
 					ClusterName: &actualName,
 				},
 			}
@@ -1476,10 +1476,10 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 
 		{
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
-			cluster := &v1alpha1.TestClusterGKE{
-				Spec: v1alpha1.TestClusterGKESpec{
-					JobSpec: &v1alpha1.TestClusterGKEJobSpec{
-						Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+			cluster := &v1alpha2.TestClusterGKE{
+				Spec: v1alpha2.TestClusterGKESpec{
+					JobSpec: &v1alpha2.TestClusterGKEJobSpec{
+						Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 							Image: &runnerImage,
 						}},
 				},
@@ -1506,7 +1506,7 @@ func TestPromResources(t *testing.T) {
 		g.Expect(err).ToNot(HaveOccurred())
 
 		{
-			cluster := &v1alpha1.TestClusterGKE{
+			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "baz",
 					Namespace: "other",

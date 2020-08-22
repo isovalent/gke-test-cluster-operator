@@ -3,7 +3,7 @@
 
 package iam
 
-import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 _name:      "\(resource.metadata.name)"
 _namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
@@ -92,8 +92,8 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 	]
 }
 
-defaults: v1alpha1.#TestClusterGKE
+defaults: v1alpha2.#TestClusterGKE
 
-resource: v1alpha1.#TestClusterGKE
+resource: v1alpha2.#TestClusterGKE
 
 template: #ClusterAccessResources

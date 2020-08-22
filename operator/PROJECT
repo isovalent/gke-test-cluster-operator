@@ -3,7 +3,7 @@ repo: github.com/isovalent/gke-test-cluster-management/operator
 resources:
 - group: clusters
   kind: TestClusterGKE
-  version: v1alpha1
+  version: v1alpha2
 - group: clusters
   kind: TestClusterPoolGKE
   version: v1alpha1

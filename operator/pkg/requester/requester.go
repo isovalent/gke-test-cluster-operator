@@ -16,7 +16,7 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	gkeclient "github.com/isovalent/gke-test-cluster-management/operator/pkg/client"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/github"
 )
@@ -34,7 +34,7 @@ type TestClusterRequest struct {
 	project           string
 	configMapName     *string
 	fromGitHubActions bool
-	cluster           *v1alpha1.TestClusterGKE
+	cluster           *v1alpha2.TestClusterGKE
 }
 
 func NewTestClusterRequest(ctx context.Context, project, managementCluster, namespace, name string) (*TestClusterRequest, error) {
@@ -83,17 +83,17 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 }
 
 func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, description, runnerImage *string, runnerCommand ...string) error {
-	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
+	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha2.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
 		return fmt.Errorf("cluster %q already exists in namespace %q", tcr.key.Name, tcr.key.Namespace)
 	}
 
-	cluster := &v1alpha1.TestClusterGKE{
+	cluster := &v1alpha2.TestClusterGKE{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      tcr.key.Name,
 			Namespace: tcr.key.Namespace,
 		},
-		Spec: v1alpha1.TestClusterGKESpec{
+		Spec: v1alpha2.TestClusterGKESpec{
 			Project: &tcr.project,
 		},
 	}
@@ -102,8 +102,8 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	}
 
 	if runnerImage != nil && *runnerImage != "" {
-		cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
-			Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
+		cluster.Spec.JobSpec = &v1alpha2.TestClusterGKEJobSpec{
+			Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{
 				Image:   runnerImage,
 				Command: runnerCommand,
 			},
@@ -117,8 +117,8 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 
 	if tcr.configMapName != nil {
 		if cluster.Spec.JobSpec == nil {
-			cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
-				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{},
+			cluster.Spec.JobSpec = &v1alpha2.TestClusterGKEJobSpec{
+				Runner: &v1alpha2.TestClusterGKEJobRunnerSpec{},
 			}
 		}
 		cluster.Spec.JobSpec.Runner.ConfigMap = tcr.configMapName

@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/controllers/common"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
@@ -79,7 +79,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	log.V(1).Info("request")
 
-	instance := &clustersv1alpha1.TestClusterGKE{}
+	instance := &clustersv1alpha2.TestClusterGKE{}
 	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
 		if client.IgnoreNotFound(err) != nil {
 			r.MetricTracker.Errors.Inc()
@@ -101,8 +101,8 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	log.Info("generated config", "items", objs.Items)
 
-	// update status to store generated cluster name and prevent
-	// more clusters being generated
+	// next status must be updated to store generated cluster
+	// name and prevent more clusters being generated
 	// (NB: r.RenderObjects sets instance.Status.ClusterName)
 	if err := r.Update(ctx, instance); err != nil {
 		return ctrl.Result{}, err
@@ -125,11 +125,11 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&clustersv1alpha1.TestClusterGKE{}).
+		For(&clustersv1alpha2.TestClusterGKE{}).
 		Complete(r)
 }
 
-func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	objs, err := r.ConfigRenderer.RenderAllClusterResources(instance, true)
 	if err != nil {
 		return nil, err

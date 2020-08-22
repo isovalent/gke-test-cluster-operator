@@ -16,7 +16,7 @@ import (
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
 
-	clustersv1alpha1 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -134,7 +134,7 @@ func (s *StatusUpdater) Update(ctx context.Context, state State, description, ur
 	return
 }
 
-func SetMetadata(cluster *clustersv1alpha1.TestClusterGKE, commitHash, repoOwner, repoName, context string) {
+func SetMetadata(cluster *clustersv1alpha2.TestClusterGKE, commitHash, repoOwner, repoName, context string) {
 	if cluster.Labels == nil {
 		cluster.Labels = map[string]string{}
 	}
@@ -151,7 +151,7 @@ func SetMetadata(cluster *clustersv1alpha1.TestClusterGKE, commitHash, repoOwner
 
 // InitalStatusUpdate assumes that SetMetdata was called and makes a direct update to GitHub status API, which
 // may result in an error
-func InitalStatusUpdate(ctx context.Context, client *github.Client, cluster *clustersv1alpha1.TestClusterGKE) error {
+func InitalStatusUpdate(ctx context.Context, client *github.Client, cluster *clustersv1alpha2.TestClusterGKE) error {
 	commitHash := cluster.Labels[labelCommitHash]
 	owner := cluster.Annotations[annotationRepoOwner]
 	name := cluster.Annotations[annotationRepoName]
