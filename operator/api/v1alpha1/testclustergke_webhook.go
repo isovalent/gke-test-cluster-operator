@@ -20,8 +20,6 @@ func (r *TestClusterGKE) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-clusters-ci-cilium-io-v1alpha1-testclustergke,mutating=true,failurePolicy=fail,groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=create;update,versions=v1alpha1,name=mtestclustergke.kb.io
-
 var _ webhook.Defaulter = &TestClusterGKE{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
@@ -72,8 +70,6 @@ func (r *TestClusterGKE) Default() {
 		*r.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 	}
 }
-
-// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-clusters-ci-cilium-io-v1alpha1-testclustergke,mutating=false,failurePolicy=fail,groups=clusters.ci.cilium.io,resources=testclustergkes,versions=v1alpha1,name=vtestclustergke.kb.io
 
 var _ webhook.Validator = &TestClusterGKE{}
 

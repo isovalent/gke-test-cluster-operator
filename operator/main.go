@@ -42,6 +42,7 @@ func init() {
 
 func main() {
 	port := flag.Int("port", 9443, "port to listen on")
+	certDir := flag.String("cert-dir", "/run/cert", "directory where TLS certificate is mounted")
 	metricsAddr := flag.String("metrics-addr", ":8080", "address the metric endpoint binds to")
 	enableLeaderElection := flag.Bool("enable-leader-election", false, "enable leader election")
 	leaderElectionID := flag.String("leader-election-id", "gke-test-cluster-operator.ci.cilium.io", "identifier to use for leader election")
@@ -62,6 +63,7 @@ func main() {
 		Scheme:             scheme,
 		MetricsBindAddress: *metricsAddr,
 		Port:               *port,
+		CertDir:            *certDir,
 		LeaderElection:     *enableLeaderElection,
 		LeaderElectionID:   *leaderElectionID,
 	})
