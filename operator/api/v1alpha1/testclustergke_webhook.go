@@ -6,6 +6,7 @@ package v1alpha1
 import (
 	"errors"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -82,7 +83,10 @@ func (c *TestClusterGKE) ValidateCreate() error {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (c *TestClusterGKE) ValidateUpdate(old runtime.Object) error {
 	log.Info("validate update", "namespace", c.Namespace, "name", c.Name)
-	return errors.New("updates are not supported")
+	if !equality.Semantic.DeepEqual(c.Spec, old.(*TestClusterGKE).Spec) {
+		return errors.New("spec updates are not supported")
+	}
+	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
