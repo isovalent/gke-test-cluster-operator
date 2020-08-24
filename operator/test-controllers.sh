@@ -44,6 +44,7 @@ one_pod_failed() {
 wait_for_cert_manager() {
   echo "INFO: waiting for cert-manager to start..."
   kubectl wait pods --namespace="cert-manager" --for="condition=Ready" --all --timeout=2m
+  until kubectl get secret --namespace="cert-manager" cert-manager-webhook-ca 2> /dev/null ; do sleep 0.5 ; done
 }
 
 wait_for_pod() {
