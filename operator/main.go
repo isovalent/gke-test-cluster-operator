@@ -87,6 +87,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterPoolGKE")
 		os.Exit(1)
 	}
+	if err = (&clustersv1alpha1.TestClusterGKE{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "TestClusterGKE")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	clientSetBuilder, err := gkeclient.NewClientSetBuilder()
