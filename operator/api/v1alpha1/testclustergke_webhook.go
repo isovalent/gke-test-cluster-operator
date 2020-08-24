@@ -29,16 +29,6 @@ func (c *TestClusterGKE) Default() {
 		log.Info("applying defaults", "name", c.Name, "namespace", c.Namespace)
 	}
 
-	if c.Spec.Nodes == nil {
-		c.Spec.Nodes = new(int)
-		*c.Spec.Nodes = 2
-	}
-
-	if c.Spec.MachineType == nil {
-		c.Spec.MachineType = new(string)
-		*c.Spec.MachineType = "n1-standard-4"
-	}
-
 	if c.Spec.Project == nil {
 		c.Spec.Project = new(string)
 		*c.Spec.Project = "cilium-ci"
@@ -68,6 +58,16 @@ func (c *TestClusterGKE) Default() {
 			c.Spec.JobSpec.Runner.InitImage = new(string)
 			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 		}
+	}
+
+	if c.Spec.MachineType == nil {
+		c.Spec.MachineType = new(string)
+		*c.Spec.MachineType = "n1-standard-4"
+	}
+
+	if c.Spec.Nodes == nil {
+		c.Spec.Nodes = new(int)
+		*c.Spec.Nodes = 2
 	}
 }
 
