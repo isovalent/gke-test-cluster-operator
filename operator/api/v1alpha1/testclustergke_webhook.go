@@ -14,79 +14,79 @@ import (
 
 var log = logf.Log.WithName("testclustergke-resource")
 
-func (r *TestClusterGKE) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (c *TestClusterGKE) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(c).
 		Complete()
 }
 
 var _ webhook.Defaulter = &TestClusterGKE{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *TestClusterGKE) Default() {
-	log.Info("default", "name", r.Name)
+func (c *TestClusterGKE) Default() {
+	log.Info("default", "name", c.Name)
 
-	if r.Spec.Nodes == nil {
-		r.Spec.Nodes = new(int)
-		*r.Spec.Nodes = 2
+	if c.Spec.Nodes == nil {
+		c.Spec.Nodes = new(int)
+		*c.Spec.Nodes = 2
 	}
 
-	if r.Spec.MachineType == nil {
-		r.Spec.MachineType = new(string)
-		*r.Spec.MachineType = "n1-standard-4"
+	if c.Spec.MachineType == nil {
+		c.Spec.MachineType = new(string)
+		*c.Spec.MachineType = "n1-standard-4"
 	}
 
-	if r.Spec.Project == nil {
-		r.Spec.Project = new(string)
-		*r.Spec.Project = "cilium-ci"
+	if c.Spec.Project == nil {
+		c.Spec.Project = new(string)
+		*c.Spec.Project = "cilium-ci"
 	}
 
-	if r.Spec.Location == nil {
-		r.Spec.Location = new(string)
-		*r.Spec.Location = "europe-west2-b"
+	if c.Spec.Location == nil {
+		c.Spec.Location = new(string)
+		*c.Spec.Location = "europe-west2-b"
 	}
 
-	if r.Spec.Region == nil {
-		r.Spec.Region = new(string)
-		*r.Spec.Region = "europe-west2"
+	if c.Spec.Region == nil {
+		c.Spec.Region = new(string)
+		*c.Spec.Region = "europe-west2"
 	}
 
-	if r.Spec.JobSpec == nil {
-		r.Spec.JobSpec = &TestClusterGKEJobSpec{}
+	if c.Spec.JobSpec == nil {
+		c.Spec.JobSpec = &TestClusterGKEJobSpec{}
 	}
 
-	if r.Spec.JobSpec.Runner == nil {
-		r.Spec.JobSpec.Runner = &TestClusterGKEJobRunnerSpec{
+	if c.Spec.JobSpec.Runner == nil {
+		c.Spec.JobSpec.Runner = &TestClusterGKEJobRunnerSpec{
 			Image:     new(string),
 			InitImage: new(string),
 		}
 	}
 
-	if r.Spec.JobSpec.Runner.Image == nil {
-		*r.Spec.JobSpec.Runner.Image = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
+	if c.Spec.JobSpec.Runner.Image == nil {
+		*c.Spec.JobSpec.Runner.Image = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
 	}
 
-	if r.Spec.JobSpec.Runner.InitImage == nil {
-		*r.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
+	if c.Spec.JobSpec.Runner.InitImage == nil {
+		*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 	}
 }
 
 var _ webhook.Validator = &TestClusterGKE{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *TestClusterGKE) ValidateCreate() error {
-	log.Info("validate create", "namespace", r.Namespace, "name", r.Name)
+func (c *TestClusterGKE) ValidateCreate() error {
+	log.Info("validate create", "namespace", c.Namespace, "name", c.Name)
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *TestClusterGKE) ValidateUpdate(old runtime.Object) error {
-	log.Info("validate update", "namespace", r.Namespace, "name", r.Name)
+func (c *TestClusterGKE) ValidateUpdate(old runtime.Object) error {
+	log.Info("validate update", "namespace", c.Namespace, "name", c.Name)
 	return errors.New("updates are not supported")
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *TestClusterGKE) ValidateDelete() error {
-	log.Info("validate delete", "namespace", r.Namespace, "name", r.Name)
+func (c *TestClusterGKE) ValidateDelete() error {
+	log.Info("validate delete", "namespace", c.Namespace, "name", c.Name)
 	return nil
 }
