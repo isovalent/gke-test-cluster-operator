@@ -7,6 +7,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
   name: testclustergkes.clusters.ci.cilium.io
+  # annotations:
+  #   "cert-manager.io/inject-ca-from": "kube-system/gke-test-cluster-operator"
 spec:
   group: clusters.ci.cilium.io
   names:
@@ -15,6 +17,15 @@ spec:
     plural: testclustergkes
     singular: testclustergke
   scope: Namespaced
+  # preserveUnknownFields: false
+  # conversion:
+  #   strategy: "Webhook"
+  #   webhookClientConfig:
+  #     caBundle: "Cg==" # dummy value
+  #     service:
+  #       namespace: "kube-system"
+  #       name:      "gke-test-cluster-operator"
+  #       path:      "/convert"
   validation:
     openAPIV3Schema:
       description: TestClusterGKE is the Schema for the testclustergkes API
