@@ -89,12 +89,12 @@ manifests.promote:
 	cp config/crd/*.yaml config/rbac/*.yaml ../config/kube-system/
 	for ns_dir in config/logview/*/ ; do cp $${ns_dir}/logview.yaml ../config/$$(basename $${ns_dir})/logview.yaml ; done
 
-test.controllers-local: images.operator
+test.controllers-local: images.all
 	docker load -i image-gke-test-cluster-operator.oci
 	$(MAKE) test.controllers
 
 test.controllers:
-	./test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)"
+	./test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)" "$$(cat image-gke-test-cluster-logview.tag)"
 
 test.unit:
 	go test ./pkg/...

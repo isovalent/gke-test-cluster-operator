@@ -7,8 +7,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-image="${1}"
-
 name="gke-test-cluster-operator"
 namespace="${name}-$(date +%s)"
 
@@ -23,7 +21,7 @@ echo "INFO: creating test job"
 # namespace, which shouldn't have to be the case once this
 # is re-written in Go and CUE template is rendered directly
 if [ -z "${CI+x}" ] ; then
-   NAMESPACE="${namespace}" ./generate-manifests.sh "${image}"
+   NAMESPACE="${namespace}" ./generate-manifests.sh "${@}"
    kubectl create namespace "${namespace}"
    kubectl label namespace "${namespace}" test="${name}"
 else
