@@ -34,6 +34,11 @@ func (c *TestClusterGKE) Default() {
 		*c.Spec.Project = "cilium-ci"
 	}
 
+	if c.Spec.ConfigTemplate == nil {
+		c.Spec.ConfigTemplate = new(string)
+		*c.Spec.ConfigTemplate = "basic"
+	}
+
 	if c.Spec.Location == nil {
 		c.Spec.Location = new(string)
 		*c.Spec.Location = "europe-west2-b"
