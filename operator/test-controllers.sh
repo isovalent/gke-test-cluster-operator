@@ -43,7 +43,7 @@ one_pod_failed() {
 
 wait_for_cert_manager() {
   echo "INFO: waiting for cert-manager to start..."
-  kubectl wait pods --namespace="cert-manager" --for="condition=Ready" --all
+  kubectl wait pods --namespace="cert-manager" --for="condition=Ready" --all --timeout=2m
 }
 
 wait_for_pod() {
