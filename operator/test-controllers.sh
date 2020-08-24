@@ -13,30 +13,6 @@ namespace="${name}-$(date +%s)"
 # this is a simple script for runnig controller tests on kind,
 # it could eventually become a Go program
 
-wait_for_cert_manager
-
-echo "INFO: creating test job"
-
-# since we rely on external dependencie, CI uses a different
-# namespace, which shouldn't have to be the case once this
-# is re-written in Go and CUE template is rendered directly
-if [ -z "${CI+x}" ] ; then
-   NAMESPACE="${namespace}" ./generate-manifests.sh "${@}"
-   kubectl create namespace "${namespace}"
-   kubectl label namespace "${namespace}" test="${name}"
-else
-   namespace="kube-system"
-fi
-
-kubectl apply --filename="config/rbac/role.yaml"
-kubectl apply --filename="config/crd"
-
-kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.yaml"
-
-# these tests should quick and there is no point in streaming logs,
-# completion should be within a minute or two, otherwise there is
-# a problem with the tests
-
 follow_logs() {
   echo "INFO: streaming container logs"
   kubectl logs --namespace="${namespace}" --selector="name=${name}" --follow || true
@@ -98,6 +74,26 @@ container_status() {
   echo "INFO: container exited with ${exit_code}"
   return "${exit_code}"
 }
+
+wait_for_cert_manager
+
+echo "INFO: creating test job"
+
+# since we rely on external dependencie, CI uses a different
+# namespace, which shouldn't have to be the case once this
+# is re-written in Go and CUE template is rendered directly
+if [ -z "${CI+x}" ] ; then
+   NAMESPACE="${namespace}" ./generate-manifests.sh "${@}"
+   kubectl create namespace "${namespace}"
+   kubectl label namespace "${namespace}" test="${name}"
+else
+   namespace="kube-system"
+fi
+
+kubectl apply --filename="config/rbac/role.yaml"
+kubectl apply --filename="config/crd"
+
+kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.yaml"
 
 wait_for_pod
 
