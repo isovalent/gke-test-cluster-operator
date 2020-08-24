@@ -54,23 +54,20 @@ func (c *TestClusterGKE) Default() {
 		*c.Spec.Region = "europe-west2"
 	}
 
-	if c.Spec.JobSpec == nil {
-		c.Spec.JobSpec = &TestClusterGKEJobSpec{}
-	}
-
-	if c.Spec.JobSpec.Runner == nil {
-		c.Spec.JobSpec.Runner = &TestClusterGKEJobRunnerSpec{
-			Image:     new(string),
-			InitImage: new(string),
+	if c.Spec.JobSpec != nil {
+		if c.Spec.JobSpec.Runner == nil {
+			c.Spec.JobSpec.Runner = &TestClusterGKEJobRunnerSpec{}
 		}
-	}
 
-	if c.Spec.JobSpec.Runner.Image == nil {
-		*c.Spec.JobSpec.Runner.Image = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
-	}
+		if c.Spec.JobSpec.Runner.Image == nil {
+			c.Spec.JobSpec.Runner.Image = new(string)
+			*c.Spec.JobSpec.Runner.Image = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
+		}
 
-	if c.Spec.JobSpec.Runner.InitImage == nil {
-		*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
+		if c.Spec.JobSpec.Runner.InitImage == nil {
+			c.Spec.JobSpec.Runner.InitImage = new(string)
+			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
+		}
 	}
 }
 

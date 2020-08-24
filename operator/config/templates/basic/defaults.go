@@ -13,6 +13,9 @@ func NewDefaults() *v1alpha1.TestClusterGKE {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 		},
+		Spec: v1alpha1.TestClusterGKESpec{
+			JobSpec: &v1alpha1.TestClusterGKEJobSpec{},
+		},
 	}
 
 	defaults.Default()
