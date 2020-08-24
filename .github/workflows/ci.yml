@@ -77,13 +77,13 @@ jobs:
         with:
           entrypoint: kubectl
           args: config use-context kind-kind
-      - name: Deploy Cilium, Cert Manager and Config Connector CRDs
+      - name: Deploy Cilium and Config Connector CRDs
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
-          args: apply --filename cilium-kind.yaml --filename config/cert-manager/cert-manager.yaml --filename config/cnrm-system/crds.yaml
+          args: apply --filename cilium-kind.yaml --filename config/cnrm-system/crds.yaml
       - name: Wait for nodes to become ready
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
@@ -91,6 +91,13 @@ jobs:
         with:
           entrypoint: kubectl
           args: wait nodes --for=condition=Ready --all --timeout=5m
+      - name: Deploy Cert Manager
+        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        env:
+          KUBECONFIG: "/github/workspace/kubeconfig"
+        with:
+          entrypoint: kubectl
+          args: apply --filename config/cert-manager/cert-manager.yaml
       - name: Run controller tests
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
