@@ -148,7 +148,7 @@ func waitForCert(t *testing.T) {
 
 	exists := func() bool {
 		_, err := os.Stat("/run/cert/tls.crt")
-		return err != nil
+		return err == nil
 	}
 
 	if exists() {
