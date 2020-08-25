@@ -634,7 +634,7 @@ func TestClusterResources(t *testing.T) {
 	}
 }
 
-func TestTestRunnerJobResources(t *testing.T) {
+func TestTestInfraWorkloadsResources(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	{
@@ -655,7 +655,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -668,7 +668,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 		g.Expect(err).To(HaveOccurred())
 		g.Expect(err.Error()).To(Equal(`unexpected nil jobSpec`))
 	}
@@ -681,7 +681,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 			Spec: v1alpha1.TestClusterGKESpec{
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{},
@@ -698,7 +698,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 			Spec: v1alpha1.TestClusterGKESpec{
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
@@ -719,7 +719,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 
 		runnerImage := "cilium-ci/cilium-e2e:latest"
 
-		_, err = c.RenderTestRunnerJobResourcesAsJSON(&v1alpha1.TestClusterGKE{
+		_, err = c.RenderTestInfraWorkloadsAsJSON(&v1alpha1.TestClusterGKE{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
 			Spec: v1alpha1.TestClusterGKESpec{
 				JobSpec: &v1alpha1.TestClusterGKEJobSpec{
@@ -762,7 +762,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 		err := c.Load()
 		g.Expect(err).ToNot(HaveOccurred())
 
-		err = c.ApplyDefaultsForTestRunnerJobResources(defCluster)
+		err = c.ApplyDefaultsForTestInfraWorkloads(defCluster)
 		g.Expect(err).ToNot(HaveOccurred())
 
 		{
@@ -791,7 +791,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 			}
 
-			data, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+			data, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
@@ -806,6 +806,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 					  "name": "test-runner-baz-a0b1c2",
 					  "namespace": "other",
 					  "labels": {
+						"component": "test-runner",
 						"cluster": "baz-a0b1c2"
 					  }
 					},
@@ -841,7 +842,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "init-runner",
+							  "name": "common-init",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -933,15 +934,201 @@ func TestTestRunnerJobResources(t *testing.T) {
 						}
 					  }
 					}
+				  },
+				  {
+					"kind": "Deployment",
+					"apiVersion": "apps/v1",
+					"metadata": {
+					  "name": "baz-a0b1c2-promview",
+					  "namespace": "other",
+					  "labels": {
+						"component": "promview",
+						"cluster": "baz-a0b1c2"
+					  }
+					},
+					"spec": {
+					  "selector": {
+						"matchLabels": {
+						  "component": "promview",
+						  "cluster": "baz-a0b1c2"
+						}
+					  },
+					  "template": {
+						"metadata": {
+						  "labels": {
+							"name": {
+							  "component": "promview",
+							  "cluster": "baz-a0b1c2"
+							},
+							"component": "promview",
+							"cluster": "baz-a0b1c2"
+						  }
+						},
+						"spec": {
+						  "volumes": [
+							{
+							  "name": "credentials",
+							  "emptyDir": {}
+							},
+							{
+							  "name": "config-system",
+							  "configMap": {
+								"name": "baz-a0b1c2-system"
+							  },
+							  "optional": true
+							},
+							{
+							  "name": "config-user",
+							  "configMap": {
+								"name": "baz-a0b1c2"
+							  }
+							}
+						  ],
+						  "initContainers": [
+							{
+							  "name": "common-init",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "baz-a0b1c2"
+								},
+								{
+								  "name": "FOO",
+								  "value": "bar"
+								}
+							  ],
+							  "image": "quay.io/isovalent/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								},
+								{
+								  "name": "config-user",
+								  "mountPath": "/config/user"
+								}
+							  ]
+							}
+						  ],
+						  "containers": [
+							{
+							  "name": "promview",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "baz-a0b1c2-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "baz-a0b1c2"
+								},
+								{
+								  "name": "FOO",
+								  "value": "bar"
+								}
+							  ],
+							  "resources": {
+								"limits": {
+								  "cpu": "100m",
+								  "memory": "100Mi"
+								},
+								"requests": {
+								  "cpu": "100m",
+								  "memory": "100Mi"
+								}
+							  },
+							  "image": "quay.io/isovalent/gke-test-cluster-promview:5771328f396b291b3cc28d7ce554779d1e6c918d",
+							  "command": [
+								"/usr/bin/gke-test-cluster-promview"
+							  ],
+							  "ports": [
+								{
+								  "name": "http",
+								  "containerPort": 8080
+								}
+							  ],
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								},
+								{
+								  "name": "config-user",
+								  "mountPath": "/config/user"
+								}
+							  ]
+							}
+						  ],
+						  "terminationGracePeriodSeconds": 10,
+						  "serviceAccountName": "baz-a0b1c2-admin",
+						  "automountServiceAccountToken": false,
+						  "enableServiceLinks": false
+						}
+					  },
+					  "replicas": 2
+					}
+				  },
+				  {
+					"kind": "Service",
+					"apiVersion": "v1",
+					"metadata": {
+					  "name": "baz-a0b1c2-promview",
+					  "namespace": "other",
+					  "labels": {
+						"component": "promview",
+						"cluster": "baz-a0b1c2"
+					  }
+					},
+					"spec": {
+					  "selector": {
+						"component": "promview",
+						"cluster": "baz-a0b1c2"
+					  },
+					  "ports": [
+						{
+						  "name": "promview",
+						  "port": 80,
+						  "targetPort": 8080
+						}
+					  ]
+					}
 				  }
 				]
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderTestRunnerJobResources(cluster)
+			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(1))
+			g.Expect(objs.Items).To(HaveLen(3))
 		}
 
 		{
@@ -963,7 +1150,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 			}
 
-			data, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+			data, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
 			const expected = `
@@ -978,6 +1165,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 					  "name": "test-runner-bar-0a1b2c",
 					  "namespace": "default",
 					  "labels": {
+						"component": "test-runner",
 						"cluster": "bar-0a1b2c"
 					  }
 					},
@@ -1007,7 +1195,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "init-runner",
+							  "name": "common-init",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -1080,15 +1268,179 @@ func TestTestRunnerJobResources(t *testing.T) {
 						}
 					  }
 					}
+				  },
+				  {
+					"kind": "Deployment",
+					"apiVersion": "apps/v1",
+					"metadata": {
+					  "name": "bar-0a1b2c-promview",
+					  "namespace": "default",
+					  "labels": {
+						"component": "promview",
+						"cluster": "bar-0a1b2c"
+					  }
+					},
+					"spec": {
+					  "selector": {
+						"matchLabels": {
+						  "component": "promview",
+						  "cluster": "bar-0a1b2c"
+						}
+					  },
+					  "template": {
+						"metadata": {
+						  "labels": {
+							"name": {
+							  "component": "promview",
+							  "cluster": "bar-0a1b2c"
+							},
+							"component": "promview",
+							"cluster": "bar-0a1b2c"
+						  }
+						},
+						"spec": {
+						  "volumes": [
+							{
+							  "name": "credentials",
+							  "emptyDir": {}
+							},
+							{
+							  "name": "config-system",
+							  "configMap": {
+								"name": "bar-0a1b2c-system"
+							  },
+							  "optional": true
+							}
+						  ],
+						  "initContainers": [
+							{
+							  "name": "common-init",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "bar-0a1b2c"
+								}
+							  ],
+							  "image": "quay.io/isovalent/gke-test-cluster-job-runner-init:660e365e201df32d61efd57a112c19d242743ae6",
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								}
+							  ]
+							}
+						  ],
+						  "containers": [
+							{
+							  "name": "promview",
+							  "env": [
+								{
+								  "name": "KUBECONFIG",
+								  "value": "/credentials/kubeconfig"
+								},
+								{
+								  "name": "SERVICE_ACCOUNT",
+								  "value": "bar-0a1b2c-admin@cilium-ci.iam.gserviceaccount.com"
+								},
+								{
+								  "name": "CLUSTER_LOCATION",
+								  "value": "europe-west2-b"
+								},
+								{
+								  "name": "CLUSTER_NAME",
+								  "value": "bar-0a1b2c"
+								}
+							  ],
+							  "resources": {
+								"limits": {
+								  "cpu": "100m",
+								  "memory": "100Mi"
+								},
+								"requests": {
+								  "cpu": "100m",
+								  "memory": "100Mi"
+								}
+							  },
+							  "image": "quay.io/isovalent/gke-test-cluster-promview:5771328f396b291b3cc28d7ce554779d1e6c918d",
+							  "command": [
+								"/usr/bin/gke-test-cluster-promview"
+							  ],
+							  "ports": [
+								{
+								  "name": "http",
+								  "containerPort": 8080
+								}
+							  ],
+							  "volumeMounts": [
+								{
+								  "name": "credentials",
+								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								}
+							  ]
+							}
+						  ],
+						  "terminationGracePeriodSeconds": 10,
+						  "serviceAccountName": "bar-0a1b2c-admin",
+						  "automountServiceAccountToken": false,
+						  "enableServiceLinks": false
+						}
+					  },
+					  "replicas": 2
+					}
+				  },
+				  {
+					"kind": "Service",
+					"apiVersion": "v1",
+					"metadata": {
+					  "name": "bar-0a1b2c-promview",
+					  "namespace": "default",
+					  "labels": {
+						"component": "promview",
+						"cluster": "bar-0a1b2c"
+					  }
+					},
+					"spec": {
+					  "selector": {
+						"component": "promview",
+						"cluster": "bar-0a1b2c"
+					  },
+					  "ports": [
+						{
+						  "name": "promview",
+						  "port": 80,
+						  "targetPort": 8080
+						}
+					  ]
+					}
 				  }
 				]
 			}`
 			g.Expect(data).To(MatchJSON(expected))
 
-			objs, err := c.RenderTestRunnerJobResources(cluster)
+			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(1))
+			g.Expect(objs.Items).To(HaveLen(3))
 		}
 
 		{
@@ -1109,18 +1461,18 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 			}
 
-			objs, err := c.RenderTestRunnerJobResources(cluster)
+			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(1))
+			g.Expect(objs.Items).To(HaveLen(3))
 
-			name := objs.Items[0].GetName()
-			g.Expect(name).To(Equal("test-runner-baz-x2a8332"))
+			g.Expect(objs.Items[0].GetName()).To(Equal("test-runner-baz-x2a8332"))
 
 			for _, obj := range objs.Items {
 				labels := obj.GetLabels()
 				g.Expect(labels).To(HaveKeyWithValue("cluster", "baz-x2a8332"))
-				g.Expect(obj.GetName()).To(Equal(name))
+				g.Expect(labels).To(HaveKey("component"))
+				g.Expect(obj.GetName()).To(ContainSubstring("baz-x2a8332"))
 			}
 		}
 
@@ -1135,7 +1487,7 @@ func TestTestRunnerJobResources(t *testing.T) {
 				},
 			}
 
-			_, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+			_, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 			g.Expect(err).To(HaveOccurred())
 			// this is another weird error from CUE, but that's what you get when optional field is unspecified on export...
 			g.Expect(err.Error()).ToNot(Equal(`cue: marshal error: template.items.0.metadata.name: field "name" is optional`))

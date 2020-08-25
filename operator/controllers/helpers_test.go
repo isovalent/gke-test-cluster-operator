@@ -97,7 +97,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(configRenderer.Load()).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaults("basic", basic.NewDefaults())).To(Succeed())
 	g.Expect(configRenderer.ApplyDefaultsForClusterAccessResources(basic.NewDefaults())).To(Succeed())
-	g.Expect(configRenderer.ApplyDefaultsForTestRunnerJobResources(basic.NewDefaults())).To(Succeed())
+	g.Expect(configRenderer.ApplyDefaultsForTestInfraWorkloads(basic.NewDefaults())).To(Succeed())
 
 	metricTracker := controllerscommon.NewMetricTracker()
 

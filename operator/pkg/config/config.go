@@ -20,7 +20,7 @@ import (
 
 const (
 	ClusterAccessResourcesTemplateName = "iam"
-	TestRunnerJobResourcesTemplateName = "job"
+	TestInfraWorkloadsTemplateName     = "infra"
 	PromResourcesTemplateName          = "prom"
 )
 
@@ -89,8 +89,8 @@ func (c *Config) ApplyDefaultsForClusterAccessResources(defaults *v1alpha1.TestC
 	return c.ApplyDefaults(ClusterAccessResourcesTemplateName, defaults)
 }
 
-func (c *Config) ApplyDefaultsForTestRunnerJobResources(defaults *v1alpha1.TestClusterGKE) error {
-	return c.ApplyDefaults(TestRunnerJobResourcesTemplateName, defaults)
+func (c *Config) ApplyDefaultsForTestInfraWorkloads(defaults *v1alpha1.TestClusterGKE) error {
+	return c.ApplyDefaults(TestInfraWorkloadsTemplateName, defaults)
 }
 
 func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, templateName string) ([]byte, error) {
@@ -102,7 +102,7 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 	}
 	switch templateName {
 	case ClusterAccessResourcesTemplateName:
-	case TestRunnerJobResourcesTemplateName:
+	case TestInfraWorkloadsTemplateName:
 		if cluster.Spec.JobSpec == nil {
 			return nil, fmt.Errorf("unexpected nil jobSpec")
 		}
@@ -122,7 +122,7 @@ func (c *Config) renderTemplateAsJSON(cluster *v1alpha1.TestClusterGKE, template
 			return nil, fmt.Errorf("unexpected nil/empty configTemplate")
 		}
 		templateName = *cluster.Spec.ConfigTemplate
-		if templateName == TestRunnerJobResourcesTemplateName || templateName == ClusterAccessResourcesTemplateName {
+		if templateName == TestInfraWorkloadsTemplateName || templateName == ClusterAccessResourcesTemplateName {
 			return nil, fmt.Errorf("cannot create cluster directly with configTemplate=%q", templateName)
 		}
 	}
@@ -146,8 +146,8 @@ func (c *Config) RenderClusterAccessResourcesAsJSON(cluster *v1alpha1.TestCluste
 	return c.renderTemplateAsJSON(cluster, ClusterAccessResourcesTemplateName)
 }
 
-func (c *Config) RenderTestRunnerJobResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
-	return c.renderTemplateAsJSON(cluster, TestRunnerJobResourcesTemplateName)
+func (c *Config) RenderTestInfraWorkloadsAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, TestInfraWorkloadsTemplateName)
 }
 
 func (c *Config) RenderPromResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
@@ -237,10 +237,10 @@ func toUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
 	return u, nil
 }
 
-func (c *Config) RenderTestRunnerJobResources(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderTestInfraWorkloads(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	jobRunnerResources := &unstructured.UnstructuredList{}
 
-	jobRunnerResourcesData, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+	jobRunnerResourcesData, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
