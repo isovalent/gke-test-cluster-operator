@@ -1142,3 +1142,32 @@ func TestTestRunnerJobResources(t *testing.T) {
 		}
 	}
 }
+
+func TestPromResources(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	{
+		c := &Config{
+			BaseDirectory: "../../config/templates",
+		}
+
+		err := c.Load()
+		g.Expect(err).ToNot(HaveOccurred())
+
+		{
+			cluster := &v1alpha1.TestClusterGKE{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "baz",
+					Namespace: "other",
+				},
+			}
+
+			cluster.Default()
+
+			objs, err := c.RenderPromResources(cluster)
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(objs).ToNot(BeNil())
+			g.Expect(objs.Items).To(HaveLen(9))
+		}
+	}
+}

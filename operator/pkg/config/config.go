@@ -17,6 +17,7 @@ import (
 const (
 	ClusterAccessResourcesTemplateName = "iam"
 	TestRunnerJobResourcesTemplateName = "job"
+	PromResourcesTemplateName          = "prom"
 )
 
 type Config struct {
@@ -145,6 +146,10 @@ func (c *Config) RenderTestRunnerJobResourcesAsJSON(cluster *v1alpha1.TestCluste
 	return c.renderTemplateAsJSON(cluster, TestRunnerJobResourcesTemplateName)
 }
 
+func (c *Config) RenderPromResourcesAsJSON(cluster *v1alpha1.TestClusterGKE) ([]byte, error) {
+	return c.renderTemplateAsJSON(cluster, PromResourcesTemplateName)
+}
+
 func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
 	allResources := &unstructured.UnstructuredList{}
 	coreResources := &unstructured.UnstructuredList{}
@@ -192,6 +197,21 @@ func (c *Config) RenderTestRunnerJobResources(cluster *v1alpha1.TestClusterGKE) 
 	jobRunnerResources := &unstructured.UnstructuredList{}
 
 	jobRunnerResourcesData, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := jobRunnerResources.UnmarshalJSON(jobRunnerResourcesData); err != nil {
+		return nil, err
+	}
+
+	return jobRunnerResources, nil
+}
+
+func (c *Config) RenderPromResources(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+	jobRunnerResources := &unstructured.UnstructuredList{}
+
+	jobRunnerResourcesData, err := c.RenderPromResourcesAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
