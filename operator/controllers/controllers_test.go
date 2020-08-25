@@ -10,6 +10,7 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,6 +74,16 @@ func simpleCreateDeleteObjects(g *WithT, cst *ControllerSubTest) {
 	clusterName := cnrmContainerClusterObjs.Items[0].GetName()
 	g.Expect(clusterName).To(HavePrefix("test-1-"))
 	g.Expect(clusterName).To(HaveLen(12))
+
+	g.Eventually(func() bool {
+		systemConfigMapObj := &corev1.ConfigMap{}
+		systemConfigMapKey := types.NamespacedName{
+			Name:      clusterName + "-system",
+			Namespace: ns,
+		}
+		err := cst.Client.Get(ctx, systemConfigMapKey, systemConfigMapObj)
+		return err == nil
+	}, *pollTimeout, *pollInterval).Should(BeTrue())
 
 	cnrmClusterCore := newEmptyClusterCoreObjs(ns, clusterName)
 

@@ -14,6 +14,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func TestClusterResources(t *testing.T) {
@@ -324,7 +325,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(8))
+			g.Expect(objs.Items).To(HaveLen(9))
 		}
 
 		{
@@ -552,7 +553,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, false)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(8))
+			g.Expect(objs.Items).To(HaveLen(9))
 		}
 
 		{
@@ -571,7 +572,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(8))
+			g.Expect(objs.Items).To(HaveLen(9))
 
 			name := objs.Items[1].GetName()
 			g.Expect(name).To(HavePrefix("baz-"))
@@ -604,7 +605,7 @@ func TestClusterResources(t *testing.T) {
 			objs, err := c.RenderAllClusterResources(cluster, true)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(8))
+			g.Expect(objs.Items).To(HaveLen(9))
 
 			name := objs.Items[1].GetName()
 			g.Expect(name).To(Equal(clusterName))
@@ -1164,8 +1165,10 @@ func TestPromResources(t *testing.T) {
 
 			cluster.Default()
 
-			objs, err := c.RenderPromResources(cluster)
+			data, err := c.RenderPromResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
+			objs := &unstructured.UnstructuredList{}
+			g.Expect(objs.UnmarshalJSON(data)).To(Succeed())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(9))
 		}

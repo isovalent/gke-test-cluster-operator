@@ -4,13 +4,17 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
 	"github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha1"
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/template"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
 
@@ -187,31 +191,56 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha1.TestClusterGKE, gen
 		return nil, err
 	}
 
+	promResourcesData, err := c.RenderPromResourcesAsJSON(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	systemConfigMap, err := toUnstructured(&corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cluster.Name + "-system",
+			Namespace: cluster.Namespace,
+			Labels: map[string]string{
+				"cluster": cluster.Name,
+			},
+		},
+		BinaryData: map[string][]byte{
+			"init-manifest": promResourcesData,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	allResources.Items = append(allResources.Items, coreResources.Items...)
 	allResources.Items = append(allResources.Items, accessResources.Items...)
+	allResources.Items = append(allResources.Items, *systemConfigMap)
 
 	return allResources, nil
+}
+
+// toUnstructured convers runtime.Object so that it can be appended to UnstructuredList
+// with all other resouces
+func toUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
+	u := &unstructured.Unstructured{}
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+	if err := u.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 func (c *Config) RenderTestRunnerJobResources(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	jobRunnerResources := &unstructured.UnstructuredList{}
 
 	jobRunnerResourcesData, err := c.RenderTestRunnerJobResourcesAsJSON(cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := jobRunnerResources.UnmarshalJSON(jobRunnerResourcesData); err != nil {
-		return nil, err
-	}
-
-	return jobRunnerResources, nil
-}
-
-func (c *Config) RenderPromResources(cluster *v1alpha1.TestClusterGKE) (*unstructured.UnstructuredList, error) {
-	jobRunnerResources := &unstructured.UnstructuredList{}
-
-	jobRunnerResourcesData, err := c.RenderPromResourcesAsJSON(cluster)
 	if err != nil {
 		return nil, err
 	}
