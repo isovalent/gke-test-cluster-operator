@@ -26,6 +26,9 @@ gcloud config set account "${SERVICE_ACCOUNT}"
 
 gcloud container clusters get-credentials --zone "${CLUSTER_LOCATION}" "${CLUSTER_NAME}"
 
-if [ -f /config/init-manifest ] ; then
-  kubectl apply -f /config/init-manifest
+if [ -f /config/system/init-manifest ] ; then
+  kubectl apply -f /config/system/init-manifest
+fi
+if [ -f /config/user/init-manifest ] ; then
+  kubectl apply -f /config/user/init-manifest
 fi

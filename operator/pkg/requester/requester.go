@@ -65,7 +65,7 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      tcr.key.Name,
+			Name:      *tcr.configMapName(),
 			Namespace: tcr.key.Namespace,
 		},
 		BinaryData: map[string][]byte{
@@ -122,7 +122,12 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	*cluster.Spec.Region = "europe-west2"
 
 	if tcr.hasConfigMap {
-		cluster.Spec.JobSpec.Runner.ConfigMap = &tcr.key.Name
+		if cluster.Spec.JobSpec == nil {
+			cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
+				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{},
+			}
+		}
+		cluster.Spec.JobSpec.Runner.ConfigMap = tcr.configMapName()
 	}
 
 	if tcr.fromGitHubActions {
@@ -140,6 +145,11 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	}
 	tcr.cluster = cluster
 	return tcr.restClient.Create(ctx, cluster)
+}
+
+func (tcr *TestClusterRequest) configMapName() *string {
+	name := tcr.key.Name + "-user"
+	return &name
 }
 
 func (tcr *TestClusterRequest) MaybeSendInitialGitHubStatusUpdate(ctx context.Context) error {

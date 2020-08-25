@@ -56,18 +56,29 @@ _kubeconfigVolumeMount: {
 	mountPath: "/credentials"
 }
 
+_systemConfigVolume: {
+	name: "config-system"
+	configMap:
+		name: "\(_name)-system"
+	optional: true
+}
+_systemConfigVolumeMount: {
+	name:      "config-system"
+	mountPath: "/config/system"
+}
+
 _extraVolumes: [...{}]
 
 _extraVolumeMounts: [...{}]
 
 if resource.spec.jobSpec.runner.configMap != "" {
 	_extraVolumes: [{
-		name: "config"
+		name: "config-user"
 		configMap: name: "\(resource.spec.jobSpec.runner.configMap)"
 	}]
 	_extraVolumeMounts: [{
-		name:      "config"
-		mountPath: "/config"
+		name:      "config-user"
+		mountPath: "/config/user"
 	}]
 }
 
@@ -91,19 +102,19 @@ if resource.spec.jobSpec.runner.configMap != "" {
 				spec: {
 					enableServiceLinks:           false
 					automountServiceAccountToken: false
-					volumes:                      [_kubeconfigVolume] + _extraVolumes
+					volumes:                      [_kubeconfigVolume, _systemConfigVolume] + _extraVolumes
 					initContainers: [{
 						name:         "init-runner"
 						image:        "\(_runnerInitImage)"
 						env:          [_kubeconfigEnv] + _authInfoEnv + _extraEnv
-						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
+						volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts
 					}]
 					containers: [{
 						name:         "test-runner"
 						command:      _runnerCommand
 						image:        "\(_runnerImage)"
 						env:          [_kubeconfigEnv] + _authInfoEnv + _extraEnv
-						volumeMounts: [_kubeconfigVolumeMount] + _extraVolumeMounts
+						volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts
 					}]
 					dnsPolicy:          "ClusterFirst"
 					restartPolicy:      "Never"

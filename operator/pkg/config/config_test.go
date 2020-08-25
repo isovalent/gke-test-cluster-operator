@@ -825,7 +825,14 @@ func TestTestRunnerJobResources(t *testing.T) {
 							  "emptyDir": {}
 							},
 							{
-							  "name": "config",
+							  "name": "config-system",
+							  "configMap": {
+							    "name": "baz-a0b1c2-system"
+							  },
+							  "optional": true
+							},
+							{
+							  "name": "config-user",
 							  "configMap": {
 							    "name": "baz-a0b1c2"
 							  }
@@ -863,8 +870,12 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "mountPath": "/credentials"
 								},
 								{
-								  "name": "config",
-								  "mountPath": "/config"
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								},
+								{
+								  "name": "config-user",
+								  "mountPath": "/config/user"
 								}
 							  ]
 							}
@@ -905,8 +916,12 @@ func TestTestRunnerJobResources(t *testing.T) {
 								  "mountPath": "/credentials"
 								},
 								{
-								  "name": "config",
-								  "mountPath": "/config"
+								  "name": "config-system",
+								  "mountPath": "/config/system"
+								},
+								{
+								  "name": "config-user",
+								  "mountPath": "/config/user"
 								}
 							  ]
 							}
@@ -980,6 +995,13 @@ func TestTestRunnerJobResources(t *testing.T) {
 							{
 							  "name": "credentials",
 							  "emptyDir": {}
+							},
+							{
+							  "name": "config-system",
+							  "configMap": {
+							    "name": "bar-0a1b2c-system"
+							  },
+							  "optional": true
 							}
 						  ],
 						  "initContainers": [
@@ -1008,6 +1030,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "credentials",
 								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
 								}
 							  ]
 							}
@@ -1039,6 +1065,10 @@ func TestTestRunnerJobResources(t *testing.T) {
 								{
 								  "name": "credentials",
 								  "mountPath": "/credentials"
+								},
+								{
+								  "name": "config-system",
+								  "mountPath": "/config/system"
 								}
 							  ]
 							}
