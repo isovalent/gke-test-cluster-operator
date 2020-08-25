@@ -84,7 +84,10 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(kubeClient).ToNot(BeNil())
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme: scheme,
+		Scheme:  scheme,
+		CertDir: "/run/cert",
+		Host:    "0.0.0.0",
+		Port:    9443,
 	})
 	g.Expect(err).ToNot(HaveOccurred())
 
@@ -122,6 +125,9 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		Scheme:  mgr.GetScheme(),
 		objChan: objChan,
 	}).SetupWithManager(mgr)).To(Succeed())
+
+	g.Expect((&clustersv1alpha1.TestClusterGKE{}).
+		SetupWebhookWithManager(mgr)).To(Succeed())
 
 	stop := make(chan struct{})
 	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()

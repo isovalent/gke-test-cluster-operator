@@ -188,6 +188,15 @@ _serviceAccount: {
 	}
 }
 
+_serviceSelector: {
+	if !parameters.test {
+		name: constants.name
+	}
+	if parameters.test {
+		"job-name": constants.name
+	}
+}
+
 _service: {
 	apiVersion: "v1"
 	kind:       "Service"
@@ -197,7 +206,7 @@ _service: {
 		namespace: parameters.namespace
 	}
 	spec: {
-		selector: name: constants.name
+		selector: _serviceSelector
 		ports: [{
 			name:       "https"
 			port:       443
@@ -321,7 +330,7 @@ if parameters.certManager {
 	}]
 }
 
-if (parameters.certManager && !parameters.test) {
+if parameters.certManager {
 	_extra_webhookConfigurations: [{
 		apiVersion: "admissionregistration.k8s.io/v1"
 		kind:       "MutatingWebhookConfiguration"
