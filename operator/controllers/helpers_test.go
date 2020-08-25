@@ -129,6 +129,8 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect((&clustersv1alpha1.TestClusterGKE{}).
 		SetupWebhookWithManager(mgr)).To(Succeed())
 
+	waitForCert(t)
+
 	stop := make(chan struct{})
 	go func() { g.Expect(mgr.Start(stop)).To(Succeed()) }()
 
@@ -138,6 +140,31 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	}
 
 	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan, metricTracker), teardown
+}
+
+func waitForCert(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	exists := func() bool {
+		_, err := os.Stat("/run/cert/tls.crt")
+		return err != nil
+	}
+
+	if exists() {
+		return
+	}
+
+	for {
+		select {
+		case <-time.After(10 * time.Second):
+			if exists() {
+				return
+			}
+		case <-ctx.Done():
+			t.Fatal("timeout waiting for cert")
+		}
+	}
 }
 
 func newTestClusterGKE(namespace, name string) (types.NamespacedName, *clustersv1alpha1.TestClusterGKE) {
