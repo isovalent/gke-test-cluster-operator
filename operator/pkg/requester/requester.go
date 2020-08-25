@@ -32,7 +32,7 @@ type TestClusterRequest struct {
 	configMapClient   typedcorev1.ConfigMapInterface
 	key               types.NamespacedName
 	project           string
-	hasConfigMap      bool
+	configMapName     *string
 	fromGitHubActions bool
 	cluster           *v1alpha1.TestClusterGKE
 }
@@ -63,9 +63,10 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 		return err
 	}
 
+	configMapName := tcr.cluster.Name + "-user"
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      *tcr.configMapName(),
+			Name:      configMapName,
 			Namespace: tcr.key.Namespace,
 		},
 		BinaryData: map[string][]byte{
@@ -77,11 +78,11 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 	if err != nil {
 		return err
 	}
-	tcr.hasConfigMap = true
+	tcr.configMapName = &configMapName
 	return nil
 }
 
-func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate string, description, runnerImage *string, runnerCommand ...string) error {
+func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemplate, description, runnerImage *string, runnerCommand ...string) error {
 	err := tcr.restClient.Get(ctx, tcr.key, &v1alpha1.TestClusterGKE{})
 	if !apierrors.IsNotFound(err) {
 		return fmt.Errorf("cluster %q already exists in namespace %q", tcr.key.Name, tcr.key.Namespace)
@@ -93,23 +94,20 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 			Namespace: tcr.key.Namespace,
 		},
 		Spec: v1alpha1.TestClusterGKESpec{
-			Nodes:          new(int),
-			ConfigTemplate: &configTemplate,
-			Project:        &tcr.project,
-			Location:       new(string),
-			Region:         new(string),
+			Project: &tcr.project,
 		},
+	}
+	if configTemplate != nil && *configTemplate != "" {
+		cluster.Spec.ConfigTemplate = configTemplate
 	}
 
 	if runnerImage != nil && *runnerImage != "" {
 		cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
 			Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{
-				Image:     runnerImage,
-				Command:   runnerCommand,
-				InitImage: new(string),
+				Image:   runnerImage,
+				Command: runnerCommand,
 			},
 		}
-		*cluster.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:28c3b8e6218d145398f78e1343d95b16012fc179"
 	}
 	if description != nil && *description != "" {
 		cluster.Annotations = map[string]string{
@@ -117,17 +115,13 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 		}
 	}
 
-	*cluster.Spec.Nodes = 2
-	*cluster.Spec.Location = "europe-west2-b"
-	*cluster.Spec.Region = "europe-west2"
-
-	if tcr.hasConfigMap {
+	if tcr.configMapName != nil {
 		if cluster.Spec.JobSpec == nil {
 			cluster.Spec.JobSpec = &v1alpha1.TestClusterGKEJobSpec{
 				Runner: &v1alpha1.TestClusterGKEJobRunnerSpec{},
 			}
 		}
-		cluster.Spec.JobSpec.Runner.ConfigMap = tcr.configMapName()
+		cluster.Spec.JobSpec.Runner.ConfigMap = tcr.configMapName
 	}
 
 	if tcr.fromGitHubActions {
@@ -145,11 +139,6 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	}
 	tcr.cluster = cluster
 	return tcr.restClient.Create(ctx, cluster)
-}
-
-func (tcr *TestClusterRequest) configMapName() *string {
-	name := tcr.key.Name + "-user"
-	return &name
 }
 
 func (tcr *TestClusterRequest) MaybeSendInitialGitHubStatusUpdate(ctx context.Context) error {

@@ -59,7 +59,7 @@ func main() {
 		log.Printf("configmap created with init manifiest %q\n", *initManifest)
 	}
 
-	err = tcr.CreateTestCluster(ctx, "basic", description, image, flag.Args()...)
+	err = tcr.CreateTestCluster(ctx, nil, description, image, flag.Args()...)
 	if err != nil {
 		log.Fatal(err)
 	}
