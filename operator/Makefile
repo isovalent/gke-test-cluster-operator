@@ -21,7 +21,7 @@ KIND_CLUSTER_NAME = operator-kind
 	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
-images.all: images.operator images.job-runner-init images.logview images.requester
+images.all: images.operator images.job-runner-init images.logview images.promview images.requester
 
 images.operator: .buildx_builder
 	$(IMAGINE) build \
@@ -65,6 +65,20 @@ images.logview: .buildx_builder
 		--name gke-test-cluster-logview \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-logview.tag
+
+images.promview: .buildx_builder
+	$(IMAGINE) build \
+		--builder $$(cat .buildx_builder) \
+		--base ./promview \
+		--name gke-test-cluster-promview \
+		--registry $(REGISTRY) \
+		$(imagine_push_or_export) \
+		--cleanup
+	$(IMAGINE) image \
+		--base ./promview \
+		--name gke-test-cluster-promview \
+		--registry $(REGISTRY) \
+		> image-gke-test-cluster-promview.tag
 
 images.requester: .buildx_builder
 	$(IMAGINE) build \
