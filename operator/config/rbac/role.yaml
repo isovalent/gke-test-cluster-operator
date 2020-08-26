@@ -61,6 +61,20 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - get
+- apiGroups:
   - batch
   resources:
   - jobs
