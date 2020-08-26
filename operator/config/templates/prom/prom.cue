@@ -307,6 +307,7 @@ _configMapData: {
 		}]
 	}]
 }
+
 #PromManifestTemplate: {
 	apiVersion: "v1"
 	kind:       "List"
