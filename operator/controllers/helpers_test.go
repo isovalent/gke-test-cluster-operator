@@ -143,7 +143,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 }
 
 func waitForCert(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	exists := func() bool {
