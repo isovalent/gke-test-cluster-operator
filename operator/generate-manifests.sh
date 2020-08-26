@@ -70,3 +70,4 @@ fi
 
 kg -input-directory ./config/operator -output-directory ./config/operator
 kg -input-directory ./config/logview -output-directory ./config/logview
+kg -input-directory ./config/templates/prom -output-directory ./config/templates/prom

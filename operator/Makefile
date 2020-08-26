@@ -100,6 +100,7 @@ manifests.generate:
 
 manifests.promote:
 	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
+	cp config/templates/prom/prom.yaml ../config/prom/prom.yaml
 	cp config/crd/*.yaml config/rbac/*.yaml ../config/kube-system/
 	for ns_dir in config/logview/*/ ; do cp $${ns_dir}/logview.yaml ../config/$$(basename $${ns_dir})/logview.yaml ; done
 
