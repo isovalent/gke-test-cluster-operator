@@ -1,3 +1,5 @@
+package operator
+
 constants: {
 	name:    "gke-test-cluster-operator"
 	project: "cilium-ci"

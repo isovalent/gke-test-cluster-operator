@@ -1,3 +1,5 @@
+package logview
+
 import (
 	"encoding/hex"
 	"crypto/sha256"

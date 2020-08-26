@@ -68,5 +68,5 @@ if [ -n "${GOPATH+x}" ] ; then
   export PATH="${PATH}:${GOPATH}/bin"
 fi
 
-kg -input-directory config/operator -output-directory config/operator
-kg -input-directory config/logview -output-directory config/logview
+kg -input-directory ./config/operator -output-directory ./config/operator
+kg -input-directory ./config/logview -output-directory ./config/logview
