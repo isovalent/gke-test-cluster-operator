@@ -958,6 +958,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  "labels": {
 							"component": "promview",
 							"cluster": "baz-a0b1c2"
+						  },
+						  "annotations": {
+							"prometheus.io.scrape": "false"
 						  }
 						},
 						"spec": {
@@ -1288,6 +1291,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  "labels": {
 							"component": "promview",
 							"cluster": "bar-0a1b2c"
+						  },
+						  "annotations": {
+							"prometheus.io.scrape": "false"
 						  }
 						},
 						"spec": {

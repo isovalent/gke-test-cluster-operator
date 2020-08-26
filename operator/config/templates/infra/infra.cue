@@ -112,9 +112,15 @@ _promviewWorkloadSpec: {
 			cluster:   "\(_name)"
 			component: "promview"
 		}
-	template: metadata: labels: {
-		cluster:   "\(_name)"
-		component: "promview"
+	template: metadata: {
+		labels: {
+			cluster:   "\(_name)"
+			component: "promview"
+		}
+		annotations: {
+			// do not scrape the pod directly, use service and label seletor
+			"prometheus.io.scrape": "false"
+		}
 	}
 	replicas: 2
 	template: {
@@ -154,7 +160,7 @@ _promviewWorkloadSpec: {
 	}
 }
 
-_proviewService: {
+_promviewService: {
 	apiVersion: "v1"
 	kind:       "Service"
 	metadata: {
@@ -221,7 +227,7 @@ _testRunnerJobSpec: {
 	items: [
 		_testRunnerJob,
 		_promviewWorkload,
-		_proviewService,
+		_promviewService,
 	]
 }
 

@@ -10,6 +10,51 @@ _name: "prom"
 _configMapData: {
 	global: scrape_interval: "15s"
 	scrape_configs: [{
+		job_name: "gke-test-cluster-operator-promview-metrics"
+		kubernetes_sd_configs: [{
+			role: "service"
+			selectors: [{label: "component=promview"}]
+		}]
+		relabel_configs: [{
+			source_labels: [
+				"__meta_kubernetes_namespace",
+			]
+			target_label: "test_cluster_namespace"
+		}, {
+			source_labels: [
+				"__meta_kubernetes_service_label_cluster",
+			]
+			target_label: "test_cluster_name"
+		}]
+	}, {
+		job_name: "gke-test-cluster-operator-promview-federate"
+		kubernetes_sd_configs: [{
+			role: "service"
+			selectors: [{label: "component=promview"}]
+		}]
+		honor_labels: true
+		metrics_path: '/federate'
+		params: {
+			"match[]": [
+				'{job="kubernetes-apiservers"}',
+				'{job="envoy"}',
+				'{job="kubernetes-pods"}',
+				'{job="kubernetes-nodes"}',
+				'{job="cadvisor"}',
+			]
+		}
+		relabel_configs: [{
+			source_labels: [
+				"__meta_kubernetes_namespace",
+			]
+			target_label: "test_cluster_namespace"
+		}, {
+			source_labels: [
+				"__meta_kubernetes_service_label_cluster",
+			]
+			target_label: "test_cluster_name"
+		}]
+	}, {
 		job_name: "kubernetes-apiservers"
 		kubernetes_sd_configs: [{
 			role: "endpoints"
