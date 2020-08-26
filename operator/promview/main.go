@@ -39,7 +39,8 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/metrics", l.handleLogs)
+	router.HandleFunc("/metrics", l.handleRequest)
+	router.HandleFunc("/federate", l.handleRequest)
 
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal(err)
@@ -51,31 +52,37 @@ type promview struct {
 	serviceClient typedcorev1.ServiceInterface
 }
 
-func (l *promview) handleLogs(w http.ResponseWriter, r *http.Request) {
+func (l *promview) handleRequest(w http.ResponseWriter, r *http.Request) {
 	_, err := l.serviceClient.Get(l.ctx, "prom", metav1.GetOptions{})
 	if err != nil {
 		log.Printf("error: %s", err)
-		http.Error(w, "cannot get service", http.StatusBadRequest)
+		http.Error(w, "cannot get service", http.StatusNotFound)
 		return
 	}
 
-	metricStream, err := l.serviceClient.ProxyGet("http", "prom", "prom", "/metrics", nil).Stream(l.ctx)
+	// convert url.Values (map[string][]string) to map[string]string
+	params := map[string]string{}
+	for k := range r.URL.Query() {
+		params[k] = r.URL.Query().Get(k)
+	}
+
+	metricStream, err := l.serviceClient.ProxyGet("http", "prom", "prom", r.URL.Path, params).Stream(l.ctx)
 	if err != nil {
-		log.Printf("error: %s", err)
-		http.Error(w, "cannot get metric stream", http.StatusBadRequest)
+		log.Printf("error: cannot get stream (URL=%q RemoteAddr=%q): %s", r.URL, r.RemoteAddr, err)
+		http.Error(w, "cannot get stream", http.StatusNotFound)
 		return
 	}
 	defer metricStream.Close()
-	defer log.Printf("stopped streaming metric to %q", r.RemoteAddr)
+	defer log.Printf("stopped streaming (URL=%q remoteAddr=%q)", r.URL, r.RemoteAddr)
 
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	log.Printf("started streaming metrics to %q", r.RemoteAddr)
+	log.Printf("started streaming (URL=%q remoteAddr=%q)", r.URL, r.RemoteAddr)
 	if _, err := io.Copy(w, metricStream); err != nil {
-		log.Printf("error: %s", err)
-		http.Error(w, "log stream terminated unexpectedly", http.StatusInternalServerError)
+		log.Printf("error: cannot copy stream (URL=%q remoteAddr=%q): %s", r.URL, r.RemoteAddr, err)
+		http.Error(w, "stream terminated unexpectedly", http.StatusInternalServerError)
 		return
 	}
 	return
