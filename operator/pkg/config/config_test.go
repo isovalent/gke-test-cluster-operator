@@ -829,9 +829,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							{
 							  "name": "config-system",
 							  "configMap": {
+								"optional": true,
 							    "name": "baz-a0b1c2-system"
-							  },
-							  "optional": true
+							  }
 							},
 							{
 							  "name": "config-user",
@@ -956,10 +956,6 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 					  "template": {
 						"metadata": {
 						  "labels": {
-							"name": {
-							  "component": "promview",
-							  "cluster": "baz-a0b1c2"
-							},
 							"component": "promview",
 							"cluster": "baz-a0b1c2"
 						  }
@@ -973,9 +969,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							{
 							  "name": "config-system",
 							  "configMap": {
+								"optional": true,
 								"name": "baz-a0b1c2-system"
-							  },
-							  "optional": true
+							  }
 							},
 							{
 							  "name": "config-user",
@@ -1188,9 +1184,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							{
 							  "name": "config-system",
 							  "configMap": {
+								"optional": true,
 							    "name": "bar-0a1b2c-system"
-							  },
-							  "optional": true
+							  }
 							}
 						  ],
 						  "initContainers": [
@@ -1290,10 +1286,6 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 					  "template": {
 						"metadata": {
 						  "labels": {
-							"name": {
-							  "component": "promview",
-							  "cluster": "bar-0a1b2c"
-							},
 							"component": "promview",
 							"cluster": "bar-0a1b2c"
 						  }
@@ -1307,9 +1299,9 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							{
 							  "name": "config-system",
 							  "configMap": {
+								"optional": true,
 								"name": "bar-0a1b2c-system"
-							  },
-							  "optional": true
+							  }
 							}
 						  ],
 						  "initContainers": [

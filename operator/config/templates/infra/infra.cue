@@ -58,9 +58,10 @@ _kubeconfigVolumeMount: {
 
 _systemConfigVolume: {
 	name: "config-system"
-	configMap:
-		name: "\(_name)-system"
-	optional: true
+	configMap: {
+		optional: true
+		name:     "\(_name)-system"
+	}
 }
 _systemConfigVolumeMount: {
 	name:      "config-system"
@@ -117,7 +118,7 @@ _promviewWorkloadSpec: {
 	}
 	replicas: 2
 	template: {
-		metadata: labels: name: {
+		metadata: labels: {
 			cluster:   "\(_name)"
 			component: "promview"
 		}
@@ -183,7 +184,7 @@ _testRunnerJob: {
 	metadata: {
 		name: "test-runner-\(_name)"
 		labels: {
-			cluster: "\(_name)"
+			cluster:   "\(_name)"
 			component: "test-runner"
 		}
 		namespace: "\(_namespace)"
