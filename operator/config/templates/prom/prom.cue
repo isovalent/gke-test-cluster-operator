@@ -7,59 +7,85 @@ import "encoding/yaml"
 
 _name: "prom"
 
+_promviewSDConfigs: [{
+        role: "service"
+        selectors: [{
+                role: "service"
+                label: "component=promview"
+        }]
+}]
+
+_promviewRelabelConfigs: [{
+        source_labels: [
+                "__meta_kubernetes_namespace",
+        ]
+        target_label: "test_cluster_namespace"
+}, {
+        source_labels: [
+                "__meta_kubernetes_service_label_cluster",
+        ]
+        target_label: "test_cluster_name"
+}]
+
+// having more then one item in `match[]` will be encoded usign repeated keys in the URL,
+// but logview (or rathe ProxyGet) doesn't work with repeated keys;
+// it also seems plausible to separate each of the federated jobs
 _configMapData: {
 	global: scrape_interval: "15s"
 	scrape_configs: [{
 		job_name: "gke-test-cluster-operator-promview-metrics"
-		kubernetes_sd_configs: [{
-			role: "service"
-			selectors: [{
-				role: "service"
-				label: "component=promview"
-			}]
-		}]
-		relabel_configs: [{
-			source_labels: [
-				"__meta_kubernetes_namespace",
-			]
-			target_label: "test_cluster_namespace"
-		}, {
-			source_labels: [
-				"__meta_kubernetes_service_label_cluster",
-			]
-			target_label: "test_cluster_name"
-		}]
+		kubernetes_sd_configs: _promviewSDConfigs
+		relabel_configs: _promviewRelabelConfigs
+        }, {
+                job_name: "gke-test-cluster-operator-promview-federate-kubernetes-apiservers"
+                kubernetes_sd_configs: _promviewSDConfigs
+                honor_labels: true
+                metrics_path: '/federate'
+                params: {
+                        "match[]": [ '{job="kubernetes-apiservers"}' ]
+                }
+                relabel_configs: _promviewRelabelConfigs
+        }, {
+        }, {
+                job_name: "gke-test-cluster-operator-promview-federate-envoy"
+                kubernetes_sd_configs: _promviewSDConfigs
+                honor_labels: true
+                metrics_path: '/federate'
+                params: {
+                        "match[]": [ '{job="envoy"}' ]
+                }
+                relabel_configs: _promviewRelabelConfigs
+        }, {
+        }, {
+                job_name: "gke-test-cluster-operator-promview-federate-kubernetes-pods"
+                kubernetes_sd_configs: _promviewSDConfigs
+                honor_labels: true
+                metrics_path: '/federate'
+                params: {
+                        "match[]": [ '{job="kubernetes-pods"}' ]
+                }
+                relabel_configs: _promviewRelabelConfigs
+        }, {
+        }, {
+                job_name: "gke-test-cluster-operator-promview-federate-kubernetes-nodes"
+                kubernetes_sd_configs: _promviewSDConfigs
+                honor_labels: true
+                metrics_path: '/federate'
+                params: {
+                        "match[]": [ '{job="kubernetes-nodes"}'
+                        ]
+                }
+                relabel_configs: _promviewRelabelConfigs
+        }, {
 	}, {
-		job_name: "gke-test-cluster-operator-promview-federate"
-		kubernetes_sd_configs: [{
-			role: "service"
-			selectors: [{
-				role: "service"
-				label: "component=promview"
-			}]
-		}]
+		job_name: "gke-test-cluster-operator-promview-federate-cadvisor"
+                kubernetes_sd_configs: _promviewSDConfigs
 		honor_labels: true
 		metrics_path: '/federate'
 		params: {
-			"match[]": [
-				'{job="kubernetes-apiservers"}',
-				'{job="envoy"}',
-				'{job="kubernetes-pods"}',
-				'{job="kubernetes-nodes"}',
-				'{job="cadvisor"}',
-			]
+			"match[]": [ '{job="cadvisor"}' ]
 		}
-		relabel_configs: [{
-			source_labels: [
-				"__meta_kubernetes_namespace",
-			]
-			target_label: "test_cluster_namespace"
-		}, {
-			source_labels: [
-				"__meta_kubernetes_service_label_cluster",
-			]
-			target_label: "test_cluster_name"
-		}]
+                relabel_configs: _promviewRelabelConfigs
 	}, {
 		job_name: "kubernetes-apiservers"
 		kubernetes_sd_configs: [{

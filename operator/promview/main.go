@@ -61,6 +61,10 @@ func (l *promview) handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert url.Values (map[string][]string) to map[string]string
+	// NB: this will only strore a single value for each key, so if
+	// if requests passes multiple keys, it won't work as expected;
+	// namely this happens with `"match[]": []`, which actually
+	// introduces repeated keys...
 	params := map[string]string{}
 	for k := range r.URL.Query() {
 		params[k] = r.URL.Query().Get(k)
