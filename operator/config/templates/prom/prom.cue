@@ -13,7 +13,10 @@ _configMapData: {
 		job_name: "gke-test-cluster-operator-promview-metrics"
 		kubernetes_sd_configs: [{
 			role: "service"
-			selectors: [{label: "component=promview"}]
+			selectors: [{
+				role: "service"
+				label: "component=promview"
+			}]
 		}]
 		relabel_configs: [{
 			source_labels: [
@@ -30,7 +33,10 @@ _configMapData: {
 		job_name: "gke-test-cluster-operator-promview-federate"
 		kubernetes_sd_configs: [{
 			role: "service"
-			selectors: [{label: "component=promview"}]
+			selectors: [{
+				role: "service"
+				label: "component=promview"
+			}]
 		}]
 		honor_labels: true
 		metrics_path: '/federate'
