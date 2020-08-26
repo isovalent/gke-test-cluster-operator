@@ -46,7 +46,6 @@ _configMapData: {
                 }
                 relabel_configs: _promviewRelabelConfigs
         }, {
-        }, {
                 job_name: "gke-test-cluster-operator-promview-federate-envoy"
                 kubernetes_sd_configs: _promviewSDConfigs
                 honor_labels: true
@@ -55,7 +54,6 @@ _configMapData: {
                         "match[]": [ '{job="envoy"}' ]
                 }
                 relabel_configs: _promviewRelabelConfigs
-        }, {
         }, {
                 job_name: "gke-test-cluster-operator-promview-federate-kubernetes-pods"
                 kubernetes_sd_configs: _promviewSDConfigs
@@ -66,7 +64,6 @@ _configMapData: {
                 }
                 relabel_configs: _promviewRelabelConfigs
         }, {
-        }, {
                 job_name: "gke-test-cluster-operator-promview-federate-kubernetes-nodes"
                 kubernetes_sd_configs: _promviewSDConfigs
                 honor_labels: true
@@ -76,7 +73,6 @@ _configMapData: {
                         ]
                 }
                 relabel_configs: _promviewRelabelConfigs
-        }, {
 	}, {
 		job_name: "gke-test-cluster-operator-promview-federate-cadvisor"
                 kubernetes_sd_configs: _promviewSDConfigs
