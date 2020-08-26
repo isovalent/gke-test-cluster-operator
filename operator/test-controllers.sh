@@ -80,6 +80,11 @@ container_status() {
 
 wait_for_cert_manager
 
+echo "INFO: cleaning up stale resouces"
+
+kubectl delete namespace --selector="test" --field-selector="status.phase=Active" --wait="false"
+kubectl delete ClusterRole,ClusterRoleBinding,MutatingWebhookConfiguration,ValidatingWebhookConfiguration --selector="name=${name}"
+
 echo "INFO: creating test job"
 
 # since we rely on external dependencie, CI uses a different
@@ -96,7 +101,8 @@ fi
 kubectl apply --filename="config/rbac/role.yaml"
 kubectl apply --filename="config/crd"
 
-kubectl create --namespace="${namespace}" --filename="config/operator/operator-test.yaml"
+# wait_for_cert_manager attemapts what it can, yet the readiness of webhook is hard to determined without retrying
+until kubectl apply --namespace="${namespace}" --filename="config/operator/operator-test.yaml" ; do sleep 0.5 ; done
 
 wait_for_pod
 
