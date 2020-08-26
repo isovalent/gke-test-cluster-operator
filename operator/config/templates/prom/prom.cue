@@ -505,7 +505,7 @@ _configMapData: {
 							mountPath: "/etc/prometheus"
 						}]
 					}]
-					serviceAccountname: _name
+					serviceAccountName: _name
 					volumes: [{
 						name: "etc-prometheus"
 						configMap: name: _name
