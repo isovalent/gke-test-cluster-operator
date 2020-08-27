@@ -56,12 +56,12 @@ func (c *TestClusterGKE) Default() {
 
 		if c.Spec.JobSpec.Runner.Image == nil {
 			c.Spec.JobSpec.Runner.Image = new(string)
-			*c.Spec.JobSpec.Runner.Image = "docker.io/google/cloud-sdk:slim@sha256:a2bade78228faad59a16c36d440f10cfef58a6055cd997d19e258c59c78a409a"
+			*c.Spec.JobSpec.Runner.Image = "quay.io/isovalent/gke-test-cluster-gcloud:803ff83d3786eb38ef05c95768060b0c7ae0fc4d"
 		}
 
 		if c.Spec.JobSpec.Runner.InitImage == nil {
 			c.Spec.JobSpec.Runner.InitImage = new(string)
-			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-initutil:685510cd7320e1fa00e6813f966d3a9efc9e2fed"
+			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-initutil:854733411778d633350adfa1ae66bf11ba658a3f"
 		}
 	}
 

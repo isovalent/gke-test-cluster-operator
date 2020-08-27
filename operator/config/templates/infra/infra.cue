@@ -90,7 +90,7 @@ _commonInitContainer: {
 	volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts
 }
 
-_promviewImage: "quay.io/isovalent/gke-test-cluster-promview:463f866a84935ba1f1e764c7bed6eccbf61d6640"
+_promviewImage: "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e"
 
 _promviewWorkload: {
 	apiVersion: "apps/v1"

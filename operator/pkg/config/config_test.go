@@ -1060,7 +1060,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 								  "memory": "100Mi"
 								}
 							  },
-							  "image": "quay.io/isovalent/gke-test-cluster-promview:463f866a84935ba1f1e764c7bed6eccbf61d6640",
+							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
 							  "command": [
 								"/usr/bin/gke-test-cluster-promview"
 							  ],
@@ -1375,7 +1375,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 								  "memory": "100Mi"
 								}
 							  },
-							  "image": "quay.io/isovalent/gke-test-cluster-promview:463f866a84935ba1f1e764c7bed6eccbf61d6640",
+							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
 							  "command": [
 								"/usr/bin/gke-test-cluster-promview"
 							  ],
