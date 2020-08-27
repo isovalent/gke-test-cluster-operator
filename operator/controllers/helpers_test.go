@@ -128,6 +128,8 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		objChan: objChan,
 	}).SetupWithManager(mgr)).To(Succeed())
 
+	g.Expect((&clustersv1alpha1.TestClusterGKE{}).
+		SetupWebhookWithManager(mgr)).To(Succeed())
 	g.Expect((&clustersv1alpha2.TestClusterGKE{}).
 		SetupWebhookWithManager(mgr)).To(Succeed())
 

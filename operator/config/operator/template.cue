@@ -341,35 +341,58 @@ if parameters.certManager {
 			labels: name:                                  constants.name
 			annotations: "cert-manager.io/inject-ca-from": "\(parameters.namespace)/\(constants.name)"
 		}
-		webhooks: [{
-			name:          "mutate.clusters.ci.cilium.io"
-			failurePolicy: "Fail"
-			sideEffects:   "None"
-			rules: [{
-				apiGroups: [
-					"clusters.ci.cilium.io",
-				]
-				apiVersions: [
-					"v1alpha1",
-				]
-				operations: [
-					"CREATE",
-					"UPDATE",
-				]
-				resources: [
-					"testclustergkes",
-				]
-			}]
-			admissionReviewVersions: [ "v1beta1", "v1"]
-			clientConfig: {
-				caBundle: "Cg==" // dummy value
-				service: {
-					name:      constants.name
-					namespace: parameters.namespace
-					path:      "/mutate-clusters-ci-cilium-io-v1alpha1-testclustergke"
+		webhooks: [
+			{
+				name:          "v1alpha1.mutate.clusters.ci.cilium.io"
+				failurePolicy: "Fail"
+				sideEffects:   "None"
+				rules: [{
+					apiGroups: [ "clusters.ci.cilium.io" ]
+					apiVersions: [ "v1alpha1" ]
+					operations: [
+						"CREATE",
+						"UPDATE",
+					]
+					resources: [
+						"testclustergkes",
+					]
+				}]
+				admissionReviewVersions: [ "v1beta1", "v1"]
+				clientConfig: {
+					caBundle: "Cg==" // dummy value
+					service: {
+						name:      constants.name
+						namespace: parameters.namespace
+						path:      "/mutate-clusters-ci-cilium-io-v1alpha1-testclustergke"
+					}
 				}
-			}
-		}]
+			},
+			{
+				name:          "v1alpha2.mutate.clusters.ci.cilium.io"
+				failurePolicy: "Fail"
+				sideEffects:   "None"
+				rules: [{
+					apiGroups: [ "clusters.ci.cilium.io" ]
+					apiVersions: [ "v1alpha2" ]
+					operations: [
+						"CREATE",
+						"UPDATE",
+					]
+					resources: [
+						"testclustergkes",
+					]
+				}]
+				admissionReviewVersions: [ "v1beta1", "v1"]
+				clientConfig: {
+					caBundle: "Cg==" // dummy value
+					service: {
+						name:      constants.name
+						namespace: parameters.namespace
+						path:      "/mutate-clusters-ci-cilium-io-v1alpha2-testclustergke"
+					}
+				}
+			},
+		]
 	}, {
 		apiVersion: "admissionregistration.k8s.io/v1"
 		kind:       "ValidatingWebhookConfiguration"
@@ -378,36 +401,60 @@ if parameters.certManager {
 			labels: name:                                  constants.name
 			annotations: "cert-manager.io/inject-ca-from": "\(parameters.namespace)/\(constants.name)"
 		}
-		webhooks: [{
-			name:          "validate.clusters.ci.cilium.io"
-			failurePolicy: "Fail"
-			sideEffects:   "None"
-			rules: [{
-				apiGroups: [
-					"clusters.ci.cilium.io",
-				]
-				apiVersions: [
-					"v1alpha1",
-				]
-				operations: [
-					"CREATE",
-					"UPDATE",
-					"DELETE",
-				]
-				resources: [
-					"testclustergkes",
-				]
-			}]
-			admissionReviewVersions: [ "v1beta1", "v1"]
-			clientConfig: {
-				caBundle: "Cg==" // dummy value
-				service: {
-					name:      constants.name
-					namespace: parameters.namespace
-					path:      "/validate-clusters-ci-cilium-io-v1alpha1-testclustergke"
+		webhooks: [
+			{
+				name:          "v1alpha1.validate.clusters.ci.cilium.io"
+				failurePolicy: "Fail"
+				sideEffects:   "None"
+				rules: [{
+					apiGroups: [ "clusters.ci.cilium.io" ]
+					apiVersions: [ "v1alpha1" ]
+					operations: [
+						"CREATE",
+						"UPDATE",
+						"DELETE",
+					]
+					resources: [
+						"testclustergkes",
+					]
+				}]
+				admissionReviewVersions: [ "v1beta1", "v1"]
+				clientConfig: {
+					caBundle: "Cg==" // dummy value
+					service: {
+						name:      constants.name
+						namespace: parameters.namespace
+						path:      "/validate-clusters-ci-cilium-io-v1alpha1-testclustergke"
+					}
 				}
-			}
-		}]
+			},
+			{
+				name:          "v1alpha2.validate.clusters.ci.cilium.io"
+				failurePolicy: "Fail"
+				sideEffects:   "None"
+				rules: [{
+					apiGroups: [ "clusters.ci.cilium.io" ]
+					apiVersions: [ "v1alpha2" ]
+					operations: [
+						"CREATE",
+						"UPDATE",
+						"DELETE",
+					]
+					resources: [
+						"testclustergkes",
+					]
+				}]
+				admissionReviewVersions: [ "v1beta1", "v1"]
+				clientConfig: {
+					caBundle: "Cg==" // dummy value
+					service: {
+						name:      constants.name
+						namespace: parameters.namespace
+						path:      "/validate-clusters-ci-cilium-io-v1alpha2-testclustergke"
+					}
+				}
+			},
+		]
 	}]
 }
 
