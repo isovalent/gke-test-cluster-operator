@@ -37,6 +37,21 @@ images.operator: .buildx_builder
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-operator.tag
 
+images.gcloud: .buildx_builder
+	$(IMAGINE) build \
+		--builder $$(cat .buildx_builder) \
+		--base ./gcloud \
+		--name gke-test-cluster-gcloud \
+		--test \
+		--registry $(REGISTRY) \
+		$(imagine_push_or_export) \
+		--cleanup
+	$(IMAGINE) image \
+		--base ./gcloud  \
+		--name gke-test-cluster-gcloud \
+		--registry $(REGISTRY) \
+		> image-gke-test-cluster-gcloud.tag
+
 images.initutil: .buildx_builder
 	$(IMAGINE) build \
 		--builder $$(cat .buildx_builder) \
