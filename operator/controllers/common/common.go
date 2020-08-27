@@ -163,6 +163,8 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind str
 		Message:            readinessMessage,
 	}}
 
+	c.Log.V(1).Info("updating owner status", "owner", owner)
+
 	if err := c.Update(ctx, owner); err != nil {
 		return err
 	}

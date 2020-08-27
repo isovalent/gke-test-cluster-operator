@@ -90,6 +90,7 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	ghs := github.NewStatusUpdater(r.Log.WithValues("GitHubStatus", req.NamespacedName), instance.ObjectMeta)
 
 	// it's safe to re-generate object, as same name will be used
+	log.V(1).Info("regenerating config", "intance", instance)
 	objs, err := r.RenderObjects(instance)
 	if err != nil {
 		errMsg := "unable render config template"
