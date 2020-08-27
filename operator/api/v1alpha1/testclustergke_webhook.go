@@ -61,7 +61,7 @@ func (c *TestClusterGKE) Default() {
 
 		if c.Spec.JobSpec.Runner.InitImage == nil {
 			c.Spec.JobSpec.Runner.InitImage = new(string)
-			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-job-runner-init:685510cd7320e1fa00e6813f966d3a9efc9e2fed"
+			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-initutil:685510cd7320e1fa00e6813f966d3a9efc9e2fed"
 		}
 	}
 
