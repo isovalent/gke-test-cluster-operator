@@ -84,7 +84,7 @@ if resource.spec.jobSpec.runner.configMap != "" {
 }
 
 _commonInitContainer: {
-	name:         "common-init"
+	name:         "initutil"
 	image:        "\(_runnerInitImage)"
 	env:          [_kubeconfigEnv] + _authInfoEnv + _extraEnv
 	volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts

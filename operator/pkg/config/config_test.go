@@ -842,7 +842,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "common-init",
+							  "name": "initutil",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -985,7 +985,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "common-init",
+							  "name": "initutil",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -1194,7 +1194,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "common-init",
+							  "name": "initutil",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
@@ -1312,7 +1312,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						  ],
 						  "initContainers": [
 							{
-							  "name": "common-init",
+							  "name": "initutil",
 							  "env": [
 								{
 								  "name": "KUBECONFIG",
