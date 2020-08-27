@@ -1,16 +1,5 @@
 schemaVersion: "2.0.0"
 
-commandTests:
-- name: "kubectl command is in path"
-  command: "which"
-  args: ["kubectl"]
-  expectedOutput: ["/usr/bin/kubectl"]
-- name: "kubectl version"
-  command: "kubectl"
-  args: ["version", "--client", "--short"]
-  expectedOutput:
-  - 'Client\ Version:\ v1\.18\.*'
-
 fileExistenceTests:
 - name: '/usr/local/bin/init.sh'
   path: '/usr/local/bin/init.sh'
@@ -21,6 +10,10 @@ fileExistenceTests:
   path: '/config'
   shouldExist: false
 
-- name: '/config/init-manifest'
-  path: '/config/init-manifest'
+- name: '/config/system/init-manifest'
+  path: '/config/system/init-manifest'
+  shouldExist: false
+
+- name: '/config/user/init-manifest'
+  path: '/config/user/init-manifest'
   shouldExist: false
