@@ -34,6 +34,7 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.Nodes = src.Spec.Nodes
 
 	dst.Status.ClusterName = src.Status.ClusterName
+
 	if len(src.Status.Conditions) > 0 {
 		dstCondtions := v1alpha2.TestClusterGKEConditions{}
 		for _, srcCondition := range src.Status.Conditions {
