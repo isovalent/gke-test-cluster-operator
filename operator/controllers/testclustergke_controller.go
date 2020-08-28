@@ -5,6 +5,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -105,7 +106,10 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// next status must be updated to store generated cluster
 	// name and prevent more clusters being generated
 	// (NB: r.RenderObjects sets instance.Status.ClusterName)
-	if err := r.Update(ctx, instance); err != nil {
+	if instance.Status.ClusterName == nil {
+		return ctrl.Result{}, fmt.Errorf("unexpected nil status.clusterName")
+	}
+	if err := r.Status().Update(ctx, instance); err != nil {
 		return ctrl.Result{}, err
 	}
 

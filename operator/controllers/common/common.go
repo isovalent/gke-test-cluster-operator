@@ -165,7 +165,7 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind str
 
 	c.Log.V(1).Info("updating owner status", "owner", owner)
 
-	if err := c.Update(ctx, owner); err != nil {
+	if err := c.Status().Update(ctx, owner); err != nil {
 		return err
 	}
 

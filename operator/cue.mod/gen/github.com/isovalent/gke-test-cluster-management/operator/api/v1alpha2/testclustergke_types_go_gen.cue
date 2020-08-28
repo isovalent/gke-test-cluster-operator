@@ -37,7 +37,7 @@ import (
 	nodes?: null | int @go(Nodes,*int)
 }
 
-// JobSpec is the specification of test job
+// TestClusterGKEJobSpec is the specification of test job
 #TestClusterGKEJobSpec: {
 	// Runner specifies a container that will run control process that drives the tests
 	runner?: null | #TestClusterGKEJobRunnerSpec @go(Runner,*TestClusterGKEJobRunnerSpec)
@@ -67,9 +67,7 @@ import (
 #TestClusterGKEConditions: [...#TestClusterGKECondition]
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
-// +kubebuilder:subresource:status
 #TestClusterGKEStatus: {
-	// Important: Run "make misc.generate" to regenerate code after modifying this file
 	conditions?: #TestClusterGKEConditions @go(Conditions)
 	dependencyConditions?: {[string]: #TestClusterGKEConditions} @go(Dependencies,map[string]TestClusterGKEConditions)
 	clusterName?: null | string @go(ClusterName,*string)

@@ -11,10 +11,10 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Important: Run "make misc.generate" to regenerate code after modifying this file
+
 // TestClusterGKESpec defines the desired state of TestClusterGKE
 type TestClusterGKESpec struct {
-	// Important: Run "make misc.generate" to regenerate code after modifying this file
-
 	// Project is the name of GCP project
 	Project *string `json:"project,omitempty"`
 	// ConfigTemplate is the name of configuration template to use
@@ -34,7 +34,7 @@ type TestClusterGKESpec struct {
 	Nodes *int `json:"nodes,omitempty"`
 }
 
-// JobSpec is the specification of test job
+// TestClusterGKEJobSpec is the specification of test job
 type TestClusterGKEJobSpec struct {
 	// Runner specifies a container that will run control process that drives the tests
 	Runner *TestClusterGKEJobRunnerSpec `json:"runner,omitempty"`
@@ -57,10 +57,7 @@ type TestClusterGKEJobRunnerSpec struct {
 }
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
-// +kubebuilder:subresource:status
 type TestClusterGKEStatus struct {
-	// Important: Run "make misc.generate" to regenerate code after modifying this file
-
 	Conditions           []TestClusterGKEStatusCondition `json:"conditions,omitempty"`
 	Endpoint             *string                         `json:"endpoint,omitempty"`
 	Operation            *string                         `json:"operation,omitempty"`
@@ -89,6 +86,7 @@ func (c *TestClusterGKEStatus) HasReadyCondition() bool {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // TestClusterGKE is the Schema for the testclustergkes API
 type TestClusterGKE struct {

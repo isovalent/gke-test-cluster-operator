@@ -189,9 +189,8 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		g.Expect(clusterName).To(HavePrefix("test-2-"))
 		g.Expect(clusterName).To(HaveLen(12))
 
-		// TODO: this is not the case for some reason, should check why that maybe...
-		// g.Expect(obj.Status.ClusterName).ToNot(BeNil())
-		// g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
+		g.Expect(remoteObj.Status.ClusterName).ToNot(BeNil())
+		g.Expect(*remoteObj.Status.ClusterName).To(Equal(clusterName))
 
 		cnrmCluster := &cnrmObjs.Items[0]
 
@@ -231,7 +230,7 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
 			g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha2.TestClusterGKEStatus).Conditions))
 			// make an update simulating what CNRM would do
-			g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
+			g.Expect(cst.Client.Status().Update(ctx, cnrmCluster)).To(Succeed())
 			// expect the depenencies status to be exactly the same soon enough
 			g.Eventually(func() []v1alpha2.TestClusterGKECondition {
 				err := cst.Client.Get(ctx, key, obj)
