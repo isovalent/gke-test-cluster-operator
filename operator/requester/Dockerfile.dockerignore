@@ -3,9 +3,8 @@
 !go.mod
 !go.sum
 
-!main.go
 !pkg/
 !api/
-!controllers/
+!requester/
 !config/templates
 !cue.mod/
