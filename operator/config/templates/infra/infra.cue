@@ -5,14 +5,25 @@ package infra
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
-_name:      "\(resource.metadata.name)"
-_namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+_generatedName: resource.metadata.name | *resource.status.clusterName
 
-_project:  "\(defaults.spec.project)" | *"\(resource.spec.project)"
-_location: "\(defaults.spec.location)" | *"\(resource.spec.location)"
+_namespace: defaults.metadata.namespace | *resource.metadata.namespace
 
-_runnerImage:     "\(defaults.spec.jobSpec.runner.image)" | *"\(resource.spec.jobSpec.runner.image)"
-_runnerInitImage: "\(defaults.spec.jobSpec.runner.initImage)" | *"\(resource.spec.jobSpec.runner.initImage)"
+_project:  defaults.spec.project | *resource.spec.project
+_location: defaults.spec.location | *resource.spec.location
+
+_runnerImage:     defaults.spec.jobSpec.runner.image | *resource.spec.jobSpec.runner.image
+_runnerInitImage: defaults.spec.jobSpec.runner.initImage | *resource.spec.jobSpec.runner.initImage
+
+_promviewLabels: {
+	cluster:   resource.metadata.name
+	component: "promview"
+}
+
+_runnerLabels: {
+	cluster:   resource.metadata.name
+	component: "test-runner"
+}
 
 _runnerCommand: [...string]
 
@@ -23,15 +34,15 @@ if len(resource.spec.jobSpec.runner.command) > 0 {
 _authInfoEnv: [
 	{
 		name:  "SERVICE_ACCOUNT"
-		value: "\(_name)-admin@\(_project).iam.gserviceaccount.com"
+		value: "\(_generatedName)-admin@\(_project).iam.gserviceaccount.com"
 	},
 	{
 		name:  "CLUSTER_LOCATION"
-		value: "\(_location)"
+		value: _location
 	},
 	{
 		name:  "CLUSTER_NAME"
-		value: "\(_name)"
+		value: _generatedName
 	},
 ]
 
@@ -60,7 +71,7 @@ _systemConfigVolume: {
 	name: "config-system"
 	configMap: {
 		optional: true
-		name:     "\(_name)-system"
+		name:     "\(_generatedName)-system"
 	}
 }
 _systemConfigVolumeMount: {
@@ -75,7 +86,7 @@ _extraVolumeMounts: [...{}]
 if resource.spec.jobSpec.runner.configMap != "" {
 	_extraVolumes: [{
 		name: "config-user"
-		configMap: name: "\(resource.spec.jobSpec.runner.configMap)"
+		configMap: name: resource.spec.jobSpec.runner.configMap
 	}]
 	_extraVolumeMounts: [{
 		name:      "config-user"
@@ -85,7 +96,7 @@ if resource.spec.jobSpec.runner.configMap != "" {
 
 _commonInitContainer: {
 	name:         "initutil"
-	image:        "\(_runnerInitImage)"
+	image:        _runnerInitImage
 	env:          [_kubeconfigEnv] + _authInfoEnv + _extraEnv
 	volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts
 }
@@ -96,27 +107,18 @@ _promviewWorkload: {
 	apiVersion: "apps/v1"
 	kind:       "Deployment"
 	metadata: {
-		name: "\(_name)-promview"
-		labels: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
-		namespace: "\(_namespace)"
+		name:      "\(_generatedName)-promview"
+		labels:    _promviewLabels
+		namespace: _namespace
 	}
 	spec: _promviewWorkloadSpec
 }
 
 _promviewWorkloadSpec: {
 	selector:
-		matchLabels: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
+		matchLabels: _promviewLabels
 	template: metadata: {
-		labels: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
+		labels: _promviewLabels
 		annotations: {
 			// do not scrape the pod directly, use service and label seletor
 			"prometheus.io.scrape": "false"
@@ -124,12 +126,10 @@ _promviewWorkloadSpec: {
 	}
 	replicas: 2
 	template: {
-		metadata: labels: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
+		metadata:
+			labels: _promviewLabels
 		spec: {
-			serviceAccountName:           "\(_name)-admin"
+			serviceAccountName:           "\(_generatedName)-admin"
 			automountServiceAccountToken: false
 			enableServiceLinks:           false
 			volumes:                      [_kubeconfigVolume, _systemConfigVolume] + _extraVolumes
@@ -164,18 +164,12 @@ _promviewService: {
 	apiVersion: "v1"
 	kind:       "Service"
 	metadata: {
-		name: "\(_name)-promview"
-		labels: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
-		namespace: "\(_namespace)"
+		name:      "\(_generatedName)-promview"
+		labels:    _promviewLabels
+		namespace: _namespace
 	}
 	spec: {
-		selector: {
-			cluster:   "\(_name)"
-			component: "promview"
-		}
+		selector: _promviewLabels
 		ports: [{
 			name:       "promview"
 			port:       80
@@ -188,12 +182,9 @@ _testRunnerJob: {
 	apiVersion: "batch/v1"
 	kind:       "Job"
 	metadata: {
-		name: "test-runner-\(_name)"
-		labels: {
-			cluster:   "\(_name)"
-			component: "test-runner"
-		}
-		namespace: "\(_namespace)"
+		name:      "test-runner-\(_generatedName)"
+		labels:    _runnerLabels
+		namespace: _namespace
 	}
 	spec: _testRunnerJobSpec
 }
@@ -201,9 +192,9 @@ _testRunnerJob: {
 _testRunnerJobSpec: {
 	backoffLimit: 0
 	template: {
-		metadata: labels: cluster: "\(_name)"
+		metadata: labels: _runnerLabels
 		spec: {
-			serviceAccountName:           "\(_name)-admin"
+			serviceAccountName:           "\(_generatedName)-admin"
 			automountServiceAccountToken: false
 			enableServiceLinks:           false
 			volumes:                      [_kubeconfigVolume, _systemConfigVolume] + _extraVolumes
@@ -211,7 +202,7 @@ _testRunnerJobSpec: {
 			containers: [{
 				name:         "test-runner"
 				command:      _runnerCommand
-				image:        "\(_runnerImage)"
+				image:        _runnerImage
 				env:          [_kubeconfigEnv] + _authInfoEnv + _extraEnv
 				volumeMounts: [_kubeconfigVolumeMount, _systemConfigVolumeMount] + _extraVolumeMounts
 			}]

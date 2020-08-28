@@ -137,20 +137,25 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 	for _, tc := range []struct {
 		command    []string
 		shouldFail bool
+		name       string
 	}{
+		// the job needs to run long enought for cluster to not
+		// get deleted too quickly
 		{
-			command:    []string{"sleep", "10"},
+			command:    []string{"sleep", "25"},
 			shouldFail: false,
+			name:       "test-2-good-job",
 		},
 		{
-			command:    []string{"sh", "-c", "sleep 10 && exit 1"},
+			command:    []string{"sh", "-c", "sleep 25 && exit 1"},
 			shouldFail: true,
+			name:       "test-2-failing-job",
 		},
 	} {
 
 		ns := cst.NextNamespace()
 
-		key, obj := newTestClusterGKE(ns, "test-2")
+		key, obj := newTestClusterGKE(ns, tc.name)
 		remoteObj := obj.DeepCopy()
 
 		obj.Spec.ConfigTemplate = new(string)
@@ -163,6 +168,7 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 				Command:   tc.command,
 			},
 		}
+
 		*obj.Spec.JobSpec.Runner.InitImage = "tianon/true@sha256:009cce421096698832595ce039aa13fa44327d96beedb84282a69d3dbcf5a81b"
 		*obj.Spec.JobSpec.Runner.Image = "busybox:1.32"
 
@@ -173,9 +179,6 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		g.Expect(cst.Client.Create(ctx, obj)).To(Succeed())
 
 		g.Expect(cst.Client.Get(ctx, key, remoteObj)).To(Succeed())
-
-		g.Expect(remoteObj.Status.ClusterName).ToNot(BeNil())
-		g.Expect(*remoteObj.Status.ClusterName).To(HavePrefix("test-2-"))
 
 		listOpts := &client.ListOptions{Namespace: ns}
 		g.Eventually(func() bool {
@@ -189,11 +192,17 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		g.Expect(cnrmObjs.Items).To(HaveLen(1))
 
 		clusterName := cnrmObjs.Items[0].GetName()
-		g.Expect(clusterName).To(HavePrefix("test-2-"))
-		g.Expect(clusterName).To(HaveLen(12))
+		g.Expect(clusterName).To(HavePrefix(tc.name + "-"))
+		g.Expect(clusterName).To(HaveLen(len(tc.name) + 6))
 
-		g.Expect(remoteObj.Status.ClusterName).ToNot(BeNil())
-		g.Expect(*remoteObj.Status.ClusterName).To(Equal(clusterName))
+		g.Eventually(func() bool {
+			if cst.Client.Get(ctx, key, remoteObj) != nil {
+				return false
+			}
+
+			return (remoteObj.Status.ClusterName != nil) &&
+				(*remoteObj.Status.ClusterName == clusterName)
+		}, *pollTimeout, *pollInterval).Should(BeTrue())
 
 		cnrmCluster := &cnrmObjs.Items[0]
 
@@ -233,11 +242,11 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
 			g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha2.TestClusterGKEStatus).Conditions))
 			// make an update simulating what CNRM would do
-			g.Expect(cst.Client.Status().Update(ctx, cnrmCluster)).To(Succeed())
+			// NB: CNRM resources don't have status subresource
+			g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
 			// expect the depenencies status to be exactly the same soon enough
 			g.Eventually(func() []v1alpha2.TestClusterGKECondition {
-				err := cst.Client.Get(ctx, key, obj)
-				if err != nil {
+				if cst.Client.Get(ctx, key, obj) != nil {
 					return nil
 				}
 

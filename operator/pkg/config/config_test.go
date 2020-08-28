@@ -109,10 +109,14 @@ func TestClusterResources(t *testing.T) {
 					Region:         new(string),
 					Location:       new(string),
 				},
+				Status: v1alpha2.TestClusterGKEStatus{
+					ClusterName: new(string),
+				},
 			}
 			*cluster.Spec.Project = "cilium-ci"
 			*cluster.Spec.Region = "europe-west2"
 			*cluster.Spec.Location = "europe-west2-b"
+			*cluster.Status.ClusterName = "baz"
 
 			coreResourcesData, err := c.RenderClusterCoreResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -339,8 +343,12 @@ func TestClusterResources(t *testing.T) {
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
+				Status: v1alpha2.TestClusterGKEStatus{
+					ClusterName: new(string),
+				},
 			}
 			*cluster.Spec.Project = "cilium-ci"
+			*cluster.Status.ClusterName = "bar"
 
 			coreResourcesData, err := c.RenderClusterCoreResourcesAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -816,7 +824,8 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 					  "template": {
 						"metadata": {
 						  "labels": {
-							"cluster": "baz-a0b1c2"
+							"cluster": "baz-a0b1c2",
+							"component": "test-runner"
 						  }
 						},
 						"spec": {
@@ -1174,7 +1183,8 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 					  "template": {
 						"metadata": {
 						  "labels": {
-							"cluster": "bar-0a1b2c"
+							"cluster": "bar-0a1b2c",
+							"component": "test-runner"
 						  }
 						},
 						"spec": {

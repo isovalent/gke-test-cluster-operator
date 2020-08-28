@@ -88,6 +88,11 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	if instance.GetDeletionTimestamp() != nil {
+		log.V(1).Info("object is being deleted")
+		return ctrl.Result{}, nil
+	}
+
 	ghs := github.NewStatusUpdater(r.Log.WithValues("GitHubStatus", req.NamespacedName), instance.ObjectMeta)
 
 	if instance.Status.ClusterName == nil {

@@ -69,6 +69,9 @@ import (
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 #TestClusterGKEStatus: {
 	conditions?: #TestClusterGKEConditions @go(Conditions)
+
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:XPreserveUnknownFields
 	dependencyConditions?: {[string]: #TestClusterGKEConditions} @go(Dependencies,map[string]TestClusterGKEConditions)
 	clusterName?: null | string @go(ClusterName,*string)
 }

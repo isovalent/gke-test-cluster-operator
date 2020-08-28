@@ -86,8 +86,9 @@ func (c *TestClusterGKE) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (c *TestClusterGKE) ValidateUpdate(old runtime.Object) error {
-	log.V(1).Info("validate update", "namespace", c.Namespace, "name", c.Name, "new.Spec", c.Spec, "old.Spec", old.(*TestClusterGKE).Spec)
-	if !equality.Semantic.DeepEqual(c.Spec, old.(*TestClusterGKE).Spec) {
+	o := old.(*TestClusterGKE)
+	log.V(1).Info("validate update", "namespace", c.Namespace, "name", c.Name, "new.Spec", c.Spec, "new.Status", c.Status, "old.Spec", o.Spec, "old.Status", o.Status)
+	if !equality.Semantic.DeepEqual(c.Spec, o.Spec) {
 		return errors.New("spec updates are not supported")
 	}
 	return nil

@@ -5,12 +5,17 @@ package iam
 
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
-_name:      "\(resource.metadata.name)"
-_namespace: "\(defaults.metadata.namespace)" | *"\(resource.metadata.namespace)"
+_generatedName: resource.metadata.name | *resource.status.clusterName
 
-_project: "\(defaults.spec.project)" | *"\(resource.spec.project)"
+_namespace: defaults.metadata.namespace | *resource.metadata.namespace
 
-_adminServiceAccountName:  "\(_name)-admin"
+_project: defaults.spec.project | *resource.spec.project
+
+_commonLabels: cluster: resource.metadata.name
+
+_commonAnnotations: "cnrm.cloud.google.com/project-id": _project
+
+_adminServiceAccountName:  "\(_generatedName)-admin"
 _adminServiceAccountEmail: "\(_adminServiceAccountName)@\(_project).iam.gserviceaccount.com"
 _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)/\(_adminServiceAccountName)]"
 
@@ -22,32 +27,28 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 			apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
 			kind:       "IAMServiceAccount"
 			metadata: {
-				name:      "\(_adminServiceAccountName)"
-				namespace: "\(_namespace)"
-				labels: cluster: "\(_name)"
-				annotations: {
-					"cnrm.cloud.google.com/project-id": "\(_project)"
-				}
+				name:        _adminServiceAccountName
+				labels:      _commonLabels
+				namespace:   _namespace
+				annotations: _commonAnnotations
 			}
 		},
 		{
 			apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
 			kind:       "IAMPolicyMember"
 			metadata: {
-				name: "\(_name)-workload-identity"
-				labels: cluster: "\(_name)"
-				namespace: "\(_namespace)"
-				annotations: {
-					"cnrm.cloud.google.com/project-id": "\(_project)"
-				}
+				name:        "\(_generatedName)-workload-identity"
+				labels:      _commonLabels
+				namespace:   _namespace
+				annotations: _commonAnnotations
 			}
 			spec: {
-				member: "\(_adminServiceAccountRef)"
+				member: _adminServiceAccountRef
 				role:   "roles/iam.workloadIdentityUser"
 				resourceRef: {
 					apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
 					kind:       "IAMServiceAccount"
-					name:       "\(_adminServiceAccountName)"
+					name:       _adminServiceAccountName
 				}
 			}
 		},
@@ -55,12 +56,10 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 			apiVersion: "iam.cnrm.cloud.google.com/v1beta1"
 			kind:       "IAMPolicyMember"
 			metadata: {
-				name: "\(_name)-cluster-admin"
-				labels: cluster: "\(_name)"
-				namespace: "\(_namespace)"
-				annotations: {
-					"cnrm.cloud.google.com/project-id": "\(_project)"
-				}
+				name:        "\(_generatedName)-cluster-admin"
+				labels:      _commonLabels
+				namespace:   _namespace
+				annotations: _commonAnnotations
 			}
 			spec: {
 				member: "serviceAccount:\(_adminServiceAccountEmail)"
@@ -80,12 +79,12 @@ _adminServiceAccountRef:   "serviceAccount:\(_project).svc.id.goog[\(_namespace)
 			apiVersion: "v1"
 			kind:       "ServiceAccount"
 			metadata: {
-				name:      "\(_adminServiceAccountName)"
-				namespace: "\(_namespace)"
-				labels: cluster: "\(_name)"
+				name:      _adminServiceAccountName
+				namespace: _namespace
+				labels:    _commonLabels
 				annotations: {
-					"iam.gke.io/gcp-service-account":   "\(_adminServiceAccountEmail)"
-					"cnrm.cloud.google.com/project-id": "\(_project)"
+					"iam.gke.io/gcp-service-account":   _adminServiceAccountEmail
+					"cnrm.cloud.google.com/project-id": _project
 				}
 			}
 		},

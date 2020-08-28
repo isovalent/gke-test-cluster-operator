@@ -181,13 +181,17 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha2.TestClusterGKE) (*u
 		return nil, err
 	}
 
+	if cluster.Status.ClusterName == nil {
+		return nil, fmt.Errorf("unexpected nil status.clusterName")
+	}
+
 	systemConfigMap, err := toUnstructured(&corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cluster.Name + "-system",
+			Name:      *cluster.Status.ClusterName + "-system",
 			Namespace: cluster.Namespace,
 			Labels: map[string]string{
 				"cluster": cluster.Name,

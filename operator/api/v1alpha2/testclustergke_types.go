@@ -60,7 +60,9 @@ type TestClusterGKEConditions []TestClusterGKECondition
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 type TestClusterGKEStatus struct {
-	Conditions   TestClusterGKEConditions            `json:"conditions,omitempty"`
+	Conditions TestClusterGKEConditions `json:"conditions,omitempty"`
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +kubebuilder:validation:XPreserveUnknownFields
 	Dependencies map[string]TestClusterGKEConditions `json:"dependencyConditions,omitempty"`
 	ClusterName  *string                             `json:"clusterName,omitempty"`
 }

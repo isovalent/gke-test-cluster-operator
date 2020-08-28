@@ -135,7 +135,7 @@ if parameters.test {
 	_command: [
 		"test.gke-test-cluster-operator-controllers",
 		"-test.v",
-		"-test.timeout=5m",
+		"-test.timeout=25m", // this must be kept greater then the sum of all polling timeouts
 		"-resource-prefix=\(parameters.namespace)",
 	]
 
