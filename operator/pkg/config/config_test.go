@@ -322,7 +322,7 @@ func TestClusterResources(t *testing.T) {
 			}`
 			g.Expect(accessResourcesData).To(MatchJSON(accessResourcesExpected))
 
-			objs, err := c.RenderAllClusterResources(cluster, false)
+			objs, err := c.RenderAllClusterResources(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(9))
@@ -550,13 +550,14 @@ func TestClusterResources(t *testing.T) {
 			}`
 			g.Expect(accessResourcesData).To(MatchJSON(accessResourcesExpected))
 
-			objs, err := c.RenderAllClusterResources(cluster, false)
+			objs, err := c.RenderAllClusterResources(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(9))
 		}
 
 		{
+			generatedName := "baz-abc1xad"
 			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "baz",
@@ -566,22 +567,23 @@ func TestClusterResources(t *testing.T) {
 					ConfigTemplate: &templateName,
 					MachineType:    &machineType,
 				},
+				Status: v1alpha2.TestClusterGKEStatus{
+					ClusterName: &generatedName,
+				},
 			}
 			*cluster.Spec.Project = "cilium-ci"
 
-			objs, err := c.RenderAllClusterResources(cluster, true)
+			objs, err := c.RenderAllClusterResources(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(9))
 
 			name := objs.Items[1].GetName()
-			g.Expect(name).To(HavePrefix("baz-"))
-			g.Expect(name).To(HaveLen(9))
+			g.Expect(name).To(Equal(generatedName))
 
 			for _, obj := range objs.Items {
 				labels := obj.GetLabels()
-				g.Expect(labels).To(HaveKeyWithValue("cluster", name))
-				g.Expect(obj.GetName()).To(HavePrefix(name))
+				g.Expect(labels).To(HaveKeyWithValue("cluster", cluster.Name))
 			}
 		}
 
@@ -602,7 +604,7 @@ func TestClusterResources(t *testing.T) {
 			}
 			*cluster.Spec.Project = "cilium-ci"
 
-			objs, err := c.RenderAllClusterResources(cluster, true)
+			objs, err := c.RenderAllClusterResources(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
 			g.Expect(objs.Items).To(HaveLen(9))
@@ -612,8 +614,7 @@ func TestClusterResources(t *testing.T) {
 
 			for _, obj := range objs.Items {
 				labels := obj.GetLabels()
-				g.Expect(labels).To(HaveKeyWithValue("cluster", name))
-				g.Expect(obj.GetName()).To(HavePrefix(name))
+				g.Expect(labels).To(HaveKeyWithValue("cluster", cluster.Name))
 			}
 		}
 
@@ -766,7 +767,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		g.Expect(err).ToNot(HaveOccurred())
 
 		{
-			actualName := "baz-a0b1c2"
+			generatedName := "baz-a0b1c2"
 			runnerImage := "cilium-ci/cilium-e2e:80d4133f2b9317a0f08fcff9b2f8d625ea9f7b7a"
 			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
@@ -782,12 +783,12 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 								Name:  "FOO",
 								Value: "bar",
 							}},
-							ConfigMap: &actualName,
+							ConfigMap: &generatedName,
 						},
 					},
 				},
 				Status: v1alpha2.TestClusterGKEStatus{
-					ClusterName: &actualName,
+					ClusterName: &generatedName,
 				},
 			}
 
@@ -1131,7 +1132,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		}
 
 		{
-			actualName := "bar-0a1b2c"
+			generatedName := "bar-0a1b2c"
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
 			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1145,7 +1146,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 					},
 				},
 				Status: v1alpha2.TestClusterGKEStatus{
-					ClusterName: &actualName,
+					ClusterName: &generatedName,
 				},
 			}
 
@@ -1442,7 +1443,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 		}
 
 		{
-			actualName := "baz-x2a8332"
+			generatedName := "baz-x2a8332"
 			runnerImage := "cilium-ci/cilium-e2e:0d725ea9f7ba0f08fcff48133f2b9319b2f8d67a"
 			cluster := &v1alpha2.TestClusterGKE{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1455,7 +1456,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						}},
 				},
 				Status: v1alpha2.TestClusterGKEStatus{
-					ClusterName: &actualName,
+					ClusterName: &generatedName,
 				},
 			}
 

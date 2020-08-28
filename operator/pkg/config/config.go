@@ -15,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
 
 const (
@@ -154,24 +153,10 @@ func (c *Config) RenderPromResourcesAsJSON(cluster *v1alpha2.TestClusterGKE) ([]
 	return c.renderTemplateAsJSON(cluster, PromResourcesTemplateName)
 }
 
-func (c *Config) RenderAllClusterResources(cluster *v1alpha2.TestClusterGKE, generateName bool) (*unstructured.UnstructuredList, error) {
+func (c *Config) RenderAllClusterResources(cluster *v1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	allResources := &unstructured.UnstructuredList{}
 	coreResources := &unstructured.UnstructuredList{}
 	accessResources := &unstructured.UnstructuredList{}
-
-	if generateName {
-		generatedName := cluster.Name + "-" + utilrand.String(5)
-		if cluster.Status.ClusterName == nil {
-			// store generated name in status
-			cluster.Status.ClusterName = &generatedName
-		} else {
-			// if name is already stored in status, use that instead
-			generatedName = *cluster.Status.ClusterName
-		}
-		// make a copy and use new name as input to generator
-		cluster = cluster.DeepCopy()
-		cluster.Name = generatedName
-	}
 
 	coreResourcesData, err := c.RenderClusterCoreResourcesAsJSON(cluster)
 	if err != nil {

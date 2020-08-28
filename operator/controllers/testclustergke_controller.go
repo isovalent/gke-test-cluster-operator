@@ -5,12 +5,12 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/prometheus/client_golang/prometheus"
+	utilrand "k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -90,6 +90,15 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	ghs := github.NewStatusUpdater(r.Log.WithValues("GitHubStatus", req.NamespacedName), instance.ObjectMeta)
 
+	if instance.Status.ClusterName == nil {
+		generatedName := instance.Name + "-" + utilrand.String(5)
+		log.V(1).Info("generated new cluster name", "status.clusterName", generatedName)
+		instance.Status.ClusterName = &generatedName
+		if err := r.Status().Update(ctx, instance); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	// it's safe to re-generate object, as same name will be used
 	log.V(1).Info("regenerating config", "intance", instance)
 	objs, err := r.RenderObjects(instance)
@@ -102,16 +111,6 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 
 	log.Info("generated config", "items", objs.Items)
-
-	// next status must be updated to store generated cluster
-	// name and prevent more clusters being generated
-	// (NB: r.RenderObjects sets instance.Status.ClusterName)
-	if instance.Status.ClusterName == nil {
-		return ctrl.Result{}, fmt.Errorf("unexpected nil status.clusterName")
-	}
-	if err := r.Status().Update(ctx, instance); err != nil {
-		return ctrl.Result{}, err
-	}
 
 	ifCreated := func() {
 		r.MetricTracker.ClustersCreated.Inc()
@@ -135,7 +134,7 @@ func (r *TestClusterGKEReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
-	objs, err := r.ConfigRenderer.RenderAllClusterResources(instance, true)
+	objs, err := r.ConfigRenderer.RenderAllClusterResources(instance)
 	if err != nil {
 		return nil, err
 	}

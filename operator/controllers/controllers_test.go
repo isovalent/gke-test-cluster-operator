@@ -174,6 +174,9 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 
 		g.Expect(cst.Client.Get(ctx, key, remoteObj)).To(Succeed())
 
+		g.Expect(remoteObj.Status.ClusterName).ToNot(BeNil())
+		g.Expect(*remoteObj.Status.ClusterName).To(HavePrefix("test-2-"))
+
 		listOpts := &client.ListOptions{Namespace: ns}
 		g.Eventually(func() bool {
 			cnrmObjs := cnrm.NewContainerClusterList()
