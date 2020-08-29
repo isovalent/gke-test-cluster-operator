@@ -106,8 +106,11 @@ func (c *TestClusterGKEStatus) HasReadyCondition() bool {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
+// +kubebuilder:singular=testclustergke
+// +kubebuilder:plural=testclustersgke
+// +kubebuilder:resource:path=testclustersgke,shortName=tcg;tcgke;
 
-// TestClusterGKE is the Schema for the testclustergkes API
+// TestClusterGKE is the Schema for the TestClustersGKE API
 type TestClusterGKE struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

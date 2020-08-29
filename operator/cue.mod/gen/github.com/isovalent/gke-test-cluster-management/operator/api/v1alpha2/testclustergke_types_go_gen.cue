@@ -84,7 +84,7 @@ import (
 	message?:            string       @go(Message)
 }
 
-// TestClusterGKE is the Schema for the testclustergkes API
+// TestClusterGKE is the Schema for the TestClustersGKE API
 #TestClusterGKE: {
 	metav1.#TypeMeta
 	metadata?: metav1.#ObjectMeta    @go(ObjectMeta)

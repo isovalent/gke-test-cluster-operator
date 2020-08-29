@@ -38,8 +38,8 @@ import (
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=configmaps/status,verbs=get;update;patch
 
-// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustergkes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustersgke,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=clusters.ci.cilium.io,resources=testclustersgke/status,verbs=get;update;patch
 
 // +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containerclusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=container.cnrm.cloud.google.com,resources=containerclusters/status,verbs=get;update;patch

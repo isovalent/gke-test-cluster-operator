@@ -354,7 +354,7 @@ if parameters.certManager {
 						"UPDATE",
 					]
 					resources: [
-						"testclustergkes",
+						"testclustersgke",
 					]
 				}]
 				admissionReviewVersions: [ "v1beta1", "v1"]
@@ -379,7 +379,7 @@ if parameters.certManager {
 						"UPDATE",
 					]
 					resources: [
-						"testclustergkes",
+						"testclustersgke",
 					]
 				}]
 				admissionReviewVersions: [ "v1beta1", "v1"]
@@ -415,7 +415,7 @@ if parameters.certManager {
 						"DELETE",
 					]
 					resources: [
-						"testclustergkes",
+						"testclustersgke",
 					]
 				}]
 				admissionReviewVersions: [ "v1beta1", "v1"]
@@ -441,7 +441,7 @@ if parameters.certManager {
 						"DELETE",
 					]
 					resources: [
-						"testclustergkes",
+						"testclustersgke",
 					]
 				}]
 				admissionReviewVersions: [ "v1beta1", "v1"]

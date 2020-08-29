@@ -97,26 +97,6 @@ rules:
 - apiGroups:
   - clusters.ci.cilium.io
   resources:
-  - testclustergkes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - clusters.ci.cilium.io
-  resources:
-  - testclustergkes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - clusters.ci.cilium.io
-  resources:
   - testclusterpoolgkes
   verbs:
   - create
@@ -130,6 +110,26 @@ rules:
   - clusters.ci.cilium.io
   resources:
   - testclusterpoolgkes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclustersgke
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - clusters.ci.cilium.io
+  resources:
+  - testclustersgke/status
   verbs:
   - get
   - patch
