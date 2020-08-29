@@ -6,6 +6,8 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	v1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -58,31 +60,11 @@ type TestClusterGKEJobRunnerSpec struct {
 
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 type TestClusterGKEStatus struct {
-	Conditions           []TestClusterGKEStatusCondition `json:"conditions,omitempty"`
-	Endpoint             *string                         `json:"endpoint,omitempty"`
-	Operation            *string                         `json:"operation,omitempty"`
-	KubeconfigSecretName *string                         `json:"kubeconfigSecretName,omitempty"`
-	ClusterName          *string                         `json:"clusterName,omitempty"`
-}
-
-type TestClusterGKEStatusCondition struct {
-	Type               string      `json:"type"`
-	Status             string      `json:"status"`
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-	Reason             string      `json:"reason,omitempty"`
-	Message            string      `json:"message,omitempty"`
-}
-
-func (c *TestClusterGKEStatus) HasReadyCondition() bool {
-	if c == nil {
-		return false
-	}
-	for _, condition := range c.Conditions {
-		if condition.Type == "Ready" && condition.Status == "True" {
-			return true
-		}
-	}
-	return false
+	Conditions           v1alpha2.CommonConditions `json:"conditions,omitempty"`
+	Endpoint             *string                   `json:"endpoint,omitempty"`
+	Operation            *string                   `json:"operation,omitempty"`
+	KubeconfigSecretName *string                   `json:"kubeconfigSecretName,omitempty"`
+	ClusterName          *string                   `json:"clusterName,omitempty"`
 }
 
 // +kubebuilder:object:root=true

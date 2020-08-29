@@ -5,7 +5,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -28,6 +27,8 @@ import (
 	"github.com/isovalent/gke-test-cluster-management/operator/pkg/config"
 )
 
+const TestRunnerJobClusterRoleBindingName = "test-job-runner"
+
 // setup watchers only for functional depednencies of the cluster,
 // no watchers are needed for IAM resources
 
@@ -36,24 +37,14 @@ var cnrmEventHandler = &handler.EnqueueRequestForObject{}
 
 type CNRMContainerClusterWatcher struct {
 	common.ClientLogger
+	Scheme *runtime.Scheme
+}
+
+type CNRMContainerNodePoolWatcher struct {
+	common.ClientLogger
 	gkeclient.ClientSetBuilder
-	Scheme         *runtime.Scheme
 	ConfigRenderer *config.Config
-}
-
-type CNRMContainerNodePoolSourceWatcher struct {
-	common.ClientLogger
-	Scheme *runtime.Scheme
-}
-
-type CNRMComputeNetworkWatcher struct {
-	common.ClientLogger
-	Scheme *runtime.Scheme
-}
-
-type CNRMComputeSubnetworkWatcher struct {
-	common.ClientLogger
-	Scheme *runtime.Scheme
+	Scheme         *runtime.Scheme
 }
 
 func (w *CNRMContainerClusterWatcher) SetupWithManager(mgr ctrl.Manager) error {
@@ -89,14 +80,12 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, nil
 	}
 
-	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.ObjectMeta)
-
 	if instance.GetDeletionTimestamp() != nil {
 		log.V(1).Info("object is being deleted")
 		return ctrl.Result{}, nil
 	}
 
-	status, err := w.GetContainerClusterStatus(instance)
+	status, err := cnrm.ParsePartialStatus(instance)
 	if err != nil {
 		log.Error(err, "failed to get status")
 		return ctrl.Result{}, err
@@ -109,7 +98,69 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 
 	log.V(1).Info("reconciling status", "status", status)
 
-	if err := w.UpdateOwnerStatus(ctx, "ContainerCluster", req.NamespacedName, status, owner); err != nil {
+	if err := w.UpdateOwnerStatus(ctx, "ContainerCluster", req.NamespacedName, status.Conditions, owner); err != nil {
+		log.Error(err, "failed to update owner status")
+		w.MetricTracker.Errors.Inc()
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func (w *CNRMContainerNodePoolWatcher) SetupWithManager(mgr ctrl.Manager) error {
+	c, err := controller.New("cnrm-containernodepool-watcher", mgr, controller.Options{
+		Reconciler: w,
+	})
+	if err != nil {
+		return err
+	}
+	return c.Watch(cnrm.NewContainerNodePoolSource(), cnrmEventHandler)
+}
+
+func (w *CNRMContainerNodePoolWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	ctx := context.Background()
+	log := w.Log.WithValues("Reconcile", req.NamespacedName)
+
+	log.V(1).Info("request")
+
+	instance := cnrm.NewContainerNodePool()
+	if err := w.Get(ctx, req.NamespacedName, instance); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			w.MetricTracker.Errors.Inc()
+		}
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	owner, err := w.GetOwner(ctx, req.NamespacedName, instance.GetOwnerReferences())
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if owner == nil {
+		log.V(1).Info("object not owned by the opertor")
+		return ctrl.Result{}, nil
+	}
+
+	ghs := github.NewStatusUpdater(w.Log.WithValues("GitHubStatus", req.NamespacedName), owner.ObjectMeta)
+
+	if instance.GetDeletionTimestamp() != nil {
+		log.V(1).Info("object is being deleted")
+		return ctrl.Result{}, nil
+	}
+
+	status, err := cnrm.ParsePartialStatus(instance)
+	if err != nil {
+		log.Error(err, "failed to get status")
+		return ctrl.Result{}, err
+	}
+
+	if status == nil {
+		log.V(1).Info("empty status")
+		return ctrl.Result{}, nil
+	}
+
+	log.V(1).Info("reconciling status", "status", status)
+
+	if err := w.UpdateOwnerStatus(ctx, "ContainerNodePool", req.NamespacedName, status.Conditions, owner); err != nil {
 		log.Error(err, "failed to update owner status")
 		w.MetricTracker.Errors.Inc()
 		return ctrl.Result{}, err
@@ -145,10 +196,7 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 	return ctrl.Result{}, nil
 }
 
-const TestRunnerJobClusterRoleBindingName = "test-job-runner"
-
-func (w *CNRMContainerClusterWatcher) EnsureTestRunnerJobClusterRoleBindingExists(ctx context.Context, instance *unstructured.Unstructured) error {
-
+func (w *CNRMContainerNodePoolWatcher) EnsureTestRunnerJobClusterRoleBindingExists(ctx context.Context, instance *unstructured.Unstructured) error {
 	cluster, err := cnrm.ParsePartialContainerCluster(instance)
 	if err != nil {
 		return err
@@ -194,33 +242,7 @@ func (w *CNRMContainerClusterWatcher) EnsureTestRunnerJobClusterRoleBindingExist
 	return nil
 }
 
-type ContainerClusterStatus = clustersv1alpha2.TestClusterGKEStatus
-type ContainerClusterStatusCondition = clustersv1alpha2.TestClusterGKECondition
-
-func (*CNRMContainerClusterWatcher) GetContainerClusterStatus(instance *unstructured.Unstructured) (*ContainerClusterStatus, error) {
-	// TestClusterGKEStatus is really based on CNRM's ContainerClusterStatus,
-	// so the same type is used here while it's actually defined as part of
-	// the main API
-	statusObj, ok := instance.Object["status"]
-	if !ok {
-		// ignore objects without status,
-		// presumably this just hasn't been populated yet
-		return nil, nil
-	}
-
-	data, err := json.Marshal(statusObj)
-	if err != nil {
-		return nil, err
-	}
-
-	status := &ContainerClusterStatus{}
-	if err := json.Unmarshal(data, status); err != nil {
-		return nil, err
-	}
-	return status, nil
-}
-
-func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
+func (r *CNRMContainerNodePoolWatcher) RenderObjects(ownerObj *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
 	objs, err := r.ConfigRenderer.RenderTestInfraWorkloads(ownerObj)
 	if err != nil {
 		return nil, err
@@ -234,52 +256,4 @@ func (r *CNRMContainerClusterWatcher) RenderObjects(ownerObj *clustersv1alpha2.T
 	}
 
 	return objs, nil
-}
-
-func (w *CNRMContainerNodePoolSourceWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-containernodepool-watcher", mgr, controller.Options{
-		Reconciler: w,
-	})
-	if err != nil {
-		return err
-	}
-	return c.Watch(cnrm.NewContainerNodePoolSource(), cnrmEventHandler)
-}
-
-func (w *CNRMContainerNodePoolSourceWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := w.Log.WithValues("Reconcile", req.NamespacedName)
-	log.V(1).Info("request")
-	return ctrl.Result{}, nil
-}
-
-func (w *CNRMComputeNetworkWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-computenetwork-watcher", mgr, controller.Options{
-		Reconciler: w,
-	})
-	if err != nil {
-		return err
-	}
-	return c.Watch(cnrm.NewComputeNetworkSource(), cnrmEventHandler)
-}
-
-func (w *CNRMComputeNetworkWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := w.Log.WithValues("Reconcile", req.NamespacedName)
-	log.V(1).Info("request")
-	return ctrl.Result{}, nil
-}
-
-func (w *CNRMComputeSubnetworkWatcher) SetupWithManager(mgr ctrl.Manager) error {
-	c, err := controller.New("cnrm-computesubnetwork-watcher", mgr, controller.Options{
-		Reconciler: w,
-	})
-	if err != nil {
-		return err
-	}
-	return c.Watch(cnrm.NewComputeSubnetworkSource(), cnrmEventHandler)
-}
-
-func (w *CNRMComputeSubnetworkWatcher) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := w.Log.WithValues("Reconcile", req.NamespacedName)
-	log.V(1).Info("request")
-	return ctrl.Result{}, nil
 }

@@ -5,6 +5,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 )
 
 type PartialContainerCluster struct {
@@ -36,4 +38,32 @@ func ParsePartialContainerCluster(obj *unstructured.Unstructured) (*PartialConta
 		return nil, err
 	}
 	return pcc, nil
+}
+
+type PartialStatus struct {
+	Conditions clustersv1alpha2.CommonConditions `json:"conditions,omitempty"`
+}
+
+func ParsePartialStatus(obj *unstructured.Unstructured) (*PartialStatus, error) {
+	statusObj, ok := obj.Object["status"]
+	if !ok {
+		// ignore objects without status,
+		// presumably it just hasn't been populated yet
+		return nil, nil
+	}
+
+	data, err := json.Marshal(statusObj)
+	if err != nil {
+		return nil, err
+	}
+
+	status := &PartialStatus{}
+	if err := json.Unmarshal(data, status); err != nil {
+		return nil, err
+	}
+	return status, nil
+}
+
+func (c *PartialStatus) HasReadyCondition() bool {
+	return c.Conditions.HaveReadyCondition()
 }

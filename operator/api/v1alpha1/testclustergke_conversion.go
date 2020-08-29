@@ -36,9 +36,9 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Status.ClusterName = src.Status.ClusterName
 
 	if len(src.Status.Conditions) > 0 {
-		dstCondtions := v1alpha2.TestClusterGKEConditions{}
+		dstCondtions := v1alpha2.CommonConditions{}
 		for _, srcCondition := range src.Status.Conditions {
-			dstCondition := v1alpha2.TestClusterGKECondition{
+			dstCondition := v1alpha2.CommonCondition{
 				Type:               srcCondition.Type,
 				Status:             srcCondition.Status,
 				LastTransitionTime: srcCondition.LastTransitionTime,
@@ -47,7 +47,7 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 			}
 			dstCondtions = append(dstCondtions, dstCondition)
 		}
-		dst.Status.Dependencies = map[string]v1alpha2.TestClusterGKEConditions{
+		dst.Status.Dependencies = map[string]v1alpha2.CommonConditions{
 			fmt.Sprintf("ContainerCluster:%s/%s", src.Namespace, src.Name): dstCondtions,
 		}
 	}
@@ -62,7 +62,7 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 		readinessMessage = fmt.Sprintf("All %d dependencies are ready", len(dst.Status.Dependencies))
 	}
 
-	dst.Status.Conditions = v1alpha2.TestClusterGKEConditions{{
+	dst.Status.Conditions = v1alpha2.CommonConditions{{
 		Type:               "Ready",
 		Status:             readinessStatus,
 		LastTransitionTime: metav1.Time{Time: time.Now()},
@@ -100,7 +100,7 @@ func (dst *TestClusterGKE) ConvertFrom(srcRaw conversion.Hub) error {
 
 	if srcConditions, ok := src.Status.Dependencies[fmt.Sprintf("ContainerCluster:%s/%s", src.Namespace, src.Name)]; ok {
 		for _, srcCondition := range srcConditions {
-			dstCondition := TestClusterGKEStatusCondition{
+			dstCondition := v1alpha2.CommonCondition{
 				Type:               srcCondition.Type,
 				Status:             srcCondition.Status,
 				LastTransitionTime: srcCondition.LastTransitionTime,

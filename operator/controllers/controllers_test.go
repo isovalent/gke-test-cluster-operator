@@ -14,6 +14,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -181,6 +182,7 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		g.Expect(cst.Client.Get(ctx, key, remoteObj)).To(Succeed())
 
 		listOpts := &client.ListOptions{Namespace: ns}
+
 		g.Eventually(func() bool {
 			cnrmObjs := cnrm.NewContainerClusterList()
 			err := cst.Client.List(ctx, cnrmObjs, listOpts)
@@ -190,6 +192,7 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 		cnrmObjs := cnrm.NewContainerClusterList()
 		g.Expect(cst.Client.List(ctx, cnrmObjs, listOpts)).To(Succeed())
 		g.Expect(cnrmObjs.Items).To(HaveLen(1))
+		g.Expect(cnrmObjs.Items[0].GetKind()).To(Equal("ContainerCluster"))
 
 		clusterName := cnrmObjs.Items[0].GetName()
 		g.Expect(clusterName).To(HavePrefix(tc.name + "-"))
@@ -206,12 +209,19 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 
 		cnrmCluster := &cnrmObjs.Items[0]
 
+		cnrmObjs = cnrm.NewContainerNodePoolList()
+		g.Expect(cst.Client.List(ctx, cnrmObjs, listOpts)).To(Succeed())
+		g.Expect(cnrmObjs.Items).To(HaveLen(1))
+		g.Expect(cnrmObjs.Items[0].GetKind()).To(Equal("ContainerNodePool"))
+
+		cnrmNodePool := &cnrmObjs.Items[0]
+
 		// creation sequence:
 		// 1: {"conditions":[{"type":"Ready","status":"False","lastTransitionTime":"2020-07-14T17:49:03Z","reason":"DependencyNotReady","message":"reference ComputeNetwork test-clusters-dev/test-1 is not ready"}],"endpoint":"","operation":""}
 		// 2: {"conditions":[{"type":"Ready","status":"False","lastTransitionTime":"2020-07-14T17:49:03Z","reason":"Updating","message":"Update in progress"}],"endpoint":"","operation":""}
 		// 3: {"conditions":[{"type":"Ready","status":"True","lastTransitionTime":"2020-07-14T17:55:36Z","reason":"UpToDate","message":"The resource is up to date"}],"endpoint":"35.197.220.90","operation":""}
 		t := v1.Time{Time: time.Now().Round(time.Second)}
-		createConditionSequence := [][]ContainerClusterStatusCondition{
+		createConditionSequence := []v1alpha2.CommonConditions{
 			{{
 				Type:               "Ready",
 				Status:             "False",
@@ -232,51 +242,72 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			}},
 		}
 
-		cnrmClusterDependecyKey := fmt.Sprintf("ContainerCluster:%s/%s", cnrmCluster.GetNamespace(), clusterName)
-
-		for _, conditions := range createConditionSequence {
-			cnrmCluster.Object["status"] = ContainerClusterStatus{
-				Conditions: conditions,
-			}
-			// check status is not the same initially
-			g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
-			g.Expect(obj.Status.Conditions).NotTo(ConsistOf(cnrmCluster.Object["status"].(v1alpha2.TestClusterGKEStatus).Conditions))
-			// make an update simulating what CNRM would do
-			// NB: CNRM resources don't have status subresource
-			g.Expect(cst.Client.Update(ctx, cnrmCluster)).To(Succeed())
-			// expect the depenencies status to be exactly the same soon enough
-			g.Eventually(func() []v1alpha2.TestClusterGKECondition {
-				if cst.Client.Get(ctx, key, obj) != nil {
-					return nil
+		for _, dependency := range []struct {
+			key string
+			*unstructured.Unstructured
+		}{
+			{
+				key:          fmt.Sprintf("ContainerCluster:%s/%s", ns, clusterName),
+				Unstructured: cnrmCluster,
+			},
+			{
+				key:          fmt.Sprintf("ContainerNodePool:%s/%s", ns, clusterName),
+				Unstructured: cnrmNodePool,
+			},
+		} {
+			for _, conditions := range createConditionSequence {
+				dependency.Object["status"] = cnrm.PartialStatus{
+					Conditions: conditions,
 				}
+				// check status is not the same initially
+				g.Expect(cst.Client.Get(ctx, key, obj)).To(Succeed())
+				g.Expect(obj.Status.Conditions).NotTo(ConsistOf(dependency.Object["status"].(cnrm.PartialStatus).Conditions))
+				// make an update simulating what CNRM would do
+				// NB: CNRM resources don't have status subresource
+				g.Expect(cst.Client.Update(ctx, dependency.Unstructured)).To(Succeed())
+				// validate the dependency was updated
+				g.Expect(cst.Client.Get(ctx, types.NamespacedName{Namespace: ns, Name: clusterName}, dependency.Unstructured)).To(Succeed())
+				g.Expect(dependency.Unstructured.Object).To(HaveKey("status"))
+				g.Expect(dependency.Unstructured.Object["status"]).To(HaveKey("conditions"))
+				g.Expect(dependency.Unstructured.Object["status"].(map[string]interface{})["conditions"]).To(HaveLen(1))
 
-				if len(obj.Status.Dependencies) == 0 {
-					return nil
+				// expect the depenencies status to be exactly the same soon enough
+				g.Eventually(func() v1alpha2.CommonConditions {
+					if cst.Client.Get(ctx, key, obj) != nil {
+						return nil
+					}
+
+					if len(obj.Status.Dependencies) == 0 {
+						return nil
+					}
+
+					if _, ok := obj.Status.Dependencies[dependency.key]; !ok {
+						return nil
+					}
+
+					return obj.Status.Dependencies[dependency.key]
+				}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
+
+				g.Expect(obj.Status.ClusterName).ToNot(BeNil())
+				g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
+
+				if conditions[0].Status == "True" {
+					g.Expect(obj.Status.AllDependeciesReady()).To(BeTrue())
+					g.Expect(obj.Status.HasReadyCondition()).To(BeTrue())
+				} else {
+					g.Expect(obj.Status.AllDependeciesReady()).To(BeFalse())
+					g.Expect(obj.Status.HasReadyCondition()).To(BeFalse())
 				}
-
-				if _, ok := obj.Status.Dependencies[cnrmClusterDependecyKey]; !ok {
-					return nil
-				}
-
-				return obj.Status.Dependencies[cnrmClusterDependecyKey]
-			}, *pollTimeout, *pollInterval).Should(ConsistOf(conditions))
-
-			g.Expect(obj.Status.ClusterName).ToNot(BeNil())
-			g.Expect(*obj.Status.ClusterName).To(Equal(clusterName))
-
-			if conditions[0].Status == "True" {
-				g.Expect(obj.Status.AllDependeciesReady()).To(BeTrue())
-				g.Expect(obj.Status.HasReadyCondition()).To(BeTrue())
-
-			} else {
-				g.Expect(obj.Status.AllDependeciesReady()).To(BeFalse())
-				g.Expect(obj.Status.HasReadyCondition()).To(BeFalse())
 			}
 		}
 
-		cnrmCheckLeakedObjs := cnrm.NewContainerClusterList()
-		g.Expect(cst.Client.List(ctx, cnrmCheckLeakedObjs, listOpts))
-		g.Expect(cnrmCheckLeakedObjs.Items).To(HaveLen(1))
+		for _, cnrmCheckLeakedObjs := range []*unstructured.UnstructuredList{
+			cnrm.NewContainerClusterList(),
+			cnrm.NewContainerNodePoolList(),
+		} {
+			g.Expect(cst.Client.List(ctx, cnrmCheckLeakedObjs, listOpts))
+			g.Expect(cnrmCheckLeakedObjs.Items).To(HaveLen(1))
+		}
 
 		jobObj := batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{

@@ -110,7 +110,12 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMWatcher"),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
+		Scheme:       mgr.GetScheme(),
+	}).SetupWithManager(mgr)).To(Succeed())
+
+	g.Expect((&controllers.CNRMContainerNodePoolWatcher{
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerNodePoolWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: FakeClientSetBuilder{},

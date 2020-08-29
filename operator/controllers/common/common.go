@@ -138,12 +138,12 @@ func (c *ClientLogger) GetOwner(ctx context.Context, objKey types.NamespacedName
 	return ownerObj, nil
 }
 
-func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind string, dependencyKey types.NamespacedName, status *clustersv1alpha2.TestClusterGKEStatus, owner *clustersv1alpha2.TestClusterGKE) error {
+func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind string, dependencyKey types.NamespacedName, conditions clustersv1alpha2.CommonConditions, owner *clustersv1alpha2.TestClusterGKE) error {
 	if owner.Status.Dependencies == nil {
-		owner.Status.Dependencies = map[string]clustersv1alpha2.TestClusterGKEConditions{}
+		owner.Status.Dependencies = map[string]clustersv1alpha2.CommonConditions{}
 	}
 	key := fmt.Sprintf("%s:%s", dependencyKind, dependencyKey.String())
-	owner.Status.Dependencies[key] = status.Conditions
+	owner.Status.Dependencies[key] = conditions
 
 	readinessStatus := "False"
 	readinessReason := "DependenciesNotReady"
@@ -155,7 +155,7 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind str
 		readinessMessage = fmt.Sprintf("All %d dependencies are ready", len(owner.Status.Dependencies))
 	}
 
-	owner.Status.Conditions = clustersv1alpha2.TestClusterGKEConditions{{
+	owner.Status.Conditions = clustersv1alpha2.CommonConditions{{
 		Type:               "Ready",
 		Status:             readinessStatus,
 		LastTransitionTime: metav1.Time{Time: time.Now()},

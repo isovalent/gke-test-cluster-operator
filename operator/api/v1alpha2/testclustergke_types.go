@@ -56,35 +56,30 @@ type TestClusterGKEJobRunnerSpec struct {
 	ConfigMap *string `json:"configMap,omitempty"`
 }
 
-type TestClusterGKEConditions []TestClusterGKECondition
-
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 type TestClusterGKEStatus struct {
-	Conditions TestClusterGKEConditions `json:"conditions,omitempty"`
+	Conditions CommonConditions `json:"conditions,omitempty"`
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:XPreserveUnknownFields
-	Dependencies map[string]TestClusterGKEConditions `json:"dependencyConditions,omitempty"`
-	ClusterName  *string                             `json:"clusterName,omitempty"`
+	Dependencies map[string]CommonConditions `json:"dependencyConditions,omitempty"`
+	ClusterName  *string                     `json:"clusterName,omitempty"`
 }
 
-type TestClusterGKECondition struct {
-	Type               string      `json:"type"`
-	Status             string      `json:"status"`
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-	Reason             string      `json:"reason,omitempty"`
-	Message            string      `json:"message,omitempty"`
-}
+type (
+	CommonCondition struct {
+		Type               string      `json:"type"`
+		Status             string      `json:"status"`
+		LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+		Reason             string      `json:"reason,omitempty"`
+		Message            string      `json:"message,omitempty"`
+	}
+	CommonConditions []CommonCondition
+)
 
 func (c *TestClusterGKEStatus) AllDependeciesReady() bool {
 	readyDependecies := 0
 	for _, dependencyConditions := range c.Dependencies {
-		isReady := false
-		for _, condition := range dependencyConditions {
-			if condition.Type == "Ready" && condition.Status == "True" {
-				isReady = true
-			}
-		}
-		if isReady {
+		if dependencyConditions.HaveReadyCondition() {
 			readyDependecies++
 		}
 	}
@@ -92,10 +87,14 @@ func (c *TestClusterGKEStatus) AllDependeciesReady() bool {
 }
 
 func (c *TestClusterGKEStatus) HasReadyCondition() bool {
+	return c.Conditions.HaveReadyCondition()
+}
+
+func (c CommonConditions) HaveReadyCondition() bool {
 	if c == nil {
 		return false
 	}
-	for _, condition := range c.Conditions {
+	for _, condition := range c {
 		if condition.Type == "Ready" && condition.Status == "True" {
 			return true
 		}

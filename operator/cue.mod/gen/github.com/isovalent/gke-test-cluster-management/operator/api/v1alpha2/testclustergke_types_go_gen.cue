@@ -64,25 +64,25 @@ import (
 	configMap?: null | string @go(ConfigMap,*string)
 }
 
-#TestClusterGKEConditions: [...#TestClusterGKECondition]
-
 // TestClusterGKEStatus defines the observed state of TestClusterGKE
 #TestClusterGKEStatus: {
-	conditions?: #TestClusterGKEConditions @go(Conditions)
+	conditions?: #CommonConditions @go(Conditions)
 
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +kubebuilder:validation:XPreserveUnknownFields
-	dependencyConditions?: {[string]: #TestClusterGKEConditions} @go(Dependencies,map[string]TestClusterGKEConditions)
+	dependencyConditions?: {[string]: #CommonConditions} @go(Dependencies,map[string]CommonConditions)
 	clusterName?: null | string @go(ClusterName,*string)
 }
 
-#TestClusterGKECondition: {
+#CommonCondition: {
 	type:                string       @go(Type)
 	status:              string       @go(Status)
 	lastTransitionTime?: metav1.#Time @go(LastTransitionTime)
 	reason?:             string       @go(Reason)
 	message?:            string       @go(Message)
 }
+
+#CommonConditions: [...#CommonCondition]
 
 // TestClusterGKE is the Schema for the TestClustersGKE API
 #TestClusterGKE: {

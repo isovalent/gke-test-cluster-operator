@@ -108,12 +108,20 @@ func main() {
 	}
 
 	if err := (&controllers.CNRMContainerClusterWatcher{
-		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
+		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
+		Scheme:       mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
+		os.Exit(1)
+	}
+
+	if err := (&controllers.CNRMContainerNodePoolWatcher{
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerNodePoolWatcher"),
 		Scheme:           mgr.GetScheme(),
 		ConfigRenderer:   configRenderer,
 		ClientSetBuilder: *clientSetBuilder,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerClusterWatcher")
+		setupLog.Error(err, "unable to create controller", "controller", "CNRMContainerNodePoolWatcher")
 		os.Exit(1)
 	}
 
