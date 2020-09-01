@@ -4,6 +4,7 @@
 package config_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -1534,4 +1535,37 @@ func TestPromResources(t *testing.T) {
 			g.Expect(objs.Items).To(HaveLen(9))
 		}
 	}
+}
+
+func TestToUnstructured(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	runtimeCM := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "name",
+			Namespace: "namespace",
+			Labels: map[string]string{
+				"labelname": "labelvalue",
+			},
+		},
+		BinaryData: map[string][]byte{
+			"datakey": []byte("value"),
+		},
+	}
+
+	unstructuredCM, err := ToUnstructured(&runtimeCM)
+
+	g.Expect(err).ToNot(HaveOccurred())
+
+	runtimeJSON, err := json.Marshal(runtimeCM)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	unstructuredJSON, err := json.Marshal(unstructuredCM)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	g.Expect(runtimeJSON).To(MatchJSON(unstructuredJSON))
 }
