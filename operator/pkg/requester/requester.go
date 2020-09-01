@@ -63,7 +63,7 @@ func (tcr *TestClusterRequest) CreateRunnerConfigMap(ctx context.Context, initMa
 		return err
 	}
 
-	configMapName := tcr.cluster.Name + "-user"
+	configMapName := tcr.key.Name + "-user"
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapName,
