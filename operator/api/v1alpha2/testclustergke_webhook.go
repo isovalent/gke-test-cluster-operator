@@ -26,7 +26,7 @@ var _ webhook.Defaulter = &TestClusterGKE{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (c *TestClusterGKE) Default() {
 	if c.Name != "" { // avoid loging internal annonymous objects
-		log.Info("applying defaults", "name", c.Name, "namespace", c.Namespace)
+		log.V(1).Info("defaulting", "namespace", c.Namespace, "name", c.Name, "old.Spec", c.Spec)
 	}
 
 	if c.Spec.Project == nil {
@@ -73,6 +73,10 @@ func (c *TestClusterGKE) Default() {
 	if c.Spec.Nodes == nil {
 		c.Spec.Nodes = new(int)
 		*c.Spec.Nodes = 2
+	}
+
+	if c.Name != "" { // avoid loging internal annonymous objects
+		log.V(1).Info("defaulting", "namespace", c.Namespace, "name", c.Name, "new.Spec", c.Spec)
 	}
 }
 
