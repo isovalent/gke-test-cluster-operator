@@ -54,12 +54,12 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 
 	readinessStatus := "False"
 	readinessReason := "DependenciesNotReady"
-	readinessMessage := "Some depenendcies are not ready yet"
+	readinessMessage := "Some dependencies are not ready yet"
 
 	if dst.Status.AllDependeciesReady() {
 		readinessStatus = "True"
 		readinessReason = "AllDependenciesReady"
-		readinessMessage = fmt.Sprintf("All %d depenendcies are ready", len(dst.Status.Dependencies))
+		readinessMessage = fmt.Sprintf("All %d dependencies are ready", len(dst.Status.Dependencies))
 	}
 
 	dst.Status.Conditions = v1alpha2.TestClusterGKEConditions{{

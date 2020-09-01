@@ -147,12 +147,12 @@ func (c *ClientLogger) UpdateOwnerStatus(ctx context.Context, dependencyKind str
 
 	readinessStatus := "False"
 	readinessReason := "DependenciesNotReady"
-	readinessMessage := "Some depenendcies are not ready yet"
+	readinessMessage := "Some dependencies are not ready yet"
 
 	if owner.Status.AllDependeciesReady() {
 		readinessStatus = "True"
 		readinessReason = "AllDependenciesReady"
-		readinessMessage = fmt.Sprintf("All %d depenendcies are ready", len(owner.Status.Dependencies))
+		readinessMessage = fmt.Sprintf("All %d dependencies are ready", len(owner.Status.Dependencies))
 	}
 
 	owner.Status.Conditions = clustersv1alpha2.TestClusterGKEConditions{{
