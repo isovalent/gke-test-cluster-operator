@@ -26,6 +26,10 @@ func main() {
 
 	description := flag.String("description", "", "definition of the purpose of this cluster")
 
+	waitForCluster := flag.Bool("wait", false, "this flag specifies whether command should wait for cluster to be ready")
+
+	waitTimeout := flag.Duration("wait-timeout", requester.DefaultTimeout, "how long to wait for cluster")
+
 	flag.Parse()
 
 	if namespace == nil || *namespace == "" {
@@ -40,8 +44,15 @@ func main() {
 	}
 
 	maybeReadImageFromFile(image)
+	var ctx context.Context
+	var cancel context.CancelFunc
 
-	ctx := context.Background()
+	if *waitForCluster {
+		ctx = context.Background()
+	} else {
+		ctx, cancel = context.WithTimeout(context.Background(), *waitTimeout)
+		defer cancel()
+	}
 
 	name := *namePrefix + utilrand.String(5)
 
@@ -71,6 +82,16 @@ func main() {
 	err = tcr.MaybeSendInitialGitHubStatusUpdate(ctx)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if *waitForCluster {
+		log.Printf("waiting for cluster")
+		log.Printf("For credentials run:\ngcloud container clusters list --uri | grep %s | xargs gcloud container clusters get-credentials --zone x", name)
+		err = tcr.WaitForTestCluster(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("cluster ready.")
 	}
 }
 

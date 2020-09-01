@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -24,6 +25,10 @@ import (
 const (
 	DefaultProject           = "cilium-ci"
 	DefaultManagementCluster = "management-cluster-0"
+	DefaultTimeout           = 10 * time.Minute
+	DefaultWait              = 30 * time.Second
+
+	DefaultInitialWait = 5 * time.Minute
 )
 
 type TestClusterRequest struct {
@@ -139,6 +144,32 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	}
 	tcr.cluster = cluster
 	return tcr.restClient.Create(ctx, cluster)
+}
+
+func (tcr *TestClusterRequest) WaitForTestCluster(ctx context.Context) error {
+	// No use polling the cluster right after it was created
+	select {
+	case <-time.After(DefaultInitialWait):
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	cluster := &v1alpha2.TestClusterGKE{}
+	for {
+		err := tcr.restClient.Get(ctx, tcr.key, cluster)
+		if err != nil {
+			return err
+		}
+		if cluster.Status.HasReadyCondition() {
+			return nil
+		}
+		select {
+		case <-time.After(DefaultWait):
+			continue
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
 
 func (tcr *TestClusterRequest) MaybeSendInitialGitHubStatusUpdate(ctx context.Context) error {
