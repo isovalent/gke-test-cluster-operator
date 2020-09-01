@@ -27,8 +27,8 @@ _promviewRelabelConfigs: [{
         target_label: "test_cluster_name"
 }]
 
-// having more then one item in `match[]` will be encoded usign repeated keys in the URL,
-// but logview (or rathe ProxyGet) doesn't work with repeated keys;
+// having more then one item in `match[]` will be encoded using repeated keys in the URL,
+// but promview (or rather `k8s.io/client-go`'s `ProxyGet`) doesn't work with repeated keys;
 // it also seems plausible to separate each of the federated jobs
 _configMapData: {
 	global: scrape_interval: "15s"
