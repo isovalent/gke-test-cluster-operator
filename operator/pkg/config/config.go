@@ -4,7 +4,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -14,7 +13,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	//"k8s.io/apimachinery/pkg/conversion/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -216,15 +214,10 @@ func (c *Config) RenderAllClusterResources(cluster *v1alpha2.TestClusterGKE) (*u
 // ToUnstructured convers runtime.Object so that it can be appended to UnstructuredList
 // with all other resouces
 func ToUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
-	u := &unstructured.Unstructured{}
-	data, err := json.Marshal(obj)
-	if err != nil {
-		return nil, err
-	}
-	if err := u.UnmarshalJSON(data); err != nil {
-		return nil, err
-	}
-	return u, nil
+	o, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+
+	newUnstr := &unstructured.Unstructured{Object: o}
+	return newUnstr, err
 }
 
 func (c *Config) RenderTestInfraWorkloads(cluster *v1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {
