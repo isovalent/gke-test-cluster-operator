@@ -47,9 +47,12 @@ func main() {
 
 	tcr, err := requester.NewTestClusterRequest(ctx, *project, *managementCluster, *namespace, name)
 	if err != nil {
+		if os.Getenv("GCP_SERVICE_ACCOUNT_KEY") == "" && os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+			log.Fatal("Authentication failed in interactive mode. Run: gcloud auth application-default login")
+		}
 		log.Fatal(err)
 	}
-	log.Printf("successfully authenticated to management cluster %q in GPC project %q\n", *managementCluster, *project)
+	log.Printf("successfully authenticated to management cluster %q in GCP project %q\n", *managementCluster, *project)
 
 	if initManifest != nil && *initManifest != "" {
 		err = tcr.CreateRunnerConfigMap(ctx, *initManifest)
