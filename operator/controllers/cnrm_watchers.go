@@ -237,8 +237,10 @@ func (w *CNRMContainerNodePoolWatcher) EnsureTestRunnerJobClusterRoleBindingExis
 		if _, err := crbClient.Create(ctx, crb, metav1.CreateOptions{}); err != nil {
 			return err
 		}
+		w.Log.Info("created ClusterRoleBinding", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace, "obj", crb)
+		return nil
 	}
-
+	w.Log.Info("ClusterRoleBinding already exists", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace)
 	return nil
 }
 
