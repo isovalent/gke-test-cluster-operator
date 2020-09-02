@@ -168,7 +168,7 @@ func (g *googleAuthProvider) Login() error { return nil }
 
 func newConfig(endpoint, ecodedCACert string) (*rest.Config, error) {
 	if endpoint == "" || ecodedCACert == "" {
-		return nil, fmt.Errorf("unexpect empty endpoint or ecodedCACert")
+		return nil, fmt.Errorf("unexpected empty cluster credentials")
 	}
 	caCert, err := base64.StdEncoding.DecodeString(ecodedCACert)
 	if err != nil {
