@@ -37,12 +37,12 @@ var cnrmEventHandler = &handler.EnqueueRequestForObject{}
 
 type CNRMContainerClusterWatcher struct {
 	common.ClientLogger
+	gkeclient.ClientSetBuilder
 	Scheme *runtime.Scheme
 }
 
 type CNRMContainerNodePoolWatcher struct {
 	common.ClientLogger
-	gkeclient.ClientSetBuilder
 	ConfigRenderer *config.Config
 	Scheme         *runtime.Scheme
 }
@@ -104,7 +104,62 @@ func (w *CNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, err
 	}
 
+	if status.HasReadyCondition() {
+		if err := w.EnsureTestRunnerJobClusterRoleBindingExists(ctx, instance); err != nil {
+			w.MetricTracker.Errors.Inc()
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
+}
+
+func (w *CNRMContainerClusterWatcher) EnsureTestRunnerJobClusterRoleBindingExists(ctx context.Context, instance *unstructured.Unstructured) error {
+	cluster, err := cnrm.ParsePartialContainerCluster(instance)
+	if err != nil {
+		return err
+	}
+
+	clusterClient, err := w.NewClientSet(cluster)
+	if err != nil {
+		return err
+	}
+
+	project, ok := cluster.Annotations["cnrm.cloud.google.com/project-id"]
+	if !ok {
+		return fmt.Errorf("unable to get project ID")
+	}
+
+	serviceAccountEmail := fmt.Sprintf("%s-admin@%s.iam.gserviceaccount.com", cluster.Name, project)
+
+	crbClient := clusterClient.RbacV1().ClusterRoleBindings()
+
+	crb := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: TestRunnerJobClusterRoleBindingName,
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     "cluster-admin",
+		},
+		Subjects: []rbacv1.Subject{{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "User",
+			Name:     serviceAccountEmail,
+		}},
+	}
+
+	_, err = crbClient.Get(ctx, TestRunnerJobClusterRoleBindingName, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		if _, err := crbClient.Create(ctx, crb, metav1.CreateOptions{}); err != nil {
+			return err
+		}
+		w.Log.Info("created ClusterRoleBinding", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace, "obj", crb)
+		return nil
+	}
+	w.Log.Info("ClusterRoleBinding already exists", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace)
+	return nil
 }
 
 func (w *CNRMContainerNodePoolWatcher) SetupWithManager(mgr ctrl.Manager) error {
@@ -166,82 +221,26 @@ func (w *CNRMContainerNodePoolWatcher) Reconcile(req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{}, err
 	}
 
-	if status.HasReadyCondition() {
-		if err := w.EnsureTestRunnerJobClusterRoleBindingExists(ctx, instance); err != nil {
+	if status.HasReadyCondition() && owner.Spec.JobSpec != nil {
+		objs, err := w.RenderObjects(owner)
+		if err != nil {
+			log.Error(err, "failed to render job objects")
 			w.MetricTracker.Errors.Inc()
 			return ctrl.Result{}, err
 		}
-
-		if owner.Spec.JobSpec != nil {
-			objs, err := w.RenderObjects(owner)
-			if err != nil {
-				log.Error(err, "failed to render job objects")
-				w.MetricTracker.Errors.Inc()
-				return ctrl.Result{}, err
-			}
-			log.Info("generated job", "items", objs.Items)
-			ifCreated := func() {
-				w.MetricTracker.JobsCreated.Inc()
-				ghs.Update(ctx, github.StatePending, "test job launched", "")
-			}
-			if err := w.MaybeCreate(objs, ifCreated); err != nil {
-				log.Error(err, "unable reconcile object")
-				w.MetricTracker.Errors.Inc()
-				return ctrl.Result{}, err
-			}
-
+		log.Info("generated job", "items", objs.Items)
+		ifCreated := func() {
+			w.MetricTracker.JobsCreated.Inc()
+			ghs.Update(ctx, github.StatePending, "test job launched", "")
+		}
+		if err := w.MaybeCreate(objs, ifCreated); err != nil {
+			log.Error(err, "unable reconcile object")
+			w.MetricTracker.Errors.Inc()
+			return ctrl.Result{}, err
 		}
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (w *CNRMContainerNodePoolWatcher) EnsureTestRunnerJobClusterRoleBindingExists(ctx context.Context, instance *unstructured.Unstructured) error {
-	cluster, err := cnrm.ParsePartialContainerCluster(instance)
-	if err != nil {
-		return err
-	}
-
-	clusterClient, err := w.NewClientSet(cluster)
-	if err != nil {
-		return err
-	}
-
-	project, ok := cluster.Annotations["cnrm.cloud.google.com/project-id"]
-	if !ok {
-		return fmt.Errorf("unable to get project ID")
-	}
-
-	serviceAccountEmail := fmt.Sprintf("%s-admin@%s.iam.gserviceaccount.com", cluster.Name, project)
-
-	crbClient := clusterClient.RbacV1().ClusterRoleBindings()
-
-	crb := &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: TestRunnerJobClusterRoleBindingName,
-		},
-		RoleRef: rbacv1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
-			Kind:     "ClusterRole",
-			Name:     "cluster-admin",
-		},
-		Subjects: []rbacv1.Subject{{
-			APIGroup: "rbac.authorization.k8s.io",
-			Kind:     "User",
-			Name:     serviceAccountEmail,
-		}},
-	}
-
-	_, err = crbClient.Get(ctx, TestRunnerJobClusterRoleBindingName, metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		if _, err := crbClient.Create(ctx, crb, metav1.CreateOptions{}); err != nil {
-			return err
-		}
-		w.Log.Info("created ClusterRoleBinding", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace, "obj", crb)
-		return nil
-	}
-	w.Log.Info("ClusterRoleBinding already exists", "name", TestRunnerJobClusterRoleBindingName, "cluster.Name", cluster.Name, "cluster.Namespace", cluster.Namespace)
-	return nil
 }
 
 func (r *CNRMContainerNodePoolWatcher) RenderObjects(ownerObj *clustersv1alpha2.TestClusterGKE) (*unstructured.UnstructuredList, error) {

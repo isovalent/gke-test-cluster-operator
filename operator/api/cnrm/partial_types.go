@@ -2,6 +2,7 @@ package cnrm
 
 import (
 	"encoding/json"
+	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -28,6 +29,9 @@ type PartialContainerCluster struct {
 }
 
 func ParsePartialContainerCluster(obj *unstructured.Unstructured) (*PartialContainerCluster, error) {
+	if kind := obj.GetKind(); kind != "ContainerCluster" {
+		return nil, fmt.Errorf("given object is %q, not \"ContainerCluster\"", kind)
+	}
 	data, err := json.Marshal(obj.Object)
 	if err != nil {
 		return nil, err

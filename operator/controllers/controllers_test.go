@@ -309,6 +309,19 @@ func createDeleteClusterWithStatusUpdates(g *WithT, cst *ControllerSubTest) {
 			g.Expect(cnrmCheckLeakedObjs.Items).To(HaveLen(1))
 		}
 
+		g.Expect(cst.TestClusterClientSetBuilder.ClientSets).To(HaveKey(ns + "/" + clusterName))
+		testClusterClientSet := cst.TestClusterClientSetBuilder.ClientSets[ns+"/"+clusterName]
+
+		crb, err := testClusterClientSet.RbacV1().ClusterRoleBindings().Get(ctx, "test-job-runner", metav1.GetOptions{})
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(crb.RoleRef.APIGroup).To(Equal("rbac.authorization.k8s.io"))
+		g.Expect(crb.RoleRef.Kind).To(Equal("ClusterRole"))
+		g.Expect(crb.RoleRef.Name).To(Equal("cluster-admin"))
+		g.Expect(crb.Subjects).To(HaveLen(1))
+		g.Expect(crb.Subjects[0].APIGroup).To(Equal("rbac.authorization.k8s.io"))
+		g.Expect(crb.Subjects[0].Kind).To(Equal("User"))
+		g.Expect(crb.Subjects[0].Name).To(Equal(clusterName + "-admin@cilium-ci.iam.gserviceaccount.com"))
+
 		jobObj := batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-runner-" + clusterName,

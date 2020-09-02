@@ -167,6 +167,9 @@ func (g *googleAuthProvider) WrapTransport(rt http.RoundTripper) http.RoundTripp
 func (g *googleAuthProvider) Login() error { return nil }
 
 func newConfig(endpoint, ecodedCACert string) (*rest.Config, error) {
+	if endpoint != "" || ecodedCACert != "" {
+		return nil, fmt.Errorf("unexpect empty endpoint or ecodedCACert")
+	}
 	caCert, err := base64.StdEncoding.DecodeString(ecodedCACert)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding CA certificate: %v", err)

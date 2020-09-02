@@ -102,6 +102,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	g.Expect(configRenderer.ApplyDefaultsForTestInfraWorkloads(basic.NewDefaults())).To(Succeed())
 
 	metricTracker := controllerscommon.NewMetricTracker()
+	testClusterClientSetBuilder := NewFakeClientSetBuilder()
 
 	g.Expect((&controllers.TestClusterGKEReconciler{
 		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
@@ -110,15 +111,15 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerClusterWatcher{
-		ClientLogger: controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
-		Scheme:       mgr.GetScheme(),
+		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerClusterWatcher"),
+		Scheme:           mgr.GetScheme(),
+		ClientSetBuilder: testClusterClientSetBuilder,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.CNRMContainerNodePoolWatcher{
-		ClientLogger:     controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerNodePoolWatcher"),
-		Scheme:           mgr.GetScheme(),
-		ConfigRenderer:   configRenderer,
-		ClientSetBuilder: FakeClientSetBuilder{},
+		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "CNRMContainerNodePoolWatcher"),
+		Scheme:         mgr.GetScheme(),
+		ConfigRenderer: configRenderer,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	g.Expect((&controllers.JobWatcher{
@@ -148,7 +149,7 @@ func setup(t *testing.T) (*ControllerSubTestManager, func()) {
 		g.Expect(env.Stop()).To(Succeed())
 	}
 
-	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan, metricTracker), teardown
+	return NewControllerSubTestManager(kubeClient, *resourcePrefix, objChan, metricTracker, testClusterClientSetBuilder), teardown
 }
 
 func waitForCert(t *testing.T) {
@@ -280,39 +281,43 @@ func (w *TestCNRMContainerClusterWatcher) Reconcile(req ctrl.Request) (ctrl.Resu
 }
 
 type ControllerSubTestManager struct {
-	client          client.Client
-	namespacePrefix string
-	objChan         chan *unstructured.Unstructured
-	metricTracker   *controllerscommon.MetricTracker
+	client                      client.Client
+	namespacePrefix             string
+	objChan                     chan *unstructured.Unstructured
+	metricTracker               *controllerscommon.MetricTracker
+	testClusterClientSetBuilder *FakeClientSetBuilder
 }
 
 type ControllerSubTest struct {
-	Client        client.Client
-	ObjChan       chan *unstructured.Unstructured
-	MetricTracker *controllerscommon.MetricTracker
+	Client                      client.Client
+	ObjChan                     chan *unstructured.Unstructured
+	MetricTracker               *controllerscommon.MetricTracker
+	TestClusterClientSetBuilder *FakeClientSetBuilder
 
 	t                          *testing.T
 	testLabel, namespacePrefix string
 	namespaces                 []*corev1.Namespace
 }
 
-func NewControllerSubTestManager(client client.Client, namespacePrefix string, objChan chan *unstructured.Unstructured, metricTracker *controllerscommon.MetricTracker) *ControllerSubTestManager {
+func NewControllerSubTestManager(client client.Client, namespacePrefix string, objChan chan *unstructured.Unstructured, metricTracker *controllerscommon.MetricTracker, testClusterClientSetBuilder *FakeClientSetBuilder) *ControllerSubTestManager {
 	return &ControllerSubTestManager{
-		client:          client,
-		namespacePrefix: namespacePrefix,
-		objChan:         objChan,
-		metricTracker:   metricTracker,
+		client:                      client,
+		namespacePrefix:             namespacePrefix,
+		objChan:                     objChan,
+		metricTracker:               metricTracker,
+		testClusterClientSetBuilder: testClusterClientSetBuilder,
 	}
 }
 func (cstm *ControllerSubTestManager) NewControllerSubTest(t *testing.T) *ControllerSubTest {
 	t.Helper()
 
 	return &ControllerSubTest{
-		t:               t,
-		Client:          cstm.client,
-		namespacePrefix: cstm.namespacePrefix,
-		ObjChan:         cstm.objChan,
-		MetricTracker:   cstm.metricTracker,
+		t:                           t,
+		Client:                      cstm.client,
+		namespacePrefix:             cstm.namespacePrefix,
+		ObjChan:                     cstm.objChan,
+		MetricTracker:               cstm.metricTracker,
+		TestClusterClientSetBuilder: cstm.testClusterClientSetBuilder,
 	}
 }
 
@@ -352,10 +357,22 @@ func (cst *ControllerSubTest) Run(name string, testFunc func(*WithT, *Controller
 	})
 }
 
-type FakeClientSetBuilder struct{}
+type FakeClientSetBuilder struct {
+	ClientSets map[string]kubernetes.Interface
+}
 
-func (FakeClientSetBuilder) NewClientSet(*cnrm.PartialContainerCluster) (kubernetes.Interface, error) {
-	return fake.NewSimpleClientset(), nil
+func NewFakeClientSetBuilder() *FakeClientSetBuilder {
+	return &FakeClientSetBuilder{
+		ClientSets: make(map[string]kubernetes.Interface),
+	}
+}
+
+func (f *FakeClientSetBuilder) NewClientSet(cluster *cnrm.PartialContainerCluster) (kubernetes.Interface, error) {
+	k := cluster.Namespace + "/" + cluster.Name
+	if _, ok := f.ClientSets[k]; !ok {
+		f.ClientSets[k] = fake.NewSimpleClientset()
+	}
+	return f.ClientSets[k], nil
 }
 
 func getMetricIntValue(c prometheus.Collector) int {
