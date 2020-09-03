@@ -30,6 +30,8 @@ func main() {
 
 	waitTimeout := flag.Duration("wait-timeout", requester.DefaultTimeout, "how long to wait for cluster")
 
+	debug := flag.Bool("debug", false, "this flag causes the test job to run with dummy command so developer can exec into pod and debug tests interactively")
+
 	flag.Parse()
 
 	if namespace == nil || *namespace == "" {
@@ -73,7 +75,12 @@ func main() {
 		log.Printf("configmap created with init manifiest %q\n", *initManifest)
 	}
 
-	err = tcr.CreateTestCluster(ctx, nil, description, image, flag.Args()...)
+	if *debug {
+		log.Printf("requesting cluster in debug mode")
+		err = tcr.CreateTestCluster(ctx, nil, description, image, "/bin/sh", "-c", "while :; do sleep 120; done")
+	} else {
+		err = tcr.CreateTestCluster(ctx, nil, description, image, flag.Args()...)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -92,6 +99,18 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Printf("cluster ready.")
+	}
+
+	if *debug {
+		log.Print("Debug mode detected, exec into pod using following commands")
+		log.Printf("gcloud container clusters list --uri | grep %s | xargs gcloud container clusters get-credentials --zone x", name)
+		log.Printf(`
+kubectl get jobs -n %[1]s -o json | \
+jq -r '.items[].metadata.name' | \
+grep %[2]s | \
+xargs -I "{}" kubectl get pods -n %[1]s -l job-name="{}" -o json | \
+jq -r '.items[].metadata.name' | \
+xargs -I "{}" kubectl exec -n %[1]s -ti "{}" sh`, *namespace, name)
 	}
 }
 
