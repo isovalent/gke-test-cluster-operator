@@ -112,6 +112,8 @@ xargs -I "{}" kubectl get pods -n %[1]s -l job-name="{}" -o json | \
 jq -r '.items[].metadata.name' | \
 xargs -I "{}" kubectl exec -n %[1]s -ti "{}" sh`, *namespace, name)
 	}
+
+	log.Printf("To delete cluster, run following command against management cluster:\nkubectl delete tcg %s -n %s", name, *namespace)
 }
 
 // maybeReadImageFromFile will attempt to treat &image as a path to a file
