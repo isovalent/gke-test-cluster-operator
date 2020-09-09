@@ -249,10 +249,13 @@ func (r *CNRMContainerNodePoolWatcher) RenderObjects(ownerObj *clustersv1alpha2.
 		return nil, err
 	}
 
+	// not using objs.EachListItem here since it would require type conversion
 	for i := range objs.Items {
-		// not using objs.EachListItem here sicne it would require type conversion
-		if err := controllerutil.SetControllerReference(ownerObj, &objs.Items[i], r.Scheme); err != nil {
-			return nil, err
+		// don't set controller reference for objects in different namespaces e.g. Grafana dashboards
+		if objs.Items[i].GetNamespace() == ownerObj.Namespace {
+			if err := controllerutil.SetControllerReference(ownerObj, &objs.Items[i], r.Scheme); err != nil {
+				return nil, err
+			}
 		}
 	}
 
