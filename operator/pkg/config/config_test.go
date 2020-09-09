@@ -5,6 +5,7 @@ package config_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -804,7 +805,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			data, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
-			const expected = `
+			var expected = getInfraWithDashboard(generatedName, `
 			{
 				"kind": "List",
 				"apiVersion": "v1",
@@ -1064,11 +1065,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							  "resources": {
 								"limits": {
 								  "cpu": "100m",
-								  "memory": "100Mi"
+								  "memory": "200Mi"
 								},
 								"requests": {
 								  "cpu": "100m",
-								  "memory": "100Mi"
+								  "memory": "200Mi"
 								}
 							  },
 							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
@@ -1130,15 +1131,31 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						}
 					  ]
 					}
-				  }
+				  },
+				  {
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-baz-a0b1c2",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+					  "cluster": "baz-a0b1c2",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-baz-a0b1c2.json": DASHBOARD_DATA
+                  }
+                }
 				]
-			}`
+			}`)
 			g.Expect(data).To(MatchJSON(expected))
 
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(3))
+			g.Expect(objs.Items).To(HaveLen(4))
 		}
 
 		{
@@ -1163,7 +1180,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			data, err := c.RenderTestInfraWorkloadsAsJSON(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 
-			const expected = `
+			var expected = getInfraWithDashboard(generatedName, `
 			{
 				"kind": "List",
 				"apiVersion": "v1",
@@ -1380,11 +1397,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							  "resources": {
 								"limits": {
 								  "cpu": "100m",
-								  "memory": "100Mi"
+								  "memory": "200Mi"
 								},
 								"requests": {
 								  "cpu": "100m",
-								  "memory": "100Mi"
+								  "memory": "200Mi"
 								}
 							  },
 							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
@@ -1442,15 +1459,31 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 						}
 					  ]
 					}
-				  }
+				  },
+				  {
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-bar-0a1b2c",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+				      "cluster": "bar-0a1b2c",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-bar-0a1b2c.json": DASHBOARD_DATA
+                  }
+                }
 				]
-			}`
+			}`)
 			g.Expect(data).To(MatchJSON(expected))
 
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(3))
+			g.Expect(objs.Items).To(HaveLen(4))
 		}
 
 		{
@@ -1474,7 +1507,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(3))
+			g.Expect(objs.Items).To(HaveLen(4))
 
 			g.Expect(objs.Items[0].GetName()).To(Equal("test-runner-baz-x2a8332"))
 
@@ -1568,4 +1601,10 @@ func TestToUnstructured(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 
 	g.Expect(runtimeJSON).To(MatchJSON(unstructuredJSON))
+}
+
+func getInfraWithDashboard(clusterName, infra string) string {
+	dashboard := strings.Replace(dashboardTemplate, clusterNamePlaceholder, clusterName, -1)
+
+	return strings.Replace(infra, dashboardDataPlaceholder, dashboard, -1)
 }

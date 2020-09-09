@@ -3,6 +3,7 @@
 
 package infra
 
+import "encoding/json"
 import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 _generatedName: resource.metadata.name | *resource.status.clusterName
@@ -143,11 +144,11 @@ _promviewWorkloadSpec: {
 				resources: {
 					limits: {
 						cpu:    "100m"
-						memory: "100Mi"
+						memory: "200Mi"
 					}
 					requests: {
 						cpu:    "100m"
-						memory: "100Mi"
+						memory: "200Mi"
 					}
 				}
 				ports: [{
@@ -212,6 +213,23 @@ _testRunnerJobSpec: {
 	}
 }
 
+
+_grafanaDashboard: {
+	apiVersion: "v1"
+	kind:       "ConfigMap"
+	metadata: {
+		name: "dashboard-\(_generatedName)"
+		labels:{
+			grafana_dashboard: "1"
+			cluster:   resource.metadata.name
+			component: "dashboard"
+		}
+		namespace: "grafana"
+	}
+	data: "dashboard-\(_generatedName).json": json.Marshal(_dashboardConfigMapData)
+}
+
+
 #TestWorkloadTemplate: {
 	kind:       "List"
 	apiVersion: "v1"
@@ -219,6 +237,7 @@ _testRunnerJobSpec: {
 		_testRunnerJob,
 		_promviewWorkload,
 		_promviewService,
+		_grafanaDashboard,
 	]
 }
 
