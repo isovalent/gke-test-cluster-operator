@@ -146,28 +146,28 @@ func (tcr *TestClusterRequest) CreateTestCluster(ctx context.Context, configTemp
 	return tcr.restClient.Create(ctx, cluster)
 }
 
-func (tcr *TestClusterRequest) WaitForTestCluster(ctx context.Context) error {
+func (tcr *TestClusterRequest) WaitForTestCluster(ctx context.Context) (*v1alpha2.TestClusterGKE, error) {
 	// No use polling the cluster right after it was created
 	select {
 	case <-time.After(DefaultInitialWait):
 	case <-ctx.Done():
-		return ctx.Err()
+		return nil, ctx.Err()
 	}
 
 	cluster := &v1alpha2.TestClusterGKE{}
 	for {
 		err := tcr.restClient.Get(ctx, tcr.key, cluster)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if cluster.Status.HasReadyCondition() {
-			return nil
+			return cluster, nil
 		}
 		select {
 		case <-time.After(DefaultWait):
 			continue
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil, ctx.Err()
 		}
 	}
 }

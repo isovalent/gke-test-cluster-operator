@@ -26,11 +26,11 @@ func main() {
 
 	description := flag.String("description", "", "definition of the purpose of this cluster")
 
-	waitForCluster := flag.Bool("wait", false, "this flag specifies whether command should wait for cluster to be ready")
+	waitForCluster := flag.Bool("wait", false, "once cluster has been requested, wait for it to become ready")
 
 	waitTimeout := flag.Duration("wait-timeout", requester.DefaultTimeout, "how long to wait for cluster")
 
-	debug := flag.Bool("debug", false, "this flag causes the test job to run with dummy command so developer can exec into pod and debug tests interactively")
+	debug := flag.Bool("debug", false, "enable interactive test debug mode with 'kubectl exec'")
 
 	flag.Parse()
 
@@ -61,7 +61,8 @@ func main() {
 	tcr, err := requester.NewTestClusterRequest(ctx, *project, *managementCluster, *namespace, name)
 	if err != nil {
 		if os.Getenv("GCP_SERVICE_ACCOUNT_KEY") == "" && os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
-			log.Fatal("Authentication failed in interactive mode. Run: gcloud auth application-default login")
+			log.Println("authentication failed in interactive mode")
+			log.Fatal("to fix this, run 'gcloud auth application-default login'")
 		}
 		log.Fatal(err)
 	}
@@ -92,18 +93,20 @@ func main() {
 	}
 
 	if *waitForCluster {
-		log.Printf("waiting for cluster")
-		log.Printf("For credentials run:\ngcloud container clusters list --uri | grep %s | xargs gcloud container clusters get-credentials --zone x", name)
-		err = tcr.WaitForTestCluster(ctx)
+		log.Printf("waiting for test cluster %q in namespace %s to become ready", name, *namespace)
+		cluster, err := tcr.WaitForTestCluster(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("cluster ready.")
+		log.Printf("test cluster %q in namespace %q is ready", name, *namespace)
+		log.Printf("for credentials run:\ngcloud container clusters get-credentials --region %s --project %s %s", *cluster.Spec.Region, *project, name)
 	}
 
 	if *debug {
 		log.Print("Debug mode detected, exec into pod using following commands")
-		log.Printf("gcloud container clusters list --uri | grep %s | xargs gcloud container clusters get-credentials --zone x", name)
+		if !*waitForCluster { // get-credentials instruction not printed yet
+			log.Printf("gcloud container clusters list --uri | grep %s | xargs gcloud container clusters get-credentials --zone x", name)
+		}
 		log.Printf(`
 kubectl get jobs -n %[1]s -o json | \
 jq -r '.items[].metadata.name' | \
@@ -113,7 +116,7 @@ jq -r '.items[].metadata.name' | \
 xargs -I "{}" kubectl exec -n %[1]s -ti "{}" sh`, *namespace, name)
 	}
 
-	log.Printf("To delete cluster, run following command against management cluster:\nkubectl delete tcg %s -n %s", name, *namespace)
+	log.Printf("for cluster cleanup run following command against management cluster:\nkubectl delete tcg %s -n %s", name, *namespace)
 }
 
 // maybeReadImageFromFile will attempt to treat &image as a path to a file
