@@ -144,11 +144,11 @@ _promviewWorkloadSpec: {
 				resources: {
 					limits: {
 						cpu:    "100m"
-						memory: "200Mi"
+						memory: "400Mi"
 					}
 					requests: {
 						cpu:    "100m"
-						memory: "200Mi"
+						memory: "400Mi"
 					}
 				}
 				ports: [{

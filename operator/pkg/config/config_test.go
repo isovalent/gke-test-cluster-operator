@@ -1065,11 +1065,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							  "resources": {
 								"limits": {
 								  "cpu": "100m",
-								  "memory": "200Mi"
+								  "memory": "400Mi"
 								},
 								"requests": {
 								  "cpu": "100m",
-								  "memory": "200Mi"
+								  "memory": "400Mi"
 								}
 							  },
 							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
@@ -1397,11 +1397,11 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 							  "resources": {
 								"limits": {
 								  "cpu": "100m",
-								  "memory": "200Mi"
+								  "memory": "400Mi"
 								},
 								"requests": {
 								  "cpu": "100m",
-								  "memory": "200Mi"
+								  "memory": "400Mi"
 								}
 							  },
 							  "image": "quay.io/isovalent/gke-test-cluster-promview:7695938dcf3a6e4f0e7fb9537091103259aed46e",
