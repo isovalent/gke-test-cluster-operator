@@ -7,7 +7,7 @@ import "github.com/isovalent/gke-test-cluster-management/operator/api/v1alpha2"
 
 _generatedName: resource.metadata.name | *resource.status.clusterName
 
-_dashboardConfigMapData:
+_dashboardConfigMapDataCilium:
     {
       "annotations": {
         "list": [
@@ -693,7 +693,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{k8s_app=\"cilium\"})",
+              "expr": "avg(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"})",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -702,7 +702,7 @@ _dashboardConfigMapData:
               "refId": "C"
             },
             {
-              "expr": "max(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{k8s_app=\"cilium\"})",
+              "expr": "max(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"})",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -711,7 +711,7 @@ _dashboardConfigMapData:
               "refId": "D"
             },
             {
-              "expr": "min(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{k8s_app=\"cilium\"})",
+              "expr": "min(cilium_bpf_maps_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"} + cilium_bpf_progs_virtual_memory_max_bytes{test_cluster_name=~\"\(_generatedName).*\"})",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -831,7 +831,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rate(cilium_agent_api_process_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_agent_api_process_time_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, method, path)",
+              "expr": "avg(rate(cilium_agent_api_process_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_agent_api_process_time_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, method, path)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{method}} {{path}}",
@@ -932,7 +932,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "max(rate(cilium_agent_api_process_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_agent_api_process_time_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, method, path)",
+              "expr": "max(rate(cilium_agent_api_process_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_agent_api_process_time_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, method, path)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{method}} {{path}}",
@@ -1676,7 +1676,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rate(cilium_bpf_syscall_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/ rate(cilium_bpf_syscall_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, operation)",
+              "expr": "avg(rate(cilium_bpf_syscall_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/ rate(cilium_bpf_syscall_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, operation)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{operation}}",
@@ -1775,7 +1775,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "max(rate(cilium_bpf_syscall_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/ rate(cilium_bpf_syscall_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, operation)",
+              "expr": "max(rate(cilium_bpf_syscall_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/ rate(cilium_bpf_syscall_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, operation)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{operation}}",
@@ -2201,7 +2201,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(kvstore_operations_total{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, scope, action)",
+              "expr": "sum(rate(kvstore_operations_total{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope, action)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{scope}} {{action}}",
@@ -2304,7 +2304,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "max(rate(kvstore_operations_total{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, scope, action)",
+              "expr": "max(rate(kvstore_operations_total{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope, action)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{scope}} {{action}}",
@@ -2406,7 +2406,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "topk(5, avg(rate(cilium_kvstore_operations_duration_seconds_sum{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, action, scope) / avg(rate(cilium_kvstore_operations_duration_seconds_count{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, action, scope))",
+              "expr": "topk(5, avg(rate(cilium_kvstore_operations_duration_seconds_sum{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, action, scope) / avg(rate(cilium_kvstore_operations_duration_seconds_count{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, action, scope))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{action}} {{scope}}",
@@ -2507,7 +2507,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "topk(5, max(rate(cilium_kvstore_operations_duration_seconds_sum{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, action, scope) / avg(rate(cilium_kvstore_operations_duration_seconds_count{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, action, scope))",
+              "expr": "topk(5, max(rate(cilium_kvstore_operations_duration_seconds_sum{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, action, scope) / avg(rate(cilium_kvstore_operations_duration_seconds_count{kubernetes_pod_name=~\"$pod\",test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, action, scope))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{action}} {{scope}}",
@@ -2606,7 +2606,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rate(cilium_kvstore_events_queue_seconds_count{kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, scope, action)",
+              "expr": "avg(rate(cilium_kvstore_events_queue_seconds_count{test_cluster_name=~\"\(_generatedName).*\",kubernetes_pod_name=~\"$pod\"}[1m])) by (pod, scope, action)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{action}} {{scope}}",
@@ -4716,7 +4716,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rate(cilium_proxy_upstream_reply_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_proxy_upstream_reply_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, scope)",
+              "expr": "avg(rate(cilium_proxy_upstream_reply_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_proxy_upstream_reply_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -4944,21 +4944,21 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "min(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, scope)",
+              "expr": "min(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "min",
               "refId": "A"
             },
             {
-              "expr": "avg(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, scope)",
+              "expr": "avg(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "avg",
               "refId": "B"
             },
             {
-              "expr": "max(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, scope)",
+              "expr": "max(rate(cilium_triggers_policy_update_call_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_triggers_policy_update_call_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "max",
@@ -5066,7 +5066,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "max(rate(cilium_proxy_upstream_reply_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_proxy_upstream_reply_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, scope)",
+              "expr": "max(rate(cilium_proxy_upstream_reply_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope) / sum(rate(cilium_proxy_upstream_reply_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, scope)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Max {{scope}}",
@@ -6513,7 +6513,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(cilium_controllers_runs_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, status) / sum(rate(cilium_controllers_runs_duration_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, status)",
+              "expr": "sum(rate(cilium_controllers_runs_duration_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, status) / sum(rate(cilium_controllers_runs_duration_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, status)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{status}}",
@@ -6635,7 +6635,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rate(cilium_k8s_client_api_latency_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_k8s_client_api_latency_time_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, method, path)",
+              "expr": "avg(rate(cilium_k8s_client_api_latency_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_k8s_client_api_latency_time_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, method, path)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{method}} {{path}}",
@@ -6736,7 +6736,7 @@ _dashboardConfigMapData:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "max(rate(cilium_k8s_client_api_latency_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_k8s_client_api_latency_time_seconds_count{k8s_app=\"cilium\"}[1m])) by (pod, method, path)",
+              "expr": "max(rate(cilium_k8s_client_api_latency_time_seconds_sum{test_cluster_name=~\"\(_generatedName).*\"}[1m])/rate(cilium_k8s_client_api_latency_time_seconds_count{test_cluster_name=~\"\(_generatedName).*\"}[1m])) by (pod, method, path)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "{{method}} {{path}}",
@@ -8152,7 +8152,7 @@ _dashboardConfigMapData:
         ]
       },
       "timezone": "utc",
-      "title": "Cilium Metrics",
+      "title": _generatedName + " Cilium Metrics",
       "uid": "vtuWtdumz",
       "version": 1
     }

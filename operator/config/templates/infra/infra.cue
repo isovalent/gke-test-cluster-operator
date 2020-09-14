@@ -214,11 +214,11 @@ _testRunnerJobSpec: {
 }
 
 
-_grafanaDashboard: {
+_grafanaDashboardCilium: {
 	apiVersion: "v1"
 	kind:       "ConfigMap"
 	metadata: {
-		name: "dashboard-\(_generatedName)"
+		name: "dashboard-\(_generatedName)-cilium"
 		labels:{
 			grafana_dashboard: "1"
 			cluster:   resource.metadata.name
@@ -226,7 +226,37 @@ _grafanaDashboard: {
 		}
 		namespace: "grafana"
 	}
-	data: "dashboard-\(_generatedName).json": json.Marshal(_dashboardConfigMapData)
+	data: "dashboard-\(_generatedName)-cilium.json": json.Marshal(_dashboardConfigMapDataCilium)
+}
+
+_grafanaDashboardCiliumOperator: {
+	apiVersion: "v1"
+	kind:       "ConfigMap"
+	metadata: {
+		name: "dashboard-\(_generatedName)-cilium-operator"
+		labels:{
+			grafana_dashboard: "1"
+			cluster:   resource.metadata.name
+			component: "dashboard"
+		}
+		namespace: "grafana"
+	}
+	data: "dashboard-\(_generatedName)-cilium-operator.json": json.Marshal(_dashboardConfigMapDataCiliumOperator)
+}
+
+_grafanaDashboardCiliumHubble: {
+	apiVersion: "v1"
+	kind:       "ConfigMap"
+	metadata: {
+		name: "dashboard-\(_generatedName)-hubble"
+		labels:{
+			grafana_dashboard: "1"
+			cluster:   resource.metadata.name
+			component: "dashboard"
+		}
+		namespace: "grafana"
+	}
+	data: "dashboard-\(_generatedName)-hubble.json": json.Marshal(_dashboardConfigMapDataCiliumHubble)
 }
 
 
@@ -237,7 +267,9 @@ _grafanaDashboard: {
 		_testRunnerJob,
 		_promviewWorkload,
 		_promviewService,
-		_grafanaDashboard,
+		_grafanaDashboardCilium,
+		_grafanaDashboardCiliumOperator,
+		_grafanaDashboardCiliumHubble,
 	]
 }
 
