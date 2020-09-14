@@ -1136,7 +1136,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
                   "kind": "ConfigMap",
                   "apiVersion": "v1",
                   "metadata": {
-                    "name": "dashboard-baz-a0b1c2",
+                    "name": "dashboard-baz-a0b1c2-cilium",
                     "namespace": "grafana",
                     "labels": {
                       "grafana_dashboard": "1",
@@ -1145,9 +1145,41 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
                     }
                   },
                   "data": {
-                    "dashboard-baz-a0b1c2.json": DASHBOARD_DATA
+                    "dashboard-baz-a0b1c2-cilium.json": CILIUM_DASHBOARD_DATA
                   }
-                }
+				  },
+				  {
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-baz-a0b1c2-cilium-operator",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+					  "cluster": "baz-a0b1c2",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-baz-a0b1c2-cilium-operator.json": CILIUM_OPERATOR_DASHBOARD_DATA
+                  }
+                },
+				{
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-baz-a0b1c2-hubble",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+					  "cluster": "baz-a0b1c2",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-baz-a0b1c2-hubble.json": HUBBLE_DASHBOARD_DATA
+                  }
+				  }
 				]
 			}`)
 			g.Expect(data).To(MatchJSON(expected))
@@ -1155,7 +1187,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(6))
 		}
 
 		{
@@ -1464,18 +1496,50 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
                   "kind": "ConfigMap",
                   "apiVersion": "v1",
                   "metadata": {
-                    "name": "dashboard-bar-0a1b2c",
+                    "name": "dashboard-bar-0a1b2c-cilium",
                     "namespace": "grafana",
                     "labels": {
                       "grafana_dashboard": "1",
-				      "cluster": "bar-0a1b2c",
+					  "cluster": "bar-0a1b2c",
 					  "component": "dashboard"
                     }
                   },
                   "data": {
-                    "dashboard-bar-0a1b2c.json": DASHBOARD_DATA
+                    "dashboard-bar-0a1b2c-cilium.json": CILIUM_DASHBOARD_DATA
                   }
-                }
+				  },
+				  {
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-bar-0a1b2c-cilium-operator",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+					  "cluster": "bar-0a1b2c",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-bar-0a1b2c-cilium-operator.json": CILIUM_OPERATOR_DASHBOARD_DATA
+                  }
+                },
+				{
+                  "kind": "ConfigMap",
+                  "apiVersion": "v1",
+                  "metadata": {
+                    "name": "dashboard-bar-0a1b2c-hubble",
+                    "namespace": "grafana",
+                    "labels": {
+                      "grafana_dashboard": "1",
+					  "cluster": "bar-0a1b2c",
+					  "component": "dashboard"
+                    }
+                  },
+                  "data": {
+                    "dashboard-bar-0a1b2c-hubble.json": HUBBLE_DASHBOARD_DATA
+                  }
+				  }
 				]
 			}`)
 			g.Expect(data).To(MatchJSON(expected))
@@ -1483,7 +1547,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(6))
 		}
 
 		{
@@ -1507,7 +1571,7 @@ func TestTestInfraWorkloadsResources(t *testing.T) {
 			objs, err := c.RenderTestInfraWorkloads(cluster)
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(objs).ToNot(BeNil())
-			g.Expect(objs.Items).To(HaveLen(4))
+			g.Expect(objs.Items).To(HaveLen(6))
 
 			g.Expect(objs.Items[0].GetName()).To(Equal("test-runner-baz-x2a8332"))
 
@@ -1604,7 +1668,10 @@ func TestToUnstructured(t *testing.T) {
 }
 
 func getInfraWithDashboard(clusterName, infra string) string {
-	dashboard := strings.Replace(dashboardTemplate, clusterNamePlaceholder, clusterName, -1)
+	for dashboardDataPlaceholder, dashboardTemplate := range dashboardMap {
+		dashboard := strings.Replace(dashboardTemplate, clusterNamePlaceholder, clusterName, -1)
+		infra = strings.Replace(infra, dashboardDataPlaceholder, dashboard, -1)
+	}
 
-	return strings.Replace(infra, dashboardDataPlaceholder, dashboard, -1)
+	return infra
 }
