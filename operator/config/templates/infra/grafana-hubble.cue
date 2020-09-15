@@ -46,7 +46,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -161,7 +161,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -247,7 +247,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -333,7 +333,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -432,7 +432,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -518,7 +518,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -604,7 +604,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -691,7 +691,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -783,7 +783,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -916,7 +916,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1024,7 +1024,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1149,7 +1149,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1257,7 +1257,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1377,7 +1377,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1473,7 +1473,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1559,7 +1559,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1660,7 +1660,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 4,
@@ -1746,7 +1746,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 4,
@@ -1832,7 +1832,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -1919,7 +1919,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2019,7 +2019,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 6,
@@ -2106,7 +2106,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 6,
@@ -2193,7 +2193,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2279,7 +2279,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2365,7 +2365,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2465,7 +2465,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2551,7 +2551,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2673,7 +2673,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2767,7 +2767,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2854,7 +2854,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -2941,7 +2941,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -3028,7 +3028,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 5,
@@ -3119,7 +3119,7 @@ _dashboardConfigMapDataCiliumHubble:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "prometheus",
+          "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
             "h": 6,
