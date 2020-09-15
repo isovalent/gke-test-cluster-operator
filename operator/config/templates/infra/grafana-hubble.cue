@@ -3242,7 +3242,7 @@ _dashboardConfigMapDataCiliumHubble:
         ]
       },
       "timezone": "",
-      "title": "Hubble",
+      "title": _generatedName + " Hubble Metrics",
       "uid": "5HftnJAWz",
       "version": 24
     }
