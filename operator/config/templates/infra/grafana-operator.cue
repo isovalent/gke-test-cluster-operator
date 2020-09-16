@@ -1003,7 +1003,6 @@ _dashboardConfigMapDataCiliumOperator:
       },
       "timezone": "",
       "title": _generatedName + " Cilium Operator Metrics",
-      "uid": "1GC0TT4Wz",
       "version": 1
     }
 resource: v1alpha2.#TestClusterGKE

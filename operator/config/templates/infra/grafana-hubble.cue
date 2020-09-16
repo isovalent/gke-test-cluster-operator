@@ -3243,8 +3243,7 @@ _dashboardConfigMapDataCiliumHubble:
       },
       "timezone": "",
       "title": _generatedName + " Hubble Metrics",
-      "uid": "5HftnJAWz",
-      "version": 24
+      "version": 1
     }
 
 resource: v1alpha2.#TestClusterGKE

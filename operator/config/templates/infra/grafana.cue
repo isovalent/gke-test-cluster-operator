@@ -8153,7 +8153,6 @@ _dashboardConfigMapDataCilium:
       },
       "timezone": "utc",
       "title": _generatedName + " Cilium Metrics",
-      "uid": "vtuWtdumz",
       "version": 1
     }
 
