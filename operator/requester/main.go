@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,7 +15,9 @@ import (
 
 func main() {
 
-	image := flag.String("image", "", "image to test - this should be ether full image name, or path to a file containing the name")
+	image := flag.String("image", "", "name of the image to use for driving the tests")
+	imageTagFilePath := flag.String("image-tag-from-file", "", "read the name of the test image from a file")
+
 	namespace := flag.String("namespace", "", "namespace to use")
 
 	namePrefix := flag.String("name-prefix", "test-", "name prefix for the test cluster")
@@ -38,14 +41,21 @@ func main() {
 		log.Fatal("--namespace must be set")
 	}
 
-	if image == nil || *image == "" {
+	if image == nil || imageTagFilePath == nil {
 		if description == nil || *description == "" {
-			log.Fatal("--description must be set when --image is not set")
+			log.Fatal("--description must be set when neither --image nor --image-from-file are set")
 		}
-		log.Println("cluster will be created without a test job since --image was not set")
+		log.Println("cluster will be created without a test job since image was not given")
 	}
 
-	maybeReadImageFromFile(image)
+	if imageTagFilePath != nil {
+		if err := readImageFromFile(image, imageTagFilePath); err != nil {
+			log.Fatalf("cannot parse image tag from file: %s", err)
+		}
+	}
+
+	log.Printf("will use image %q", *image)
+
 	var ctx context.Context
 	var cancel context.CancelFunc
 
@@ -119,27 +129,30 @@ xargs -I "{}" kubectl exec -n %[1]s -ti "{}" sh`, *namespace, name)
 	log.Printf("for cluster cleanup run following command against management cluster:\nkubectl delete tcg %s -n %s", name, *namespace)
 }
 
-// maybeReadImageFromFile will attempt to treat &image as a path to a file
-// and read the first line, it will not fail, but if it succeeds the first
-// line of the file's contents (if non-empty) will be store in &image
-func maybeReadImageFromFile(image *string) {
-	if image == nil || *image == "" {
-		return
+// readImageFromFile will read image name from filePath and either set image or return an error;
+// the file is expected to contain image name on the first line
+func readImageFromFile(image, filePath *string) error {
+	imageFileInfo, err := os.Stat(*filePath)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("%q does not exist", *filePath)
 	}
-	imageFileInfo, err := os.Stat(*image)
-	if os.IsNotExist(err) || imageFileInfo.IsDir() {
-		return
+
+	if imageFileInfo.IsDir() {
+		return fmt.Errorf("%q is a directory", *filePath)
 	}
-	data, err := ioutil.ReadFile(*image)
+
+	data, err := ioutil.ReadFile(*filePath)
 	if err != nil {
-		return
+		return err
 	}
 	lines := strings.Split(string(data), "\n")
 	if len(lines) < 1 {
-		return
+		return fmt.Errorf("%q must have at least one line", *filePath)
 	}
-	if lines[0] == "" {
-		return
+	parsedImage := strings.TrimSpace(lines[0])
+	if parsedImage == "" {
+		return fmt.Errorf("first line in %q is empty", *filePath)
 	}
-	*image = lines[0]
+	*image = parsedImage
+	return nil
 }
