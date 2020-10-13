@@ -43,7 +43,7 @@ func main() {
 
 	if image == nil || imageTagFilePath == nil {
 		if description == nil || *description == "" {
-			log.Fatal("--description must be set when neither --image nor --image-from-file are set")
+			log.Fatal("--description must be set when neither --image nor --image-tag-from-file are set")
 		}
 		log.Println("cluster will be created without a test job since image was not given")
 	}
