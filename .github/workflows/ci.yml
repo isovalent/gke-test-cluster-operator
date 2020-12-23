@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
-      - uses: docker://docker.io/cilium/image-maker:dfa9d802a6575eca2da064a4ccb6356079a81c91
+      - uses: docker://docker.io/cilium/image-maker:8fb8f8325d966505552183f756eae4e3cb60d195
         name: Build all images and generate manifests
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -23,7 +23,7 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         with:
           entrypoint: make
-          args: -C operator images.all manifests.generate
+          args: images.all manifests.generate
       - name: Get image cache key
         id: get-image-cache-key
         run: .github/workflows/ci.get-image-cache-key.sh
@@ -37,9 +37,9 @@ jobs:
           # generate a unique key for the workflow run
           key: ${{ steps.get-image-cache-key.outputs.key }}
           path: |
-            operator/image-*.oci
-            operator/image-*.tag
-            operator/config/operator/operator-test.yaml
+            image-*.oci
+            image-*.tag
+            config/operator/operator-test.yaml
     outputs:
       image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   test-controllers:
@@ -57,9 +57,9 @@ jobs:
         with:
           key: ${{ needs.build-image.outputs.image-cache-key }}
           path: |
-            operator/image-*.oci
-            operator/image-*.tag
-            operator/config/operator/operator-test.yaml
+            image-*.oci
+            image-*.tag
+            config/operator/operator-test.yaml
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:
@@ -69,7 +69,7 @@ jobs:
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         with:
           entrypoint: kind
-          args: load image-archive operator/image-gke-test-cluster-operator.oci
+          args: load image-archive image-gke-test-cluster-operator.oci
       - name: Set kubeconfig context
         uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
         env:
@@ -105,9 +105,9 @@ jobs:
         timeout-minutes: 10
         with:
           entrypoint: make
-          args: -C operator test.controllers
+          args: test.controllers
   push-images:
-    if: github.repository == 'isovalent/gke-test-cluster-operator' && github.ref == 'refs/heads/master'
+    if: github.repository == 'isovalent/gke-test-cluster-operator' && github.ref == 'refs/heads/main'
     needs: test-controllers
     name: Build all images and push to the registry
     runs-on: ubuntu-18.04
@@ -116,7 +116,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
-      - uses: docker://docker.io/cilium/image-maker:dfa9d802a6575eca2da064a4ccb6356079a81c91
+      - uses: docker://docker.io/cilium/image-maker:8fb8f8325d966505552183f756eae4e3cb60d195
         name: Build and push all images
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -125,4 +125,4 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         with:
           entrypoint: make
-          args: -C operator images.all PUSH=true
+          args: images.all PUSH=true

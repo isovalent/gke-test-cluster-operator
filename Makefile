@@ -17,8 +17,6 @@ endif
 KIND_CLUSTER_NAME = operator-kind
 
 .buildx_builder:
-	# see https://github.com/docker/buildx/issues/308
-	mkdir -p ../.buildx
 	docker buildx create --platform linux/amd64 > $@
 
 images.all: images.operator images.initutil images.logview images.promview images.requester
@@ -28,12 +26,13 @@ images.operator: .buildx_builder
 		--builder $$(cat .buildx_builder) \
 		--base ./ \
 		--name gke-test-cluster-operator \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./ \
 		--name gke-test-cluster-operator \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-operator.tag
 
@@ -43,12 +42,13 @@ images.gcloud: .buildx_builder
 		--base ./gcloud \
 		--name gke-test-cluster-gcloud \
 		--test \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./gcloud  \
 		--name gke-test-cluster-gcloud \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-gcloud.tag
 
@@ -58,12 +58,13 @@ images.initutil: .buildx_builder
 		--base ./initutil \
 		--name gke-test-cluster-initutil \
 		--test \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./initutil  \
 		--name gke-test-cluster-initutil \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-initutil.tag
 
@@ -72,12 +73,13 @@ images.logview: .buildx_builder
 		--builder $$(cat .buildx_builder) \
 		--base ./logview \
 		--name gke-test-cluster-logview \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./logview \
 		--name gke-test-cluster-logview \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-logview.tag
 
@@ -86,12 +88,13 @@ images.promview: .buildx_builder
 		--builder $$(cat .buildx_builder) \
 		--base ./promview \
 		--name gke-test-cluster-promview \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./promview \
 		--name gke-test-cluster-promview \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-promview.tag
 
@@ -101,12 +104,13 @@ images.requester: .buildx_builder
 		--base ./ \
 		--dockerfile ./requester/Dockerfile \
 		--name gke-test-cluster-requester \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
-		$(imagine_push_or_export) \
-		--cleanup
+		$(imagine_push_or_export)
 	$(IMAGINE) image \
 		--base ./ \
 		--name gke-test-cluster-requester \
+		--upstream-branch origin/main \
 		--registry $(REGISTRY) \
 		> image-gke-test-cluster-requester.tag
 
