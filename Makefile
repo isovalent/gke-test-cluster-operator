@@ -138,15 +138,3 @@ misc.generate:
 	$(CONTROLLER_GEN) object:headerFile=".license_header.go.txt" rbac:roleName=gke-test-cluster-operator webhook paths="./..."
 	go generate ./api/...
 	go generate ./pkg/...
-
-.PHONY: kind-cluster
-kind-cluster:
-	if ! kind get clusters | grep $(KIND_CLUSTER_NAME) ; then \
-		kind create cluster --name $(KIND_CLUSTER_NAME) ; \
-	fi
-	kind export kubeconfig --name $(KIND_CLUSTER_NAME)
-	kubectl apply -f ../config/cnrm-system/crds.yaml
-
-test.controllers-kind: kind-cluster images.operator
-	kind load image-archive image-gke-test-cluster-operator.oci --name $(KIND_CLUSTER_NAME)
-	$(MAKE) test.controllers
