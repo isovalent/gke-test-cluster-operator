@@ -1,14 +1,17 @@
 #!/bin/bash
 
-# Copyright 2017-2020 Authors of Cilium
+# Copyright 2017-2021 Authors of Cilium
 # SPDX-License-Identifier: Apache-2.0
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
+root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+cd "${root_dir}"
+
 operator_image="${1}"
-logview_image="${2}"
 use_namespace="${NAMESPACE:-kube-system}"
 
 logview_domain="${LOGVIEW_DOMAIN:-""}"
@@ -43,31 +46,9 @@ cat > config/operator/instances.json << EOF
 }
 EOF
 
-ingress_route_prefix_salt="${INGRESS_ROUTE_PREFIX_SALT:-""}"
-
-if [ -z "${ingress_route_prefix_salt}" ] ; then
-  echo "WARNING: INGRESS_ROUTE_PREFIX_SALT is not set, it's required for production"
-fi
-
-cat > config/logview/instances.json << EOF
-{
-  "instances": [
-    {
-      "output": "test-clusters-atlantis/logview.yaml",
-      "parameters": {
-        "namespace": "test-clusters-atlantis",
-        "image": "${logview_image}",
-        "ingressRoutePrefixSalt": "${ingress_route_prefix_salt}"
-      }
-    }
-  ]
-}
-EOF
-
 if [ -n "${GOPATH+x}" ] ; then
   export PATH="${PATH}:${GOPATH}/bin"
 fi
 
 kg -input-directory ./config/operator -output-directory ./config/operator
-kg -input-directory ./config/logview -output-directory ./config/logview
 kg -input-directory ./config/templates/prom -output-directory ./config/templates/prom

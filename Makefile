@@ -115,7 +115,7 @@ images.requester: .buildx_builder
 		> image-gke-test-cluster-requester.tag
 
 manifests.generate:
-	./generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)" "$$(cat image-gke-test-cluster-logview.tag)"
+	./scripts/generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)"
 
 manifests.promote:
 	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
