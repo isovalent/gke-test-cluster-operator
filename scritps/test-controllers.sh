@@ -1,11 +1,15 @@
 #!/bin/bash
 
-# Copyright 2017-2020 Authors of Cilium
+# Copyright 2017-2021 Authors of Cilium
 # SPDX-License-Identifier: Apache-2.0
 
 set -o errexit
 set -o pipefail
 set -o nounset
+
+root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+cd "${root_dir}"
 
 name="gke-test-cluster-operator"
 namespace="${name}-$(date +%s)"
