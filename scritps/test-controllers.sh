@@ -95,7 +95,7 @@ echo "INFO: creating test job"
 # namespace, which shouldn't have to be the case once this
 # is re-written in Go and CUE template is rendered directly
 if [ -z "${CI+x}" ] ; then
-   NAMESPACE="${namespace}" ./generate-manifests.sh "${@}"
+   NAMESPACE="${namespace}" ./scripts/generate-manifests.sh "${@}"
    kubectl create namespace "${namespace}"
    kubectl label namespace "${namespace}" test="${name}"
 else
