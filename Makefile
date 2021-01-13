@@ -128,7 +128,7 @@ test.controllers-local: images.all
 	$(MAKE) test.controllers
 
 test.controllers:
-	./test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)" "$$(cat image-gke-test-cluster-logview.tag)"
+	./scripts/test-controllers.sh "$$(cat image-gke-test-cluster-operator.tag)" "$$(cat image-gke-test-cluster-logview.tag)"
 
 test.unit:
 	go test ./pkg/...
