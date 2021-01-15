@@ -11,6 +11,8 @@ _commonAnnotations: "cnrm.cloud.google.com/project-id": parameters.project
 _roleName: strings.Replace(_name, "-", "", -1)
 _serviceAccountName: "\(_name)@\(parameters.project).iam.gserviceaccount.com"
 
+_clusterRoleName: "gke-test-cluster-operator-ci"
+
 #RequesterAccessResources: {
 	apiVersion: "v1"
 	kind:       "List"
@@ -25,7 +27,7 @@ _serviceAccountName: "\(_name)@\(parameters.project).iam.gserviceaccount.com"
 		roleRef: {
 			apiGroup: "rbac.authorization.k8s.io"
 			kind:     "ClusterRole"
-			name:     _name
+			name:     _clusterRoleName
 		}
 		subjects: [{
 			kind: "User"
