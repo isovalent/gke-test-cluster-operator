@@ -5,7 +5,8 @@ buildx-*.json
 image-*.oci
 image-*.tag
 
-config/logview/instances.json
+config/logview/instances.cue
 config/logview/*/logview.yaml
 config/operator/instances.json
 config/operator/operator*.yaml
+config/requester-access/instances.cue
