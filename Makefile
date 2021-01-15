@@ -16,6 +16,9 @@ imagine_push_or_export = --push
 endif
 KIND_CLUSTER_NAME = operator-kind
 
+lint:
+	scripts/lint.sh
+
 .buildx_builder:
 	docker buildx create --platform linux/amd64 > $@
 
