@@ -7,6 +7,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+if [ "$#" -ne 1 ] ; then
+  echo "$0 requires exactly 1 argument - operator image"
+  exit 1
+fi
+
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 cd "${root_dir}"
