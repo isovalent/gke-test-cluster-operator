@@ -36,11 +36,13 @@ bail() {
 }
 
 one_pod_running() {
+  # shellcheck disable=SC2207
   pods=($(kubectl get pods --namespace="${namespace}" --selector="name=${name}" --output="jsonpath={range .items[?(.status.phase == \"Running\")]}{.metadata.name}{\"\n\"}{end}"))
   test "${#pods[@]}" -eq 1
 }
 
 one_pod_failed() {
+  # shellcheck disable=SC2207
   pods=($(kubectl get pods --namespace="${namespace}" --selector="name=${name}" --output="jsonpath={range .items[?(.status.phase == \"Failed\")]}{.metadata.name}{\"\n\"}{end}"))
   test "${#pods[@]}" -eq 1
 }
