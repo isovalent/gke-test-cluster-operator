@@ -15,6 +15,11 @@ jobs:
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
       - uses: docker://docker.io/cilium/image-maker:8fb8f8325d966505552183f756eae4e3cb60d195
+        name: Run make lint
+        with:
+          entrypoint: make
+          args: lint
+      - uses: docker://docker.io/cilium/image-maker:8fb8f8325d966505552183f756eae4e3cb60d195
         name: Build all images and generate manifests
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}

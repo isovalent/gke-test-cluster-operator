@@ -1,0 +1,17 @@
+ignored:
+# it cannot parse `FROM ${BASE_IMAGE}`
+- DL3006
+# alpine doesn't keep old versions around, so we cannot rely on package pinning,
+# which is also very tedious and is deemed uncessary
+- DL3018
+# also disable pining checks for ubuntu, as it currently deemed uncessary and,
+# in most cases, packages are installed via scripts and those don't get checked
+# (albeit, ubuntu repos tend to keep old versions around)
+- DL3008
+# hadolint sitll doesn't recognise RUN --mount
+- SC2215
+# it's not possible to use -o pipefail on busybox, so disable this check
+- DL4006
+# this one just needs to be set, but since `FROM ${BASE_IMAGE}` cannot be parse,
+# there isn't a way to leverage this feature anyway
+allowedRegistries: []
