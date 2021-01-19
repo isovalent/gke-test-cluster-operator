@@ -66,45 +66,45 @@ jobs:
             image-*.tag
             config/operator/operator-test.yaml
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         with:
           entrypoint: kind
           args: create cluster --config /etc/kind/${{ matrix.kube_version }}/standard-github-actions-cluster.yaml --kubeconfig /github/workspace/kubeconfig
       - name: Load OCI image into the cluster
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         with:
           entrypoint: kind
           args: load image-archive image-gke-test-cluster-operator.oci
       - name: Set kubeconfig context
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
           args: config use-context kind-kind
       - name: Deploy Cilium and Config Connector CRDs
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
           args: apply --filename config/test-deps
       - name: Wait for nodes to become ready
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
           args: wait nodes --for=condition=Ready --all --timeout=5m
       - name: Deploy Cert Manager
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         with:
           entrypoint: kubectl
           args: apply --filename config/cert-manager/cert-manager.yaml
       - name: Run controller tests
-        uses: docker://docker.io/cilium/kube-test:f0e78da899921dede4f2d752f21a6f4a3e1277d3
+        uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         env:
           KUBECONFIG: "/github/workspace/kubeconfig"
         timeout-minutes: 10
