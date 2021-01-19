@@ -8,7 +8,7 @@ set -o pipefail
 set -o nounset
 
 if [ "$#" -ne 3 ] ; then
-  echo "$0 requires exactly 2 arguments - project, namespace & logview image"
+  echo "$0 requires exactly 3 arguments - project, namespace & logview image"
   exit 1
 fi
 
