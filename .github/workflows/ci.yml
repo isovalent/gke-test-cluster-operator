@@ -29,24 +29,14 @@ jobs:
         with:
           entrypoint: make
           args: images.all manifests.generate
-      - name: Get image cache key
-        id: get-image-cache-key
-        run: .github/workflows/ci.get-image-cache-key.sh
-      - name: Cache OCI image tarballs and generated manifests
-        # cache is normally restored at the start, but it's not used in this case, as it is
-        # not being used to store anything between runs, the key is specific to this run only
-        # and is only used to pass image between jobs without having to push it to a registry;
-        # the artifacts are not used here due to costs
-        uses: actions/cache@v2
+      - name: Store OCI image tarballs and generated manifests
+        uses: actions/upload-artifact@v2
         with:
-          # generate a unique key for the workflow run
-          key: ${{ steps.get-image-cache-key.outputs.key }}
+          name: artifacts
           path: |
             image-*.oci
             image-*.tag
             config/operator/operator-test.yaml
-    outputs:
-      image-cache-key: ${{ steps.get-image-cache-key.outputs.key }}
   test-controllers:
     needs: build-image
     strategy:
@@ -57,14 +47,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Restore OCI image and manifest from cache
-        uses: actions/cache@v2
+      - name: Fetch OCI image tarvalls and generated manifests
+        uses: actions/download-artifact@v2
         with:
-          key: ${{ needs.build-image.outputs.image-cache-key }}
-          path: |
-            image-*.oci
-            image-*.tag
-            config/operator/operator-test.yaml
+          name: artifacts
+          path: ./
       - name: Create Kubernetes cluster (${{ matrix.kube_version }})
         uses: docker://docker.io/cilium/kube-test:6f40eb5b6bdc4c86d3fa2456d73d93a1a5814481
         with:
