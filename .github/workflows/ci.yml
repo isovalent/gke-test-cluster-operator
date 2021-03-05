@@ -24,8 +24,8 @@ jobs:
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME_GKE_TEST_CLUSTER_OPERATOR }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD_GKE_TEST_CLUSTER_OPERATOR }}
         with:
           entrypoint: make
           args: images.all manifests.generate
@@ -113,8 +113,8 @@ jobs:
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME_GKE_TEST_CLUSTER_OPERATOR }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD_GKE_TEST_CLUSTER_OPERATOR }}
         with:
           entrypoint: make
           args: images.all PUSH=true
