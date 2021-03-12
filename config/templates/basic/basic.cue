@@ -57,10 +57,6 @@ _commonLabels: cluster: resource.metadata.name
 				clusterRef:       _commonRef
 				initialNodeCount: _nodes
 				location:         _location
-				management: {
-					autoRepair:  false
-					autoUpgrade: false
-				}
 				nodeConfig: {
 					diskSizeGb:  100
 					diskType:    "pd-standard"
