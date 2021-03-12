@@ -179,10 +179,6 @@ func TestClusterResources(t *testing.T) {
 					  "clusterRef": {
 						"name": "baz"
 					  },
-					  "management": {
-						"autoRepair": false,
-						"autoUpgrade": false
-					  },
 					  "nodeConfig": {
 						"metadata": {
 						  "disable-legacy-endpoints": "true"
@@ -410,10 +406,6 @@ func TestClusterResources(t *testing.T) {
 					  "initialNodeCount": 3,
 					  "clusterRef": {
 						"name": "bar"
-					  },
-					  "management": {
-						"autoRepair": false,
-						"autoUpgrade": false
 					  },
 					  "nodeConfig": {
 						"metadata": {
