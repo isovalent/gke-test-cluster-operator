@@ -14,7 +14,6 @@ imagine_push_or_export = --export
 ifeq ($(PUSH),true)
 imagine_push_or_export = --push
 endif
-KIND_CLUSTER_NAME = operator-kind
 
 lint:
 	scripts/lint.sh
@@ -119,12 +118,6 @@ images.requester: .buildx_builder
 
 manifests.generate:
 	./scripts/generate-manifests.sh "$$(cat  image-gke-test-cluster-operator.tag)"
-
-manifests.promote:
-	cp config/operator/operator.yaml ../config/kube-system/operator.yaml
-	cp config/templates/prom/prom.yaml ../config/prom/prom.yaml
-	cp config/crd/*.yaml config/rbac/*.yaml ../config/kube-system/
-	for ns_dir in config/logview/*/ ; do cp $${ns_dir}/logview.yaml ../config/$$(basename $${ns_dir})/logview.yaml ; done
 
 test.controllers-local: images.all
 	docker load -i image-gke-test-cluster-operator.oci
