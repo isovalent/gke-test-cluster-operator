@@ -14,7 +14,7 @@ cd "${root_dir}"
 name="gke-test-cluster-operator"
 namespace="${name}-$(date +%s)"
 
-# this is a simple script for runnig controller tests on kind,
+# this is a simple script for running controller tests on kind,
 # it could eventually become a Go program
 
 follow_logs() {
@@ -57,8 +57,8 @@ wait_for_cert_manager() {
 
 wait_for_pod() {
   echo "INFO: waiting for the test job to start..."
-  # kubectl wait job only supports two condtions - complete or failed,
-  # so wait for a pod to get schulded
+  # kubectl wait job only supports two conditions - complete or failed,
+  # so wait for a pod to get scheduled
   # TODO: this doesn't check if job failed to create pods, which can happen
   # if there is configuration issue
   until kubectl wait pods --namespace="${namespace}" --selector="name=${name}" --for="condition=PodScheduled" --timeout="2m" 2> /dev/null ; do sleep 0.5 ; done
@@ -86,14 +86,14 @@ container_status() {
 
 wait_for_cert_manager
 
-echo "INFO: cleaning up stale resouces"
+echo "INFO: cleaning up stale resources"
 
 kubectl delete namespace --selector="test" --field-selector="status.phase=Active" --wait="false"
 kubectl delete ClusterRole,ClusterRoleBinding,MutatingWebhookConfiguration,ValidatingWebhookConfiguration --selector="name=${name}"
 
 echo "INFO: creating test job"
 
-# since we rely on external dependencie, CI uses a different
+# since we rely on external dependencies, CI uses a different
 # namespace, which shouldn't have to be the case once this
 # is re-written in Go and CUE template is rendered directly
 if [ -z "${CI+x}" ] ; then
@@ -107,7 +107,7 @@ fi
 kubectl apply --filename="config/rbac/role.yaml"
 kubectl apply --filename="config/crd"
 
-# wait_for_cert_manager attemapts what it can, yet the readiness of webhook is hard to determined without retrying
+# wait_for_cert_manager attempts what it can, yet the readiness of webhook is hard to determined without retrying
 until kubectl apply --namespace="${namespace}" --filename="config/operator/operator-test.yaml" ; do sleep 0.5 ; done
 
 wait_for_pod
