@@ -20,7 +20,7 @@ import (
 
 	"github.com/isovalent/gke-test-cluster-operator/api/cnrm"
 	"github.com/isovalent/gke-test-cluster-operator/controllers/common"
-	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client"
+	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client/gke"
 	"github.com/isovalent/gke-test-cluster-operator/pkg/github"
 
 	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-operator/api/v1alpha2"

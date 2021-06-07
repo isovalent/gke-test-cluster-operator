@@ -18,6 +18,7 @@ import (
 	clustersv1alpha2 "github.com/isovalent/gke-test-cluster-operator/api/v1alpha2"
 
 	"github.com/isovalent/gke-test-cluster-operator/controllers/common"
+	gcpclient "github.com/isovalent/gke-test-cluster-operator/pkg/client/gcp"
 	"github.com/isovalent/gke-test-cluster-operator/pkg/config"
 	"github.com/isovalent/gke-test-cluster-operator/pkg/github"
 )
@@ -64,8 +65,9 @@ type TestClusterGKEReconciler struct {
 	common.ClientLogger
 	Scheme *runtime.Scheme
 
-	ConfigRenderer *config.Config
-	Metrics        TestClusterGKEReconcilerMetrics
+	ConfigRenderer  *config.Config
+	Metrics         TestClusterGKEReconcilerMetrics
+	GCPHelperClient gcpclient.GCPHelperClient
 }
 
 // TestClusterGKEReconcilerMetrics contains metrics for TestClusterGKEReconciler
@@ -102,6 +104,10 @@ func (r *TestClusterGKEReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		if err := r.Status().Update(ctx, instance); err != nil {
 			return ctrl.Result{}, err
 		}
+	}
+
+	if err := r.SetLocation(ctx, instance, true); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// it's safe to re-generate object, as same name will be used
@@ -152,4 +158,43 @@ func (r *TestClusterGKEReconciler) RenderObjects(instance *clustersv1alpha2.Test
 	}
 
 	return objs, nil
+}
+
+func (r *TestClusterGKEReconciler) SetLocation(ctx context.Context, instance *clustersv1alpha2.TestClusterGKE, initial bool) error {
+	if instance.Spec.Region == nil {
+		instance.Spec.Region = new(string)
+	}
+	if instance.Spec.Location == nil {
+		instance.Spec.Location = new(string)
+	}
+
+	if *instance.Spec.MultiZone {
+		if initial {
+			if instance.Spec.Region == nil || *instance.Spec.Region == "" {
+				instance.Spec.Region = r.GCPHelperClient.SelectRandomRegion()
+			}
+		} else {
+			instance.Spec.Region = r.GCPHelperClient.SelectRandomRegion(instance.Spec.Region)
+		}
+		*instance.Spec.Location = *instance.Spec.Region
+		return nil
+	}
+
+	if initial {
+		zone, err := r.GCPHelperClient.SelectRandomZone(ctx, instance.Spec.Project, instance.Spec.Region)
+		if err != nil {
+			return err
+		}
+		*instance.Spec.Location = zone.Name
+		*instance.Spec.Region = zone.Region
+		return nil
+	}
+
+	zone, err := r.GCPHelperClient.SelectRandomZone(ctx, instance.Spec.Project, nil, *instance.Spec.Location)
+	if err != nil {
+		return err
+	}
+	*instance.Spec.Location = zone.Name
+	*instance.Spec.Region = zone.Region
+	return nil
 }

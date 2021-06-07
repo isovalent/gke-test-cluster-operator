@@ -5,6 +5,7 @@ package v1alpha2
 
 import (
 	"errors"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,16 +40,6 @@ func (c *TestClusterGKE) Default() {
 		*c.Spec.ConfigTemplate = "basic"
 	}
 
-	if c.Spec.Location == nil {
-		c.Spec.Location = new(string)
-		*c.Spec.Location = "europe-west2-b"
-	}
-
-	if c.Spec.Region == nil {
-		c.Spec.Region = new(string)
-		*c.Spec.Region = "europe-west2"
-	}
-
 	if c.Spec.JobSpec != nil {
 		if c.Spec.JobSpec.Runner == nil {
 			c.Spec.JobSpec.Runner = &TestClusterGKEJobRunnerSpec{}
@@ -63,6 +54,11 @@ func (c *TestClusterGKE) Default() {
 			c.Spec.JobSpec.Runner.InitImage = new(string)
 			*c.Spec.JobSpec.Runner.InitImage = "quay.io/isovalent/gke-test-cluster-initutil:854733411778d633350adfa1ae66bf11ba658a3f"
 		}
+	}
+
+	if c.Spec.MultiZone == nil {
+		c.Spec.MultiZone = new(bool)
+		*c.Spec.MultiZone = false
 	}
 
 	if c.Spec.MachineType == nil {
@@ -85,6 +81,15 @@ var _ webhook.Validator = &TestClusterGKE{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (c *TestClusterGKE) ValidateCreate() error {
 	log.Info("validate create", "namespace", c.Namespace, "name", c.Name)
+	if c.Spec.Region != nil {
+		return errors.New("'spec.region' is not user-settable, use 'spec.location' instead")
+	}
+	if c.Spec.Location != nil {
+		numLocationParts := len(strings.Split(*c.Spec.Location, "-"))
+		if 2 > numLocationParts || numLocationParts > 3 {
+			return errors.New("'spec.location' is invalid format")
+		}
+	}
 	return nil
 }
 
