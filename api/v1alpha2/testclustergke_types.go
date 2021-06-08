@@ -19,11 +19,12 @@ type TestClusterGKESpec struct {
 	Project *string `json:"project,omitempty"`
 	// ConfigTemplate is the name of configuration template to use
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
+	// Region is a GCP region
+	Region *string `json:"region,omitempty"`
 	// Location is a GCP zone or region
 	Location *string `json:"location,omitempty"`
-	// Location is a GCP region (derived from location)
-	// TODO: not user-settable, read-only
-	Region *string `json:"region,omitempty"`
+	// MultiZone indicates whether the cluster is meant to span multiple zones
+	MultiZone *bool `json:"multZone,omitempty"`
 	// KubernetesVersion is the version of Kubernetes to use
 	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
 	// JobSpec is the specification of test job

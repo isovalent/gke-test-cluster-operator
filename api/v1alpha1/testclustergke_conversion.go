@@ -20,6 +20,8 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.ConfigTemplate = src.Spec.ConfigTemplate
 	dst.Spec.Location = src.Spec.Location
 	dst.Spec.Region = src.Spec.Region
+	dst.Spec.MultiZone = new(bool)
+	*dst.Spec.MultiZone = false
 	dst.Spec.KubernetesVersion = src.Spec.KubernetesVersion
 
 	dst.Spec.JobSpec.Runner.Image = src.Spec.JobSpec.Runner.Image
@@ -73,7 +75,7 @@ func (src *TestClusterGKE) ConvertTo(dstRaw conversion.Hub) error {
 	return nil
 }
 
-// ConvertTo converts from Hub version to this TestClusterGKE.
+// ConvertFrom converts from Hub version to this TestClusterGKE.
 func (dst *TestClusterGKE) ConvertFrom(srcRaw conversion.Hub) error {
 	src := srcRaw.(*v1alpha2.TestClusterGKE)
 
@@ -83,6 +85,7 @@ func (dst *TestClusterGKE) ConvertFrom(srcRaw conversion.Hub) error {
 	dst.Spec.ConfigTemplate = src.Spec.ConfigTemplate
 	dst.Spec.Location = src.Spec.Location
 	dst.Spec.Region = src.Spec.Region
+
 	dst.Spec.KubernetesVersion = src.Spec.KubernetesVersion
 
 	dst.Spec.JobSpec.Runner.Image = src.Spec.JobSpec.Runner.Image

@@ -23,8 +23,7 @@ type TestClusterGKESpec struct {
 	ConfigTemplate *string `json:"configTemplate,omitempty"`
 	// Location is a GCP zone or region
 	Location *string `json:"location,omitempty"`
-	// Location is a GCP region (derived from location)
-	// TODO: not user-settable, read-only
+	// Region is a GCP region
 	Region *string `json:"region,omitempty"`
 	// KubernetesVersion is the version of Kubernetes to use
 	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`

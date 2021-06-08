@@ -18,7 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/isovalent/gke-test-cluster-operator/api/v1alpha2"
-	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client"
+	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client/gke"
 	"github.com/isovalent/gke-test-cluster-operator/pkg/github"
 )
 
