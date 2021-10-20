@@ -14,12 +14,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
-      - uses: docker://quay.io/cilium/image-maker:68cf0628c7a77124319cb8c33434b8cdb42a3865
+      - uses: docker://quay.io/cilium/image-maker:e8f1fa622dfad4250723d55bc6a3dd6d1f0f13cd
         name: Run make lint
         with:
           entrypoint: make
           args: lint
-      - uses: docker://quay.io/cilium/image-maker:68cf0628c7a77124319cb8c33434b8cdb42a3865
+      - uses: docker://quay.io/cilium/image-maker:e8f1fa622dfad4250723d55bc6a3dd6d1f0f13cd
         name: Build all images and generate manifests
         env:
           DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # required for imagine to detect -dev suffix
-      - uses: docker://quay.io/cilium/image-maker:68cf0628c7a77124319cb8c33434b8cdb42a3865
+      - uses: docker://quay.io/cilium/image-maker:e8f1fa622dfad4250723d55bc6a3dd6d1f0f13cd
         name: Build and push all images
         env:
           DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
