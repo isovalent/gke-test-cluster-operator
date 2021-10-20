@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"cuelang.org/go/cue"
-	"github.com/errordeveloper/kue/pkg/compiler"
+	"github.com/errordeveloper/kuegen/compiler"
 )
 
 const (
