@@ -22,8 +22,7 @@ jobs:
       - uses: docker://quay.io/cilium/image-maker:68cf0628c7a77124319cb8c33434b8cdb42a3865
         name: Build all images and generate manifests
         env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME_GKE_TEST_CLUSTER_OPERATOR }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD_GKE_TEST_CLUSTER_OPERATOR }}
         with:
@@ -111,8 +110,7 @@ jobs:
       - uses: docker://quay.io/cilium/image-maker:68cf0628c7a77124319cb8c33434b8cdb42a3865
         name: Build and push all images
         env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_PUBLIC_ACCESS_ONLY: "true"
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME_GKE_TEST_CLUSTER_OPERATOR }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD_GKE_TEST_CLUSTER_OPERATOR }}
         with:
