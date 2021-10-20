@@ -2,11 +2,9 @@ GOBIN = $(shell go env GOPATH)/bin
 
 CONTROLLER_GEN ?= $(GOBIN)/controller-gen
 IMAGINE ?= $(GOBIN)/imagine
-KG ?= $(GOBIN)/kg
 
 ifeq ($(MAKER_CONTAINER),true)
   IMAGINE=imagine
-  KG=kg
 endif
 
 REGISTRY ?= quay.io/isovalent

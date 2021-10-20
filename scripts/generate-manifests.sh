@@ -55,5 +55,5 @@ if [ -n "${GOPATH+x}" ] ; then
   export PATH="${PATH}:${GOPATH}/bin"
 fi
 
-kg -input-directory ./config/operator -output-directory ./config/operator
-kg -input-directory ./config/templates/prom -output-directory ./config/templates/prom
+kuegen -input-directory ./config/operator -output-directory ./config/operator
+kuegen -input-directory ./config/templates/prom -output-directory ./config/templates/prom

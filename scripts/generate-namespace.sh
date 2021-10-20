@@ -55,8 +55,8 @@ if [ -n "${GOPATH+x}" ] ; then
   export PATH="${PATH}:${GOPATH}/bin"
 fi
 
-kg -input-directory ./config/logview -output-directory "ns-${namespace}"
-kg -input-directory ./config/requester-access -output-directory "ns-${namespace}"
+kuegen -input-directory ./config/logview -output-directory "ns-${namespace}"
+kuegen -input-directory ./config/requester-access -output-directory "ns-${namespace}"
 
 cat > "ns-${namespace}/0-namespace.yaml" << EOF
 apiVersion: v1

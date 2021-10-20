@@ -372,6 +372,8 @@ github.com/errordeveloper/kue v0.3.0 h1:hZz4Y8x9nbd3QKs17K6IOXTkvba3MuthfLGqq3JN
 github.com/errordeveloper/kue v0.3.0/go.mod h1:fq1IBSbKXyGxnamsVBDqoScY/zWtqHB7XC2QgI6eGQ8=
 github.com/errordeveloper/kue v0.3.1 h1:mqWbyslFwRgfvKVtxouqU1Sir0PMZis3jDpxpTgMBHM=
 github.com/errordeveloper/kue v0.3.1/go.mod h1:YiFpLj4AHH1Eoya5t1Og1CxyG8O4mukspz8NFRZAjEo=
+github.com/errordeveloper/kuegen v0.4.0 h1:TfA4vq5NMugUMJaJFWFfuENGvTplZwADO1yAB37vkvU=
+github.com/errordeveloper/kuegen v0.4.0/go.mod h1:P9wCHGI07bjjeHAmLXujmg2+k+ideEZIP39QJnmrrfw=
 github.com/evanphx/json-patch v4.2.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/evanphx/json-patch v4.9.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=

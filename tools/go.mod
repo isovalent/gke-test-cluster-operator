@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/errordeveloper/imagine v0.0.0-20201215192748-b3494e82bc78
-	github.com/errordeveloper/kue v0.3.1
+	github.com/errordeveloper/kuegen v0.4.0
 	sigs.k8s.io/controller-tools v0.3.0
 )
 
