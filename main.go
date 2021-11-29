@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -21,7 +22,9 @@ import (
 	"github.com/isovalent/gke-test-cluster-operator/controllers"
 	"github.com/isovalent/gke-test-cluster-operator/controllers/common"
 	controllerscommon "github.com/isovalent/gke-test-cluster-operator/controllers/common"
-	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client"
+	gcpclient "github.com/isovalent/gke-test-cluster-operator/pkg/client/gcp"
+	gkeclient "github.com/isovalent/gke-test-cluster-operator/pkg/client/gke"
+
 	"github.com/isovalent/gke-test-cluster-operator/pkg/config"
 	// +kubebuilder:scaffold:imports
 )
@@ -76,10 +79,17 @@ func main() {
 
 	metricTracker := controllerscommon.NewMetricTracker()
 
+	gcpHelperClient, err := gcpclient.NewGCPHelperClient(context.Background())
+	if err != nil {
+		setupLog.Error(err, "unable to construct GCP helper client")
+		os.Exit(1)
+	}
+
 	if err := (&controllers.TestClusterGKEReconciler{
-		ClientLogger:   controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
-		Scheme:         mgr.GetScheme(),
-		ConfigRenderer: configRenderer,
+		ClientLogger:    controllerscommon.NewClientLogger(mgr, ctrl.Log, metricTracker, "TestClusterGKE"),
+		Scheme:          mgr.GetScheme(),
+		ConfigRenderer:  configRenderer,
+		GCPHelperClient: *gcpHelperClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestClusterGKE")
 		os.Exit(1)

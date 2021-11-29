@@ -41,20 +41,22 @@ func main() {
 		log.Fatal("--namespace must be set")
 	}
 
-	if image == nil || imageTagFilePath == nil {
+	if image == nil || *image == "" || imageTagFilePath == nil || *imageTagFilePath == "" {
 		if description == nil || *description == "" {
 			log.Fatal("--description must be set when neither --image nor --image-tag-from-file are set")
 		}
 		log.Println("cluster will be created without a test job since image was not given")
 	}
 
-	if imageTagFilePath != nil {
+	if imageTagFilePath != nil && *imageTagFilePath != "" {
 		if err := readImageFromFile(image, imageTagFilePath); err != nil {
 			log.Fatalf("cannot parse image tag from file: %s", err)
 		}
 	}
 
-	log.Printf("will use image %q", *image)
+	if *image != "" {
+		log.Printf("will use image %q", *image)
+	}
 
 	var ctx context.Context
 	var cancel context.CancelFunc
